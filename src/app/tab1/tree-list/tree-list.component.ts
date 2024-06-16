@@ -18,6 +18,7 @@ import {
   IonCardContent,
   IonSearchbar,
 } from '@ionic/angular/standalone';
+import { Guid } from 'guid-typescript';
 import { Subject, takeUntil } from 'rxjs';
 import { Tree } from 'src/app/models/tree.interface';
 import { DatabaseService } from 'src/app/services/database.service';
@@ -49,37 +50,39 @@ import { DatabaseService } from 'src/app/services/database.service';
 })
 export class TreeListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject();
-  private treeGroupId: string = '';
+  private treeGroupId: string | undefined = undefined;
 
   public treesList: Tree[] = [];
   public title: string = '';
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private databaseService: DatabaseService
+    public databaseService: DatabaseService
   ) {}
 
   ngOnInit() {
     this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (param) => {
+      next: async (param) => {
         this.treeGroupId = param['id'];
-        this.databaseService.setSelectedTreeGroup(param['id']);
-        this.treesList = this.databaseService.getTreesList(param['id']);
+        await this.databaseService.setSelectedTreeGroup(param['id']);
+        this.treesList = await this.databaseService.getTreesList(param['id']);
         this.title =
-          this.databaseService.getSelectedTree(param['id'])?.title ??
+          (await this.databaseService.getSelectedTree(param['id']))?.title ??
           'Not Found';
       },
     });
   }
 
-  filterTrees(filterString: any): void {
+  async filterTrees(filterString: any): Promise<void> {
     if (filterString) {
       filterString = filterString.toLowerCase();
-      this.treesList = this.databaseService
-        .getTreesList(this.treeGroupId)
-        .filter((x) => x.title.toLowerCase().includes(filterString));
+      this.treesList = (
+        await this.databaseService.getTreesList(this.treeGroupId)
+      ).filter((x) => x.title.toLowerCase().includes(filterString));
     } else {
-      this.treesList = this.databaseService.getTreesList(this.treeGroupId);
+      this.treesList = await this.databaseService.getTreesList(
+        this.treeGroupId
+      );
     }
   }
 

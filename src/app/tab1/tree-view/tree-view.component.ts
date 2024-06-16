@@ -65,15 +65,16 @@ export class TreeViewComponent implements OnInit, OnDestroy {
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private databaseService: DatabaseService
+    public databaseService: DatabaseService
   ) {
     register();
   }
 
   ngOnInit() {
     this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (param) => {
-        this.tree = this.databaseService.getSelectedTree(param['id']);
+      next: async (param) => {
+        this.tree = await this.databaseService.getSelectedTree(param['id']);
+        console.log(this.tree);
       },
     });
   }

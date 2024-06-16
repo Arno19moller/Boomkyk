@@ -27,19 +27,17 @@
 
     <ion-card>
       <swiper-container>
+        @for (image of tree?.images; track $index) {
         <swiper-slide>
           <img
-            src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
+            [src]="
+              image.webviewPath !== ''
+                ? image.webviewPath
+                : 'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg'
+            "
           />
         </swiper-slide>
-        <swiper-slide
-          ><img
-            src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
-        /></swiper-slide>
-        <swiper-slide
-          ><img
-            src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
-        /></swiper-slide>
+        }
       </swiper-container>
     </ion-card>
 

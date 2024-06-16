@@ -29,18 +29,18 @@ export class Tab1Page implements OnInit {
 
   constructor(public databaseService: DatabaseService) {}
 
-  ngOnInit(): void {
-    this.groups = this.databaseService.getTreeGroups();
+  async ngOnInit(): Promise<void> {
+    this.groups = await this.databaseService.getTreeGroups();
   }
 
-  filterGroups(filterString: any): void {
+  async filterGroups(filterString: any): Promise<void> {
     if (filterString) {
       filterString = filterString.toLowerCase();
-      this.groups = this.databaseService
-        .getTreeGroups()
-        .filter((x) => x.title.toLowerCase().includes(filterString));
+      this.groups = (await this.databaseService.getTreeGroups()).filter((x) =>
+        x.title.toLowerCase().includes(filterString)
+      );
     } else {
-      this.groups = this.databaseService.getTreeGroups();
+      this.groups = await this.databaseService.getTreeGroups();
     }
   }
 }

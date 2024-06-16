@@ -1,4 +1,4 @@
 export enum TreeType {
   'Group',
-  'List',
+  'Individual',
 }

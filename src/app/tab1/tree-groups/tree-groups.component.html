@@ -1,9 +1,9 @@
 @if (groups.length > 0) { @for (group of groups; track $index) {
-<ion-card [routerLink]="['/tabs/tab1/list', { id: group.id }]">
+<ion-card [routerLink]="['/tabs/tab1/list', { id: group.id['value'] }]">
   <img
     [src]="
-      group.image[0].filepath !== ''
-        ? group.image[0].filepath
+      group.images[0].webviewPath !== ''
+        ? group.images[0].webviewPath
         : 'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg'
     "
   />

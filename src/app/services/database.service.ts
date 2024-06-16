@@ -2,97 +2,108 @@ import { Injectable, signal } from '@angular/core';
 import { Tree } from '../models/tree.interface';
 import { Guid } from 'guid-typescript';
 import { TreeType } from '../models/tree-type.enum';
+import { Preferences } from '@capacitor/preferences';
+import { Platform } from '@ionic/angular';
+import { Directory, Filesystem } from '@capacitor/filesystem';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DatabaseService {
-  private tempId = Guid.create();
-  public treeGroupSignal = signal<Tree[]>([
-    {
-      id: this.tempId,
-      image: [
-        {
-          filepath:
-            'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg',
-          webviewPath:
-            'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg',
-        },
-      ],
-      title: 'Strychnos Bome',
-      subTitle: 'Loganiaceae',
-      description:
-        'Strychnos is a genus of flowering plants, belonging to the family Loganiaceae (sometimes Strychnaceae).',
-      type: TreeType.Group,
-    },
-    {
-      id: Guid.create(),
-      image: [
-        {
-          filepath:
-            'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg',
-          webviewPath:
-            'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg',
-        },
-      ],
-      title: 'Wilde Mispel',
-      description: 'Some Description.',
-      type: TreeType.List,
-      groupId: this.tempId,
-      treeInfo: {
-        overview: 'Some Overview information about the tree',
-        leaves: "Some information about the tree's leaves",
-        bark: "Some information about the tree's bark",
-        fruit: "Some information about the tree's fruit",
-      },
-    },
-    {
-      id: Guid.create(),
-      image: [
-        {
-          filepath:
-            'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg',
-          webviewPath:
-            'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg',
-        },
-      ],
-      title: 'Enkeldoring',
-      description: 'Some Description.',
-      type: TreeType.List,
-      groupId: this.tempId,
-      treeInfo: {
-        overview: '',
-        leaves: '',
-        bark: '',
-        fruit: '',
-      },
-    },
-  ]);
+  public isWebPlatform: boolean = false;
+  private TREE_STORAGE: string = 'trees';
+  private selectedTreeGroup: Tree | undefined = undefined; // used when navigating back
+  private platform: Platform;
 
-  selectedTreeGroup: Tree | undefined = undefined;
-
-  constructor() {}
-
-  getTreeGroups(): Tree[] {
-    return this.treeGroupSignal().filter((x) => x.type === TreeType.Group);
+  constructor(platform: Platform) {
+    this.platform = platform;
+    this.isWebPlatform = !this.platform.is('hybrid');
   }
 
-  getSelectedTree(id?: string): Tree | undefined {
-    return this.treeGroupSignal().find(
-      (x) => x.id.toString() === (id ?? this.selectedTreeGroup?.id.toString())
+  async getTreeGroups(): Promise<Tree[]> {
+    const { value } = await Preferences.get({ key: this.TREE_STORAGE });
+    let trees = (value ? JSON.parse(value) : []) as Tree[];
+
+    trees = trees.filter((x) => x.type === TreeType.Group);
+
+    // Only for web
+    if (this.isWebPlatform) {
+      for (let tree of trees) {
+        for (let photo of tree.images) {
+          const readFile = await Filesystem.readFile({
+            path: photo.filepath,
+            directory: Directory.Data,
+          });
+
+          photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
+        }
+      }
+    }
+
+    return trees;
+  }
+
+  async getSelectedTree(id?: string): Promise<Tree | undefined> {
+    const { value } = await Preferences.get({ key: this.TREE_STORAGE });
+    const trees = (value ? JSON.parse(value) : []) as Tree[];
+
+    const tree = trees.find(
+      (x) => x.id['value'] === (id ?? this.selectedTreeGroup?.id['value'])
     );
+
+    if (this.isWebPlatform && tree) {
+      for (let photo of tree.images) {
+        const readFile = await Filesystem.readFile({
+          path: photo.filepath,
+          directory: Directory.Data,
+        });
+
+        photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
+      }
+    }
+
+    return tree;
   }
 
-  getTreesList(groupId?: string): Tree[] {
-    return this.treeGroupSignal().filter(
+  async getTreesList(groupId?: string): Promise<Tree[]> {
+    const { value } = await Preferences.get({ key: this.TREE_STORAGE });
+    let trees = (value ? JSON.parse(value) : []) as Tree[];
+
+    trees = trees.filter(
       (x) =>
-        x.type === TreeType.List &&
-        x.groupId?.toString() ===
-          (groupId ?? this.selectedTreeGroup?.id?.toString())
+        x.type === TreeType.Individual &&
+        x.groupId !== undefined &&
+        x.groupId['value'] === (groupId ?? this.selectedTreeGroup?.id['value'])
     );
+
+    if (this.isWebPlatform) {
+      for (let tree of trees) {
+        for (let photo of tree.images) {
+          const readFile = await Filesystem.readFile({
+            path: photo.filepath,
+            directory: Directory.Data,
+          });
+
+          photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
+        }
+      }
+    }
+
+    return trees;
   }
 
-  setSelectedTreeGroup(id: string): void {
-    this.selectedTreeGroup = this.getSelectedTree(id);
+  async setSelectedTreeGroup(id: string): Promise<void> {
+    this.selectedTreeGroup = await this.getSelectedTree(id);
+  }
+
+  async addTree(tree: Tree): Promise<void> {
+    const { value } = await Preferences.get({ key: this.TREE_STORAGE });
+    const trees = (value ? JSON.parse(value) : []) as Tree[];
+    trees.push(tree);
+
+    Preferences.set({
+      key: this.TREE_STORAGE,
+      value: JSON.stringify(trees),
+    });
   }
 }

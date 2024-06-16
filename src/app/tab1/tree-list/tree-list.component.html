@@ -29,8 +29,14 @@
     <ion-row>
       @for (tree of treesList; track $index) {
       <ion-col size="6">
-        <ion-card [routerLink]="['/tabs/tab1/view', { id: tree.id }]">
-          <img [src]="tree.image[0].filepath" />
+        <ion-card [routerLink]="['/tabs/tab1/view', { id: tree.id['value'] }]">
+          <img
+            [src]="
+              tree.images[0].webviewPath !== ''
+                ? tree.images[0].webviewPath
+                : 'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg'
+            "
+          />
           <ion-card-header>
             <ion-card-title>{{ tree.title }}</ion-card-title>
           </ion-card-header>
