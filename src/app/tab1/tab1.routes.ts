@@ -13,4 +13,11 @@ export const routes: Routes = [
         (m) => m.TreeListComponent
       ),
   },
+  {
+    path: 'view',
+    loadComponent: () =>
+      import('./tree-view/tree-view.component').then(
+        (m) => m.TreeViewComponent
+      ),
+  },
 ];

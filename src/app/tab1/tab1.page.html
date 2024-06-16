@@ -1,6 +1,14 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title> Tab 1 </ion-title>
+    <ion-title> Boomkyk </ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Filter"
+      animated="true"
+      [debounce]="250"
+      (ionInput)="filterGroups($event.target.value)"
+    ></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
@@ -11,8 +19,5 @@
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container
-    name="Tab 1 page"
-    [routerLink]="['/tabs/tab1/list']"
-  ></app-explore-container>
+  <app-tree-groups [groups]="groups"></app-tree-groups>
 </ion-content>

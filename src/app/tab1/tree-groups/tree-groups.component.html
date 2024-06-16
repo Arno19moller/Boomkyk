@@ -1,0 +1,28 @@
+@if (groups.length > 0) { @for (group of groups; track $index) {
+<ion-card [routerLink]="['/tabs/tab1/list', { id: group.id }]">
+  <img
+    [src]="
+      group.image[0].filepath !== ''
+        ? group.image[0].filepath
+        : 'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg'
+    "
+  />
+  <ion-card-header>
+    <ion-card-title>{{ group.title }}</ion-card-title>
+    <ion-card-subtitle>{{ group.subTitle }}</ion-card-subtitle>
+  </ion-card-header>
+
+  <ion-card-content>
+    {{ group.description }}
+  </ion-card-content>
+</ion-card>
+} } @else {
+<ion-card [routerLink]="['/tabs/tab1/list']">
+  <img
+    src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
+  />
+  <ion-card-header>
+    <ion-card-title>No Groups Found</ion-card-title>
+  </ion-card-header>
+</ion-card>
+}

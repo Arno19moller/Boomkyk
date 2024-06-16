@@ -11,18 +11,70 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-grid>
-    <ion-row>
+  <ion-list class="form-container">
+    <ion-item>
+      <ion-select
+        interface="popover"
+        placeholder="Select Type"
+        label="Type"
+        label-placement="stacked"
+      >
+        <ion-select-option value="group">Group</ion-select-option>
+        <ion-select-option value="individual">
+          Individual Tree
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-input
+        label="Title"
+        labelPlacement="stacked"
+        placeholder="Enter Title"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input
+        label="Scientific Name"
+        labelPlacement="stacked"
+        placeholder="Enter Scientific Name"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-textarea
+        label="Description"
+        labelPlacement="stacked"
+        placeholder="Enter Description"
+      ></ion-textarea>
+    </ion-item>
+    <ion-item>
+      <ion-radio-group value="overview" class="radio-container" #infoRadio>
+        <ion-radio value="overview" labelPlacement="end">Overview</ion-radio>
+        <ion-radio value="leaves" labelPlacement="end">Leaves</ion-radio>
+        <ion-radio value="bark" labelPlacement="end">Bark</ion-radio>
+        <ion-radio value="fruit" labelPlacement="end">Fruit</ion-radio>
+      </ion-radio-group>
+    </ion-item>
+    <swiper-container>
       @for (photo of photoService.photos; track $index) {
-      <ion-col size="6">
+      <swiper-slide>
         <ion-img
           [src]="photo.webviewPath"
           (click)="showActionSheet(photo, $index)"
         ></ion-img>
-      </ion-col>
+      </swiper-slide>
       }
-    </ion-row>
-  </ion-grid>
+    </swiper-container>
+    <ion-item>
+      <ion-textarea
+        label="Description"
+        labelPlacement="stacked"
+        placeholder="Enter Description"
+      ></ion-textarea>
+    </ion-item>
+  </ion-list>
+  <div class="save-button-container">
+    <ion-button shape="round">Save</ion-button>
+  </div>
 
   <ion-fab vertical="bottom" horizontal="center" slot="fixed">
     <ion-fab-button (click)="addPhotoToGallery()">

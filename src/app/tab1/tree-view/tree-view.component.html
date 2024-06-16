@@ -1,0 +1,60 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" [routerLink]="['/tabs/tab1/list']">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title> {{ tree?.title }} </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-icon name="arrow-back"></ion-icon>
+      <ion-title size="large">{{ tree?.title }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content>
+    <ion-radio-group value="overview" class="radio-container" #infoRadio>
+      <ion-radio value="overview" labelPlacement="end">Overview</ion-radio>
+      <ion-radio value="leaves" labelPlacement="end">Leaves</ion-radio>
+      <ion-radio value="bark" labelPlacement="end">Bark</ion-radio>
+      <ion-radio value="fruit" labelPlacement="end">Fruit</ion-radio>
+    </ion-radio-group>
+
+    <ion-card>
+      <swiper-container>
+        <swiper-slide>
+          <img
+            src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
+          />
+        </swiper-slide>
+        <swiper-slide
+          ><img
+            src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
+        /></swiper-slide>
+        <swiper-slide
+          ><img
+            src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
+        /></swiper-slide>
+      </swiper-container>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-content>
+        @if (infoRadio.value == 'overview') {
+        {{ tree?.treeInfo?.overview }}
+        } @else if (infoRadio.value === 'leaves') {
+        {{ tree?.treeInfo?.leaves }}
+        }@else if (infoRadio.value === 'bark') {
+        {{ tree?.treeInfo?.bark }}
+        } @else if (infoRadio.value === 'fruit') {
+        {{ tree?.treeInfo?.fruit }}
+        }
+      </ion-card-content>
+    </ion-card>
+  </ion-content>
+</ion-content>

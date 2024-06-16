@@ -5,7 +5,15 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title> Strychnos Bome </ion-title>
+    <ion-title> {{ title }} </ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Filter"
+      animated="true"
+      [debounce]="250"
+      (ionInput)="filterTrees($event.target.value)"
+    ></ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
@@ -13,39 +21,25 @@
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-icon name="arrow-back"></ion-icon>
-      <ion-title size="large">Strychnos Bome</ion-title>
+      <ion-title size="large">{{ title }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
   <ion-grid>
     <ion-row>
-      <!-- @for (photo of photoService.photos; track $index) { -->
-
+      @for (tree of treesList; track $index) {
       <ion-col size="6">
-        <ion-card>
-          <img
-            alt="Silhouette of mountains"
-            src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
-          />
+        <ion-card [routerLink]="['/tabs/tab1/view', { id: tree.id }]">
+          <img [src]="tree.image[0].filepath" />
           <ion-card-header>
-            <ion-card-title>Strychnos Bome</ion-card-title>
-            <ion-card-subtitle>Wetenskaplike naam</ion-card-subtitle>
+            <ion-card-title>{{ tree.title }}</ion-card-title>
           </ion-card-header>
+          <ion-card-content>
+            {{ tree.description }}
+          </ion-card-content>
         </ion-card>
       </ion-col>
-      <ion-col size="6">
-        <ion-card>
-          <img
-            alt="Silhouette of mountains"
-            src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
-          />
-          <ion-card-header>
-            <ion-card-title>Strychnos Bome</ion-card-title>
-            <ion-card-subtitle>Wetenskaplike naam</ion-card-subtitle>
-          </ion-card-header>
-        </ion-card>
-      </ion-col>
-      <!-- } -->
+      }
     </ion-row>
   </ion-grid>
 </ion-content>

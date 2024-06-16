@@ -1,4 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
   IonHeader,
@@ -16,16 +21,19 @@ import {
   IonCardTitle,
   IonCardSubtitle,
   IonCardContent,
-  IonSearchbar,
+  IonLabel,
+  IonRadioGroup,
+  IonRadio,
 } from '@ionic/angular/standalone';
 import { Subject, takeUntil } from 'rxjs';
 import { Tree } from 'src/app/models/tree.interface';
 import { DatabaseService } from 'src/app/services/database.service';
+import { register } from 'swiper/element/bundle';
 
 @Component({
-  selector: 'app-tree-list',
-  templateUrl: './tree-list.component.html',
-  styleUrls: ['./tree-list.component.scss'],
+  selector: 'app-tree-view',
+  templateUrl: './tree-view.component.html',
+  styleUrls: ['./tree-view.component.scss'],
   standalone: true,
   imports: [
     IonHeader,
@@ -43,44 +51,31 @@ import { DatabaseService } from 'src/app/services/database.service';
     IonCardTitle,
     IonCardSubtitle,
     IonCardContent,
-    IonSearchbar,
+    IonLabel,
+    IonRadioGroup,
+    IonRadio,
     RouterModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class TreeListComponent implements OnInit, OnDestroy {
+export class TreeViewComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject();
-  private treeGroupId: string = '';
 
-  public treesList: Tree[] = [];
-  public title: string = '';
+  public tree: Tree | undefined = undefined;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private databaseService: DatabaseService
-  ) {}
+  ) {
+    register();
+  }
 
   ngOnInit() {
     this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe({
       next: (param) => {
-        this.treeGroupId = param['id'];
-        this.databaseService.setSelectedTreeGroup(param['id']);
-        this.treesList = this.databaseService.getTreesList(param['id']);
-        this.title =
-          this.databaseService.getSelectedTree(param['id'])?.title ??
-          'Not Found';
+        this.tree = this.databaseService.getSelectedTree(param['id']);
       },
     });
-  }
-
-  filterTrees(filterString: any): void {
-    if (filterString) {
-      filterString = filterString.toLowerCase();
-      this.treesList = this.databaseService
-        .getTreesList(this.treeGroupId)
-        .filter((x) => x.title.toLowerCase().includes(filterString));
-    } else {
-      this.treesList = this.databaseService.getTreesList(this.treeGroupId);
-    }
   }
 
   ngOnDestroy(): void {

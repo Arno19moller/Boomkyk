@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
 import {
   IonHeader,
   IonToolbar,
@@ -11,11 +11,18 @@ import {
   IonRow,
   IonCol,
   IonImg,
+  IonList,
+  IonItem,
+  IonSelect,
+  IonSelectOption,
+  IonInput,
+  IonTextarea,
 } from '@ionic/angular/standalone';
-import { ExploreContainerComponent } from '../explore-container/explore-container.component';
+import { TreeGroupsComponent } from '../tab1/tree-groups/tree-groups.component';
 import { PhotoService } from '../services/photo.service';
 import { ActionSheetController } from '@ionic/angular';
 import { BoomkykPhoto } from '../models/photo.interface';
+import { register } from 'swiper/element/bundle';
 
 @Component({
   selector: 'app-tab2',
@@ -27,7 +34,7 @@ import { BoomkykPhoto } from '../models/photo.interface';
     IonToolbar,
     IonTitle,
     IonContent,
-    ExploreContainerComponent,
+    TreeGroupsComponent,
     IonFabButton,
     IonFab,
     IonIcon,
@@ -35,7 +42,14 @@ import { BoomkykPhoto } from '../models/photo.interface';
     IonRow,
     IonCol,
     IonImg,
+    IonList,
+    IonItem,
+    IonSelect,
+    IonSelectOption,
+    IonInput,
+    IonTextarea,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class Tab2Page implements OnInit {
   constructor(
@@ -45,6 +59,7 @@ export class Tab2Page implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.photoService.loadSaved();
+    register();
   }
 
   addPhotoToGallery() {
