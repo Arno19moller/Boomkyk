@@ -80,18 +80,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
         action: 'edit',
       },
       handler: async () => {
-        const tree = await this.databaseService.getSelectedTree(
-          this.selectedTreeId
-        );
-
-        const modal = await this.modalController.create({
-          component: Tab2Page,
-          componentProps: {
-            newTree: tree,
-            showBackButton: true,
-          },
-        });
-        return await modal.present();
+        await this.updateClicked();
       },
     },
     {
@@ -101,8 +90,8 @@ export class TreeListComponent implements OnInit, OnDestroy {
       data: {
         action: 'delete',
       },
-      handler: () => {
-        console.log('Delete Clicked');
+      handler: async () => {
+        await this.deleteClicked();
       },
     },
     {
@@ -166,6 +155,25 @@ export class TreeListComponent implements OnInit, OnDestroy {
         return this.cardClicked(id);
       });
     }
+  }
+
+  async updateClicked(): Promise<void> {
+    const tree = await this.databaseService.getSelectedTree(
+      this.selectedTreeId
+    );
+
+    const modal = await this.modalController.create({
+      component: Tab2Page,
+      componentProps: {
+        newTree: tree,
+        showBackButton: true,
+      },
+    });
+    return await modal.present();
+  }
+
+  async deleteClicked(): Promise<void> {
+    await this.databaseService.deleteTree(this.selectedTreeId);
   }
 
   ngOnDestroy(): void {

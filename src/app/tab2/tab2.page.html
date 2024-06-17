@@ -7,7 +7,7 @@
       </ion-button>
     </ion-buttons>
     }
-    <ion-title> Create </ion-title>
+    <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -26,6 +26,7 @@
   </ion-header>
 
   <ion-list class="form-container">
+    @if(!isEdit){
     <ion-item>
       <ion-select
         interface="popover"
@@ -42,6 +43,7 @@
         </ion-select-option>
       </ion-select>
     </ion-item>
+    }
     <ion-item>
       <ion-input
         label="Title*"
@@ -84,7 +86,7 @@
         }
       </ion-row>
     </ion-grid>
-    } @else if(newTree.type === TreetType.Individual){
+    } @else if(newTree.type === TreetType.Individual){ @if(!isEdit){
     <ion-item>
       <ion-select
         interface="action-sheet"
@@ -102,12 +104,13 @@
         }
       </ion-select>
     </ion-item>
+    }
     <ion-item>
       <ion-radio-group
         value="overview"
         class="radio-container"
         #infoRadio
-        (ionChange)="infoTypeChanged($event)"
+        (ionChange)="infoTypeChanged($event.target.value)"
       >
         <ion-radio value="overview" labelPlacement="end">Overview</ion-radio>
         <ion-radio value="leaves" labelPlacement="end">Leaves</ion-radio>
@@ -138,6 +141,7 @@
         placeholder="Enter Description"
         (ionChange)="textInputChanged('individualDescription', $event)"
       ></ion-textarea>
+      <!-- [value]="infoDescription" -->
     </ion-item>
     }
   </ion-list>

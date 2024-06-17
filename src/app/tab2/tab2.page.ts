@@ -31,7 +31,6 @@ import { TreeGroupsComponent } from '../tab1/tree-groups/tree-groups.component';
 import { PhotoService } from '../services/photo.service';
 import { ActionSheetController } from '@ionic/angular';
 import { BoomkykPhoto } from '../models/photo.interface';
-import { register } from 'swiper/element/bundle';
 import { TreeType } from '../models/tree-type.enum';
 import { Tree } from '../models/tree.interface';
 import { Guid } from 'guid-typescript';
@@ -74,9 +73,9 @@ export class Tab2Page implements OnInit {
   @Input() showBackButton: boolean = false;
   @Input() public newTree: Tree;
 
-  private isEdit: boolean = false;
   private newId: Guid;
 
+  public isEdit: boolean = false;
   public TreetType = TreeType;
   public parentGroup: Tree | undefined = undefined;
   public infoType: string = 'overview';
@@ -85,7 +84,6 @@ export class Tab2Page implements OnInit {
   public individualImages: BoomkykPhoto[] = [];
   public selectedImageType: ImageType = ImageType.Overview;
   public treeGroups: Tree[] = [];
-  //public photos: BoomkykPhoto[] = [];
 
   constructor(
     public photoService: PhotoService,
@@ -107,12 +105,15 @@ export class Tab2Page implements OnInit {
   async ngOnInit(): Promise<void> {
     if (this.newTree.id !== this.newId) {
       this.typeSelected(this.newTree.type);
+      if (this.newTree.type === TreeType.Individual) {
+        setTimeout(() => {
+          this.infoTypeChanged('overview');
+        }, 100);
+      }
       this.isEdit = true;
     } else {
       this.newTree.images = await this.photoService.loadSaved();
     }
-
-    register();
   }
 
   backClicked(): void {
@@ -158,7 +159,7 @@ export class Tab2Page implements OnInit {
     this.newTree.type = type;
     if (this.newTree.type === this.TreetType.Individual) {
       this.newTree.description = '';
-      this.newTree.treeInfo = {
+      this.newTree.treeInfo = this.newTree.treeInfo ?? {
         overview: '',
         leaves: '',
         bark: '',
@@ -171,8 +172,6 @@ export class Tab2Page implements OnInit {
       );
 
       this.treeGroups = await this.databaseService.getTreeGroups();
-      console.log(this.treeGroups);
-      console.log(this.newTree.groupId === this.treeGroups[0].id);
     } else {
       this.newTree.treeInfo = undefined;
       this.newTree.groupId = undefined;
@@ -203,8 +202,8 @@ export class Tab2Page implements OnInit {
     }
   }
 
-  infoTypeChanged(e: any): void {
-    this.infoType = e.target.value;
+  infoTypeChanged(type: string): void {
+    this.infoType = type;
     if (this.infoType === 'overview') {
       this.selectedImageType = ImageType.Overview;
       this.ionInputEl.value = this.newTree.treeInfo!.overview;
@@ -231,9 +230,14 @@ export class Tab2Page implements OnInit {
     ) {
       this.isErrorToastOpen = true;
     } else {
-      this.databaseService.addTree(this.newTree);
+      if (this.isEdit) {
+        this.databaseService.updateTree(this.newTree);
+      } else {
+        this.databaseService.addTree(this.newTree);
+      }
       this.isSavedToastOpen = true;
       this.resetNewTree();
+      this.backClicked();
     }
   }
 
