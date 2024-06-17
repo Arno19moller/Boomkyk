@@ -1,6 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Tree } from '../models/tree.interface';
-import { Guid } from 'guid-typescript';
 import { TreeType } from '../models/tree-type.enum';
 import { Preferences } from '@capacitor/preferences';
 import { Platform } from '@ionic/angular';

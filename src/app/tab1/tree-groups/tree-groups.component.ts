@@ -38,11 +38,10 @@ import { AlertController } from '@ionic/angular';
   ],
   providers: [ModalController, AlertController],
 })
-export class TreeGroupsComponent implements AfterViewInit {
-  @Input() groups: Tree[] = [];
-
+export class TreeGroupsComponent implements OnInit {
   private selectedTreeId: string = '';
 
+  public groups: Tree[] = [];
   public isActionSheetOpen = false;
   public actionSheetButtons = [
     {
@@ -81,7 +80,8 @@ export class TreeGroupsComponent implements AfterViewInit {
     private modalController: ModalController
   ) {}
 
-  ngAfterViewInit(): void {
+  async ngOnInit(): Promise<void> {
+    this.groups = await this.databaseService.getTreeGroups();
     setTimeout(() => {
       const cardElements = document.querySelectorAll('ion-card');
       for (let i = 0; i < cardElements.length; i++) {

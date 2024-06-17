@@ -24,14 +24,10 @@ import { Tree } from '../models/tree.interface';
     IonSearchbar,
   ],
 })
-export class Tab1Page implements OnInit {
+export class Tab1Page {
   public groups: Tree[] = [];
 
   constructor(public databaseService: DatabaseService) {}
-
-  async ngOnInit(): Promise<void> {
-    this.groups = await this.databaseService.getTreeGroups();
-  }
 
   async filterGroups(filterString: any): Promise<void> {
     if (filterString) {
