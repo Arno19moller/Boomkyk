@@ -17,6 +17,8 @@ import {
   trash,
   leaf,
   arrowBack,
+  create,
+  checkmark,
 } from 'ionicons/icons';
 
 @Component({
@@ -40,6 +42,8 @@ export class TabsPage {
       close,
       leaf,
       arrowBack,
+      create,
+      checkmark,
     });
   }
 }

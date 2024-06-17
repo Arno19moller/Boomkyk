@@ -1,5 +1,12 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
+    @if(showBackButton){
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="backClicked()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    }
     <ion-title> Create </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -7,6 +14,13 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
+      @if(showBackButton){
+      <ion-buttons slot="start">
+        <ion-button fill="clear" (click)="backClicked()">
+          <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      }
       <ion-title size="large"> Create </ion-title>
     </ion-toolbar>
   </ion-header>
@@ -18,8 +32,9 @@
         placeholder="Select Type"
         label="Type*"
         label-placement="stacked"
-        (ionChange)="typeSelected($event)"
+        (ionChange)="typeSelected($event.detail.value)"
         [required]="true"
+        [value]="newTree.type"
       >
         <ion-select-option [value]="TreetType.Group">Group</ion-select-option>
         <ion-select-option [value]="TreetType.Individual">
@@ -33,6 +48,7 @@
         labelPlacement="stacked"
         placeholder="Enter Title"
         (ionChange)="textInputChanged('title', $event)"
+        [value]="newTree.title"
       ></ion-input>
     </ion-item>
     <ion-item>
@@ -41,6 +57,7 @@
         labelPlacement="stacked"
         placeholder="Enter Scientific Name"
         (ionChange)="textInputChanged('science', $event)"
+        [value]="newTree.subTitle"
       ></ion-input>
     </ion-item>
     @if (newTree.type === TreetType.Group) {
@@ -50,6 +67,7 @@
         labelPlacement="stacked"
         placeholder="Enter Description"
         (ionChange)="textInputChanged('groupDescription', $event)"
+        [value]="newTree.description"
       ></ion-textarea>
     </ion-item>
 
@@ -75,6 +93,7 @@
         label-placement="stacked"
         (ionChange)="groupSelected($event)"
         [required]="true"
+        [value]="newTree.groupId"
       >
         @for (group of treeGroups; track $index) {
         <ion-select-option [value]="group.id">
@@ -134,8 +153,17 @@
 </ion-content>
 
 <ion-toast
-  [isOpen]="isToastOpen"
+  [isOpen]="isErrorToastOpen"
   message="Please fill out all required fields"
   [duration]="3000"
-  (didDismiss)="isToastOpen = false"
+  (didDismiss)="isErrorToastOpen = false"
+></ion-toast>
+
+<ion-toast
+  icon="checkmark"
+  [isOpen]="isSavedToastOpen"
+  message="Tree Saved Successfully"
+  [duration]="3000"
+  (didDismiss)="isSavedToastOpen = false"
+  class="successful-toast"
 ></ion-toast>

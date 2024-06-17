@@ -1,7 +1,10 @@
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
+  EventEmitter,
+  Input,
   OnInit,
+  Output,
   ViewChild,
 } from '@angular/core';
 import {
@@ -34,6 +37,7 @@ import { Tree } from '../models/tree.interface';
 import { Guid } from 'guid-typescript';
 import { ImageType } from '../models/image-type.enum';
 import { DatabaseService } from '../services/database.service';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab2',
@@ -62,26 +66,36 @@ import { DatabaseService } from '../services/database.service';
     IonToast,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [ModalController],
 })
 export class Tab2Page implements OnInit {
-  public newTree: Tree;
+  @ViewChild('ionInputEl') ionInputEl!: IonInput;
+
+  @Input() showBackButton: boolean = false;
+  @Input() public newTree: Tree;
+
+  private isEdit: boolean = false;
+  private newId: Guid;
+
   public TreetType = TreeType;
   public parentGroup: Tree | undefined = undefined;
   public infoType: string = 'overview';
-  public isToastOpen: boolean = false;
+  public isErrorToastOpen: boolean = false;
+  public isSavedToastOpen: boolean = false;
   public individualImages: BoomkykPhoto[] = [];
   public selectedImageType: ImageType = ImageType.Overview;
   public treeGroups: Tree[] = [];
-
-  @ViewChild('ionInputEl') ionInputEl!: IonInput;
+  //public photos: BoomkykPhoto[] = [];
 
   constructor(
     public photoService: PhotoService,
     private databaseService: DatabaseService,
-    public actionSheetController: ActionSheetController
+    public actionSheetController: ActionSheetController,
+    private modalCtrl: ModalController
   ) {
+    this.newId = Guid.create();
     this.newTree = {
-      id: Guid.create(),
+      id: this.newId,
       images: [],
       title: '',
       subTitle: '',
@@ -91,8 +105,18 @@ export class Tab2Page implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.newTree.images = await this.photoService.loadSaved();
+    if (this.newTree.id !== this.newId) {
+      this.typeSelected(this.newTree.type);
+      this.isEdit = true;
+    } else {
+      this.newTree.images = await this.photoService.loadSaved();
+    }
+
     register();
+  }
+
+  backClicked(): void {
+    this.modalCtrl.dismiss();
   }
 
   async addPhotoToGallery() {
@@ -130,8 +154,8 @@ export class Tab2Page implements OnInit {
     await actionSheet.present();
   }
 
-  async typeSelected(e: any) {
-    this.newTree.type = e.detail.value;
+  async typeSelected(type: any) {
+    this.newTree.type = type;
     if (this.newTree.type === this.TreetType.Individual) {
       this.newTree.description = '';
       this.newTree.treeInfo = {
@@ -140,11 +164,15 @@ export class Tab2Page implements OnInit {
         bark: '',
         fruit: '',
       };
-      this.newTree.groupId = this.parentGroup?.id;
+
+      this.newTree.groupId = this.parentGroup?.id ?? this.newTree.groupId;
       this.individualImages = this.newTree.images.filter(
         (x) => x.type === ImageType.Overview
       );
+
       this.treeGroups = await this.databaseService.getTreeGroups();
+      console.log(this.treeGroups);
+      console.log(this.newTree.groupId === this.treeGroups[0].id);
     } else {
       this.newTree.treeInfo = undefined;
       this.newTree.groupId = undefined;
@@ -153,7 +181,6 @@ export class Tab2Page implements OnInit {
 
   groupSelected(e: any): void {
     this.newTree.groupId = e.detail.value;
-    console.log(this.newTree.groupId);
   }
 
   textInputChanged(control: string, e: any): void {
@@ -202,11 +229,26 @@ export class Tab2Page implements OnInit {
       (this.newTree.description === '' &&
         this.newTree.type === this.TreetType.Group)
     ) {
-      this.isToastOpen = true;
+      this.isErrorToastOpen = true;
     } else {
-      console.log(this.newTree);
-
       this.databaseService.addTree(this.newTree);
+      this.isSavedToastOpen = true;
+      this.resetNewTree();
     }
+  }
+
+  resetNewTree(): void {
+    this.newTree = {
+      id: Guid.create(),
+      images: [],
+      title: '',
+      subTitle: '',
+      description: '',
+      type: TreeType.Group,
+    };
+  }
+
+  ionViewWillLeave(): void {
+    this.resetNewTree();
   }
 }

@@ -29,8 +29,12 @@
     <ion-row>
       @for (tree of treesList; track $index) {
       <ion-col size="6">
-        <ion-card [routerLink]="['/tabs/tab1/view', { id: tree.id['value'] }]">
+        <ion-card
+          [attr.id]="tree.id['value']"
+          [routerLink]="['/tabs/tab1/view', { id: tree.id['value'] }]"
+        >
           <img
+            class="tree-image"
             [src]="
               tree.images[0].webviewPath !== ''
                 ? tree.images[0].webviewPath
@@ -39,6 +43,7 @@
           />
           <ion-card-header>
             <ion-card-title>{{ tree.title }}</ion-card-title>
+            <ion-card-subtitle>{{ tree.subTitle }}</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
             {{ tree.description }}
@@ -49,3 +54,10 @@
     </ion-row>
   </ion-grid>
 </ion-content>
+
+<ion-action-sheet
+  [isOpen]="isActionSheetOpen"
+  header="Actions"
+  [buttons]="actionSheetButtons"
+  (didDismiss)="isActionSheetOpen = false"
+></ion-action-sheet>
