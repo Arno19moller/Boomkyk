@@ -15,5 +15,6 @@ export interface Tree {
     leaves: string;
     bark: string;
     fruit: string;
+    flower: string;
   };
 }

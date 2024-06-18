@@ -1,22 +1,23 @@
-import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, RouterModule } from '@angular/router';
+import { AlertController, ModalController } from '@ionic/angular';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonCard,
-  IonCardHeader,
-  IonCardContent,
-  IonCardTitle,
-  IonCardSubtitle,
   IonActionSheet,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
+  IonContent,
+  IonHeader,
+  IonSearchbar,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
-import { DatabaseService } from '../../services/database.service';
-import { RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { Tree } from 'src/app/models/tree.interface';
-import { ModalController } from '@ionic/angular';
 import { Tab2Page } from 'src/app/tab2/tab2.page';
-import { AlertController } from '@ionic/angular';
+import { DatabaseService } from '../../services/database.service';
 
 @Component({
   selector: 'app-tree-groups',
@@ -34,12 +35,14 @@ import { AlertController } from '@ionic/angular';
     IonCardTitle,
     IonCardSubtitle,
     RouterModule,
+    IonSearchbar,
     IonActionSheet,
   ],
   providers: [ModalController, AlertController],
 })
-export class TreeGroupsComponent implements OnInit {
+export class TreeGroupsComponent implements OnInit, OnDestroy {
   private selectedTreeId: string = '';
+  private destroy$ = new Subject();
 
   public groups: Tree[] = [];
   public isActionSheetOpen = false;
@@ -77,13 +80,25 @@ export class TreeGroupsComponent implements OnInit {
 
   constructor(
     private databaseService: DatabaseService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private activeRoute: ActivatedRoute
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.groups = await this.databaseService.getTreeGroups();
+    this.activeRoute.url.pipe(takeUntil(this.destroy$)).subscribe({
+      next: async () => {
+        this.databaseService.startLoading('Loading Tree Groups');
+        this.groups = await this.databaseService.getTreeGroups();
+        this.initialiseLongPress();
+        this.databaseService.stopLoading();
+      },
+    });
+  }
+
+  initialiseLongPress(): void {
     setTimeout(() => {
       const cardElements = document.querySelectorAll('ion-card');
+
       for (let i = 0; i < cardElements.length; i++) {
         const hammer = new Hammer(cardElements[i]!);
 
@@ -113,10 +128,37 @@ export class TreeGroupsComponent implements OnInit {
         showBackButton: true,
       },
     });
-    return await modal.present();
+    await modal.present();
+    await modal.onDidDismiss();
+
+    this.groups = await this.databaseService.getTreeGroups();
+    this.initialiseLongPress();
+  }
+
+  getDescription(tree: Tree): string {
+    return tree.description.replace(/\n/g, '<br>');
+  }
+
+  async filterGroups(filterString: any): Promise<void> {
+    if (filterString) {
+      filterString = filterString.toLowerCase();
+      this.groups = (await this.databaseService.getTreeGroups()).filter((x) =>
+        x.title.toLowerCase().includes(filterString)
+      );
+    } else {
+      this.groups = await this.databaseService.getTreeGroups();
+    }
+    this.initialiseLongPress();
   }
 
   async deleteClicked(): Promise<void> {
-    await this.databaseService.deleteTree(this.selectedTreeId);
+    await this.databaseService.openDeleteTreeAlert(this.selectedTreeId);
+    this.groups = await this.databaseService.getTreeGroups();
+    this.initialiseLongPress();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next(undefined);
+    this.destroy$.complete();
   }
 }

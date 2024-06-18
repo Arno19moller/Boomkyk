@@ -7,31 +7,33 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ModalController } from '@ionic/angular';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonIcon,
+  IonActionSheet,
   IonButton,
   IonButtons,
-  IonGrid,
-  IonRow,
-  IonCol,
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardSubtitle,
   IonCardContent,
-  IonSearchbar,
-  IonActionSheet,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
+  IonCol,
+  IonContent,
+  IonGrid,
+  IonHeader,
+  IonIcon,
   IonModal,
+  IonRow,
+  IonSearchbar,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
+import * as Hammer from 'hammerjs';
 import { Subject, takeUntil } from 'rxjs';
+import { ImageType } from 'src/app/models/image-type.enum';
+import { BoomkykPhoto } from 'src/app/models/photo.interface';
 import { Tree } from 'src/app/models/tree.interface';
 import { DatabaseService } from 'src/app/services/database.service';
-import * as Hammer from 'hammerjs';
-import { ModalController } from '@ionic/angular';
 import { Tab2Page } from 'src/app/tab2/tab2.page';
 
 @Component({
@@ -114,6 +116,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe({
       next: async (param) => {
+        this.databaseService.startLoading('Loading Trees');
         this.treeGroupId = param['id'];
         await this.databaseService.setSelectedTreeGroup(param['id']);
         this.treesList = await this.databaseService.getTreesList(param['id']);
@@ -122,6 +125,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
           'Not Found';
 
         this.setLongPress();
+        this.databaseService.stopLoading();
       },
     });
   }
@@ -169,11 +173,21 @@ export class TreeListComponent implements OnInit, OnDestroy {
         showBackButton: true,
       },
     });
-    return await modal.present();
+    await modal.present();
+    await modal.onDidDismiss();
+
+    this.treesList = await this.databaseService.getTreesList(this.treeGroupId);
+    this.setLongPress();
+  }
+
+  getImage(tree: Tree): BoomkykPhoto | undefined {
+    const images = tree.images.filter((x) => x.type === ImageType.Overview);
+    if (images.length > 0) return images[0];
+    return undefined;
   }
 
   async deleteClicked(): Promise<void> {
-    await this.databaseService.deleteTree(this.selectedTreeId);
+    await this.databaseService.openDeleteTreeAlert(this.selectedTreeId);
   }
 
   ngOnDestroy(): void {

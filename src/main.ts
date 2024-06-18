@@ -1,21 +1,22 @@
 import { enableProdMode } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
+  PreloadAllModules,
   RouteReuseStrategy,
   provideRouter,
   withPreloading,
-  PreloadAllModules,
 } from '@angular/router';
 import {
   IonicRouteStrategy,
   provideIonicAngular,
 } from '@ionic/angular/standalone';
 
-import { routes } from './app/app.routes';
-import { AppComponent } from './app/app.component';
-import { environment } from './environments/environment';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
+import { IonicStorageModule } from '@ionic/storage-angular';
 import 'hammerjs';
+import { AppComponent } from './app/app.component';
+import { routes } from './app/app.routes';
+import { environment } from './environments/environment';
 
 if (environment.production) {
   enableProdMode();
@@ -23,8 +24,11 @@ if (environment.production) {
 
 defineCustomElements(window);
 
+const ionicStorageProviders = IonicStorageModule.forRoot().providers || [];
+
 bootstrapApplication(AppComponent, {
   providers: [
+    ionicStorageProviders,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),

@@ -1,34 +1,52 @@
-@if (groups.length > 0) { @for (group of groups; track $index) {
-<ion-card
-  [routerLink]="['/tabs/tab1/list', { id: group.id['value'] }]"
-  [attr.id]="group.id['value']"
->
-  <img
-    [src]="
-      group.images[0].webviewPath !== ''
-        ? group.images[0].webviewPath
-        : 'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg'
-    "
-  />
-  <ion-card-header>
-    <ion-card-title>{{ group.title }}</ion-card-title>
-    <ion-card-subtitle>{{ group.subTitle }}</ion-card-subtitle>
-  </ion-card-header>
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title> Boomkyk </ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Filter"
+      animated="true"
+      [debounce]="250"
+      (ionInput)="filterGroups($event.target.value)"
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
 
-  <ion-card-content>
-    {{ group.description }}
-  </ion-card-content>
-</ion-card>
-} } @else {
-<ion-card>
-  <img
-    src="https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg"
-  />
-  <ion-card-header>
-    <ion-card-title>No Groups Found</ion-card-title>
-  </ion-card-header>
-</ion-card>
-}
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Tab 1</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  @if (groups.length > 0) { @for (group of groups; track $index) {
+  <ion-card
+    [routerLink]="['/tabs/tab1/list', { id: group.id['value'] }]"
+    [attr.id]="group.id['value']"
+  >
+    <img
+      class="tree-image"
+      [src]="
+        group.images.length > 0 && group.images[0].webviewPath !== ''
+          ? group.images[0]?.webviewPath
+          : 'https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg'
+      "
+    />
+    <ion-card-header>
+      <ion-card-title>{{ group.title }}</ion-card-title>
+      <ion-card-subtitle>{{ group.subTitle }}</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content [innerHTML]="getDescription(group)"> </ion-card-content>
+  </ion-card>
+  } } @else {
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>No Groups Found</ion-card-title>
+    </ion-card-header>
+  </ion-card>
+  }
+</ion-content>
 
 <ion-action-sheet
   [isOpen]="isActionSheetOpen"

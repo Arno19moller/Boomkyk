@@ -1,59 +1,53 @@
 import { Injectable } from '@angular/core';
-import { Tree } from '../models/tree.interface';
-import { TreeType } from '../models/tree-type.enum';
-import { Preferences } from '@capacitor/preferences';
-import { Platform } from '@ionic/angular';
 import { Directory, Filesystem } from '@capacitor/filesystem';
-import { AlertController } from '@ionic/angular';
+import { AlertController, Platform } from '@ionic/angular';
+import { Storage } from '@ionic/storage-angular';
+import { BoomkykPhoto } from '../models/photo.interface';
+import { TreeType } from '../models/tree-type.enum';
+import { Tree } from '../models/tree.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DatabaseService {
   public isWebPlatform: boolean = false;
+  public isLoading: boolean = false;
+  public loadingMessage: string = '';
 
   private TREE_STORAGE: string = 'trees';
   private selectedTreeGroup: Tree | undefined = undefined; // used when navigating back
   private deleteTreeId: string = '';
   private platform: Platform;
-  private alertButtons = [
+  private deleteAlertButtons = [
     {
       text: 'Cancel',
       role: 'cancel',
       handler: () => {
-        console.log('Alert canceled');
+        return false;
       },
     },
     {
       text: 'Confirm',
       role: 'confirm',
       handler: async () => {
-        const trees = await this.getTrees();
-        let index = trees.findIndex((x) => x.id['value'] === this.deleteTreeId);
-
-        if (trees[index].type === TreeType.Group) {
-          let childTrees = trees.filter(
-            (x) =>
-              x.groupId != undefined &&
-              x.groupId['value'] === trees[index].id['value']
-          );
-          childTrees.map((tree) => {
-            let childIndex = trees.findIndex(
-              (x) => x.id['value'] === tree.id['value']
-            );
-            trees.splice(childIndex, 1);
-          });
-        }
-
-        trees.splice(index, 1);
-        this.saveTrees(trees);
+        await this.deleteTree();
+        return true;
       },
     },
   ];
 
-  constructor(platform: Platform, private alertController: AlertController) {
+  constructor(
+    platform: Platform,
+    private alertController: AlertController,
+    private storage: Storage
+  ) {
     this.platform = platform;
     this.isWebPlatform = !this.platform.is('hybrid');
+    this.initialiseStorage();
+  }
+
+  async initialiseStorage(): Promise<void> {
+    await this.storage.create();
   }
 
   async getTreeGroups(): Promise<Tree[]> {
@@ -109,20 +103,24 @@ export class DatabaseService {
   }
 
   async addTree(tree: Tree): Promise<void> {
+    this.startLoading('Saving Tree');
     const trees = await this.getTrees();
     trees.push(tree);
-    this.saveTrees(trees);
+    await this.saveTrees(trees);
+    this.stopLoading();
   }
 
   async updateTree(tree: Tree): Promise<void> {
+    this.startLoading('Updating Tree');
     const trees = await this.getTrees();
     let index = trees.findIndex((x) => x.id['value'] === tree.id['value']);
     trees[index] = tree;
 
-    this.saveTrees(trees);
+    await this.saveTrees(trees);
+    this.stopLoading();
   }
 
-  async deleteTree(treeId: string): Promise<void> {
+  async openDeleteTreeAlert(treeId: string): Promise<void> {
     const trees = await this.getTrees();
     let index = trees.findIndex((x) => x.id['value'] === treeId);
 
@@ -134,22 +132,31 @@ export class DatabaseService {
         trees[index].type === TreeType.Group
           ? 'Deleting a group also deletes all related trees'
           : '',
-      buttons: this.alertButtons,
+      buttons: this.deleteAlertButtons,
     });
 
     await alert.present();
+    await alert.onDidDismiss();
+  }
+
+  public startLoading(loadingText: string): void {
+    this.isLoading = true;
+    this.loadingMessage = loadingText;
+  }
+
+  public stopLoading(): void {
+    setTimeout(() => {
+      this.isLoading = false;
+    }, 100);
   }
 
   // private
-  private saveTrees(trees: Tree[]): void {
-    Preferences.set({
-      key: this.TREE_STORAGE,
-      value: JSON.stringify(trees),
-    });
+  private async saveTrees(trees: Tree[]): Promise<void> {
+    await this.storage.set(this.TREE_STORAGE, JSON.stringify(trees));
   }
 
   private async getTrees(): Promise<Tree[]> {
-    const { value } = await Preferences.get({ key: this.TREE_STORAGE });
+    const { value } = (await this.storage.get(this.TREE_STORAGE)) ?? [];
     return (value ? JSON.parse(value) : []) as Tree[];
   }
 
@@ -162,5 +169,48 @@ export class DatabaseService {
 
       photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
     }
+  }
+
+  private async deleteTree(): Promise<void> {
+    this.startLoading('Deleting Tree');
+    const trees = await this.getTrees();
+    let index = trees.findIndex((x) => x.id['value'] === this.deleteTreeId);
+
+    if (trees[index].type === TreeType.Group) {
+      let childTrees = trees.filter(
+        (x) =>
+          x.groupId != undefined &&
+          x.groupId['value'] === trees[index].id['value']
+      );
+
+      // remove child trees from storage list
+      childTrees.map((tree) => {
+        let childIndex = trees.findIndex(
+          (x) => x.id['value'] === tree.id['value']
+        );
+        trees.splice(childIndex, 1);
+
+        // Delete all tree images
+        for (let i = 0; i < tree.images.length; i++) {
+          this.deletePicture(tree.images[i]);
+        }
+      });
+    }
+
+    trees.splice(index, 1);
+    await this.saveTrees(trees);
+    this.stopLoading();
+  }
+
+  private async deletePicture(photo: BoomkykPhoto) {
+    // delete photo file from filesystem
+    const filename = photo.filepath.substring(
+      photo.filepath.lastIndexOf('/') + 1
+    );
+
+    await Filesystem.deleteFile({
+      path: filename,
+      directory: Directory.Data,
+    });
   }
 }

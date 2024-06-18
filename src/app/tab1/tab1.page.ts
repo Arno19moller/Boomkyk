@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
+  IonHeader,
   IonSearchbar,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
-import { TreeGroupsComponent } from './tree-groups/tree-groups.component';
-import { DatabaseService } from '../services/database.service';
 import { Tree } from '../models/tree.interface';
+import { TreeGroupsComponent } from './tree-groups/tree-groups.component';
 
 @Component({
   selector: 'app-tab1',
@@ -27,16 +26,5 @@ import { Tree } from '../models/tree.interface';
 export class Tab1Page {
   public groups: Tree[] = [];
 
-  constructor(public databaseService: DatabaseService) {}
-
-  async filterGroups(filterString: any): Promise<void> {
-    if (filterString) {
-      filterString = filterString.toLowerCase();
-      this.groups = (await this.databaseService.getTreeGroups()).filter((x) =>
-        x.title.toLowerCase().includes(filterString)
-      );
-    } else {
-      this.groups = await this.databaseService.getTreeGroups();
-    }
-  }
+  constructor() {}
 }

@@ -3,4 +3,5 @@ export enum ImageType {
   'Leaves',
   'Bark',
   'Fruit',
+  'Flower',
 }

@@ -3,29 +3,51 @@ import {
   Camera,
   CameraResultType,
   CameraSource,
+  GalleryPhoto,
   Photo,
 } from '@capacitor/camera';
-import { BoomkykPhoto } from '../models/photo.interface';
-import { Directory, Filesystem } from '@capacitor/filesystem';
-import { Preferences } from '@capacitor/preferences';
-import { Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
-import { ImageType } from '../models/image-type.enum';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { Platform } from '@ionic/angular';
 import { Guid } from 'guid-typescript';
+import { ImageType } from '../models/image-type.enum';
+import { BoomkykPhoto } from '../models/photo.interface';
+import { DatabaseService } from './database.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PhotoService {
-  //public photos: BoomkykPhoto[] = [];
-  //private PHOTO_STORAGE: string = 'photos';
   private platform: Platform;
 
-  constructor(platform: Platform) {
+  constructor(platform: Platform, private databaseService: DatabaseService) {
     this.platform = platform;
   }
 
-  public async addNewToGallery(
+  public async addMultipleImages(
+    photos: BoomkykPhoto[],
+    type?: ImageType
+  ): Promise<void> {
+    const images = await Camera.pickImages({
+      quality: 100,
+      limit: 10,
+    }).catch(() => {
+      return;
+    });
+
+    if (images && images?.photos?.length > 0) {
+      this.databaseService.startLoading('Saving Images');
+      await Promise.all(
+        images.photos.map(async (image) => {
+          const savedImageFile = await this.savePicture(image, type);
+          photos.unshift(savedImageFile);
+        })
+      );
+      this.databaseService.stopLoading();
+    }
+  }
+
+  public async addSingleImage(
     photos: BoomkykPhoto[],
     type?: ImageType
   ): Promise<void> {
@@ -33,21 +55,22 @@ export class PhotoService {
     const capturedPhoto = await Camera.getPhoto({
       resultType: CameraResultType.Uri,
       source: CameraSource.Camera,
+      allowEditing: true,
       quality: 100,
+    }).catch(() => {
+      return;
     });
 
-    const savedImageFile = await this.savePicture(capturedPhoto, type);
-    photos.unshift(savedImageFile);
-
-    // Save to device
-    // Preferences.set({
-    //   key: this.PHOTO_STORAGE,
-    //   value: JSON.stringify(photos),
-    // });
+    if (capturedPhoto) {
+      this.databaseService.startLoading('Saving Image');
+      const savedImageFile = await this.savePicture(capturedPhoto, type);
+      photos.unshift(savedImageFile);
+      this.databaseService.stopLoading();
+    }
   }
 
   private async savePicture(
-    photo: Photo,
+    photo: Photo | GalleryPhoto,
     type?: ImageType
   ): Promise<BoomkykPhoto> {
     const base64Data = await this.readAsBase64(photo);
@@ -76,7 +99,7 @@ export class PhotoService {
     }
   }
 
-  private async readAsBase64(photo: Photo) {
+  private async readAsBase64(photo: Photo | GalleryPhoto) {
     // Mobile
     if (this.platform.is('hybrid')) {
       const file = await Filesystem.readFile({
@@ -105,36 +128,11 @@ export class PhotoService {
     });
   }
 
-  public async loadSaved(): Promise<BoomkykPhoto[]> {
-    // const { value } = await Preferences.get({ key: this.PHOTO_STORAGE });
-    // const photos = (value ? JSON.parse(value) : []) as BoomkykPhoto[];
-
-    // // Only for web
-    // if (!this.platform.is('hybrid')) {
-    //   for (let photo of photos) {
-    //     const readFile = await Filesystem.readFile({
-    //       path: photo.filepath,
-    //       directory: Directory.Data,
-    //     });
-
-    //     photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
-    //   }
-    // }
-
-    // return photos;
-    return [];
-  }
-
   public async deletePicture(photos: BoomkykPhoto[], photo: BoomkykPhoto) {
-    // Remove this photo from the Photos reference data array
+    this.databaseService.startLoading('Deleting Image');
+
     const position = photos.findIndex((x) => x.id === photo.id);
     photos.splice(position, 1);
-
-    // Update photos array cache by overwriting the existing photo array
-    // Preferences.set({
-    //   key: this.PHOTO_STORAGE,
-    //   value: JSON.stringify(photos),
-    // });
 
     // delete photo file from filesystem
     const filename = photo.filepath.substring(
@@ -145,5 +143,7 @@ export class PhotoService {
       path: filename,
       directory: Directory.Data,
     });
+
+    this.databaseService.stopLoading();
   }
 }

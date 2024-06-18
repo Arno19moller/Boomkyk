@@ -36,9 +36,8 @@
           <img
             class="tree-image"
             [src]="
-              tree.images[0].webviewPath !== ''
-                ? tree.images[0].webviewPath
-                : 'https://www.treetags.co.za/wp-content/uploads/2019/10/marula-tree.jpg'
+              getImage(tree)?.webviewPath ??
+              'https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg'
             "
           />
           <ion-card-header>

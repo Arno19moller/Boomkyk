@@ -1,37 +1,39 @@
 import { Component, EnvironmentInjector, inject } from '@angular/core';
 import {
-  IonTabs,
-  IonTabBar,
-  IonTabButton,
   IonIcon,
   IonLabel,
+  IonLoading,
+  IonTabBar,
+  IonTabButton,
+  IonTabs,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  triangle,
-  ellipse,
-  square,
-  camera,
-  image,
-  close,
-  trash,
-  leaf,
   arrowBack,
-  create,
+  camera,
   checkmark,
+  close,
+  create,
+  ellipse,
+  image,
+  leaf,
+  square,
+  trash,
+  triangle,
 } from 'ionicons/icons';
+import { DatabaseService } from '../services/database.service';
 
 @Component({
   selector: 'app-tabs',
   templateUrl: 'tabs.page.html',
   styleUrls: ['tabs.page.scss'],
   standalone: true,
-  imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
+  imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel, IonLoading],
 })
 export class TabsPage {
   public environmentInjector = inject(EnvironmentInjector);
 
-  constructor() {
+  constructor(public databaseService: DatabaseService) {
     addIcons({
       triangle,
       ellipse,

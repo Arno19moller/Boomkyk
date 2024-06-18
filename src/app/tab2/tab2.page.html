@@ -68,8 +68,9 @@
         label="Description*"
         labelPlacement="stacked"
         placeholder="Enter Description"
-        (ionChange)="textInputChanged('groupDescription', $event)"
         [value]="newTree.description"
+        [autoGrow]="true"
+        (ionChange)="textInputChanged('groupDescription', $event)"
       ></ion-textarea>
     </ion-item>
 
@@ -106,17 +107,17 @@
     </ion-item>
     }
     <ion-item>
-      <ion-radio-group
+      <ion-segment
+        [scrollable]="true"
         value="overview"
-        class="radio-container"
-        #infoRadio
-        (ionChange)="infoTypeChanged($event.target.value)"
+        (ionChange)="infoTypeChanged($event.target?.value?.toString() ?? '')"
       >
-        <ion-radio value="overview" labelPlacement="end">Overview</ion-radio>
-        <ion-radio value="leaves" labelPlacement="end">Leaves</ion-radio>
-        <ion-radio value="bark" labelPlacement="end">Bark</ion-radio>
-        <ion-radio value="fruit" labelPlacement="end">Fruit</ion-radio>
-      </ion-radio-group>
+        <ion-segment-button value="overview">Overview</ion-segment-button>
+        <ion-segment-button value="leaves">Leaves</ion-segment-button>
+        <ion-segment-button value="bark">Bark</ion-segment-button>
+        <ion-segment-button value="fruit">Fruit</ion-segment-button>
+        <ion-segment-button value="flower">Flower</ion-segment-button>
+      </ion-segment>
     </ion-item>
 
     <!-- individual images -->
@@ -139,6 +140,7 @@
         label="Description"
         labelPlacement="stacked"
         placeholder="Enter Description"
+        [autoGrow]="true"
         (ionChange)="textInputChanged('individualDescription', $event)"
       ></ion-textarea>
       <!-- [value]="infoDescription" -->
@@ -158,7 +160,7 @@
 
 <ion-toast
   [isOpen]="isErrorToastOpen"
-  message="Please fill out all required fields"
+  [message]="errorMessage"
   [duration]="3000"
   (didDismiss)="isErrorToastOpen = false"
 ></ion-toast>

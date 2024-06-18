@@ -1,42 +1,39 @@
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
-  EventEmitter,
   Input,
   OnInit,
-  Output,
   ViewChild,
 } from '@angular/core';
+import { ActionSheetController, ModalController } from '@ionic/angular';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonFabButton,
-  IonFab,
-  IonIcon,
-  IonGrid,
-  IonRow,
   IonCol,
+  IonContent,
+  IonFab,
+  IonFabButton,
+  IonGrid,
+  IonHeader,
+  IonIcon,
   IonImg,
-  IonList,
+  IonInput,
   IonItem,
+  IonList,
+  IonRow,
   IonSelect,
   IonSelectOption,
-  IonInput,
   IonTextarea,
+  IonTitle,
   IonToast,
+  IonToolbar,
 } from '@ionic/angular/standalone';
-import { TreeGroupsComponent } from '../tab1/tree-groups/tree-groups.component';
-import { PhotoService } from '../services/photo.service';
-import { ActionSheetController } from '@ionic/angular';
+import { Guid } from 'guid-typescript';
+import { ImageType } from '../models/image-type.enum';
 import { BoomkykPhoto } from '../models/photo.interface';
 import { TreeType } from '../models/tree-type.enum';
 import { Tree } from '../models/tree.interface';
-import { Guid } from 'guid-typescript';
-import { ImageType } from '../models/image-type.enum';
 import { DatabaseService } from '../services/database.service';
-import { ModalController } from '@ionic/angular';
+import { PhotoService } from '../services/photo.service';
+import { TreeGroupsComponent } from '../tab1/tree-groups/tree-groups.component';
 
 @Component({
   selector: 'app-tab2',
@@ -84,6 +81,7 @@ export class Tab2Page implements OnInit {
   public individualImages: BoomkykPhoto[] = [];
   public selectedImageType: ImageType = ImageType.Overview;
   public treeGroups: Tree[] = [];
+  public errorMessage: string = '';
 
   constructor(
     public photoService: PhotoService,
@@ -111,8 +109,6 @@ export class Tab2Page implements OnInit {
         }, 100);
       }
       this.isEdit = true;
-    } else {
-      this.newTree.images = await this.photoService.loadSaved();
     }
   }
 
@@ -121,13 +117,44 @@ export class Tab2Page implements OnInit {
   }
 
   async addPhotoToGallery() {
-    await this.photoService.addNewToGallery(
-      this.newTree.images,
-      this.selectedImageType
-    );
-    this.individualImages = this.newTree.images.filter(
-      (x) => x.type === this.selectedImageType
-    );
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Add Photos',
+      buttons: [
+        {
+          text: 'From Photos',
+          role: 'destructive',
+          icon: 'image',
+          handler: async () => {
+            await this.photoService.addMultipleImages(
+              this.newTree.images,
+              this.selectedImageType
+            );
+            this.individualImages = this.newTree.images.filter(
+              (x) => x.type === this.selectedImageType
+            );
+          },
+        },
+        {
+          text: 'Take Picture',
+          role: 'destructive',
+          icon: 'camera',
+          handler: async () => {
+            await this.photoService.addSingleImage(
+              this.newTree.images,
+              this.selectedImageType
+            );
+            this.individualImages = this.newTree.images.filter(
+              (x) => x.type === this.selectedImageType
+            );
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+      ],
+    });
+    await actionSheet.present();
   }
 
   public async showImageActionSheet(photo: BoomkykPhoto) {
@@ -164,6 +191,7 @@ export class Tab2Page implements OnInit {
         leaves: '',
         bark: '',
         fruit: '',
+        flower: '',
       };
 
       this.newTree.groupId = this.parentGroup?.id ?? this.newTree.groupId;
@@ -198,6 +226,8 @@ export class Tab2Page implements OnInit {
         this.newTree.treeInfo!.bark = e.target.value;
       } else if (this.infoType === 'fruit') {
         this.newTree.treeInfo!.fruit = e.target.value;
+      } else if (this.infoType === 'flower') {
+        this.newTree.treeInfo!.flower = e.target.value;
       }
     }
   }
@@ -216,24 +246,31 @@ export class Tab2Page implements OnInit {
     } else if (this.infoType === 'fruit') {
       this.selectedImageType = ImageType.Fruit;
       this.ionInputEl.value = this.newTree.treeInfo!.fruit;
+    } else if (this.infoType === 'flower') {
+      this.selectedImageType = ImageType.Flower;
+      this.ionInputEl.value = this.newTree.treeInfo!.flower;
     }
     this.individualImages = this.newTree.images.filter(
       (x) => x.type === this.selectedImageType
     );
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (
       this.newTree.title === '' ||
       (this.newTree.description === '' &&
         this.newTree.type === this.TreetType.Group)
     ) {
+      this.errorMessage = 'Please fill out all required fields';
+      this.isErrorToastOpen = true;
+    } else if (this.newTree.images.length === 0) {
+      this.errorMessage = 'Please add at least one image';
       this.isErrorToastOpen = true;
     } else {
       if (this.isEdit) {
-        this.databaseService.updateTree(this.newTree);
+        await this.databaseService.updateTree(this.newTree);
       } else {
-        this.databaseService.addTree(this.newTree);
+        await this.databaseService.addTree(this.newTree);
       }
       this.isSavedToastOpen = true;
       this.resetNewTree();
