@@ -1,12 +1,10 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    @if(showBackButton){
     <ion-buttons slot="start">
       <ion-button fill="clear" (click)="backClicked()">
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    }
     <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -14,17 +12,16 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      @if(showBackButton){
       <ion-buttons slot="start">
         <ion-button fill="clear" (click)="backClicked()">
           <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
         </ion-button>
       </ion-buttons>
-      }
       <ion-title size="large"> Create </ion-title>
     </ion-toolbar>
   </ion-header>
 
+  @if(newTree){
   <ion-list class="form-container">
     @if(!isEdit){
     <ion-item>
@@ -73,24 +70,10 @@
         (ionChange)="textInputChanged('groupDescription', $event)"
       ></ion-textarea>
     </ion-item>
-
-    <!-- Group images -->
-    <ion-grid>
-      <ion-row>
-        @for (image of newTree.images; track $index) {
-        <ion-col size="3">
-          <ion-img
-            [src]="image.webviewPath"
-            (click)="showImageActionSheet(image)"
-          ></ion-img>
-        </ion-col>
-        }
-      </ion-row>
-    </ion-grid>
-    } @else if(newTree.type === TreetType.Individual){ @if(!isEdit){
+    } @else if(newTree.type === TreetType.Individual && !isEdit){
     <ion-item>
       <ion-select
-        interface="action-sheet"
+        interface="popover"
         placeholder="Select Group"
         label="Tree Group*"
         label-placement="stacked"
@@ -106,6 +89,36 @@
       </ion-select>
     </ion-item>
     }
+  </ion-list>
+  <br />
+  <ion-list>
+    @if(newTree.type === TreetType.Group){
+    <!-- Group images -->
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-label>Image</ion-label>
+        </ion-col>
+      </ion-row>
+      <ion-row class="image-column">
+        @if(individualImages.length === 0){
+        <ion-col size="6">
+          <ion-img
+            src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
+            (click)="addPhotoToGallery()"
+          ></ion-img>
+        </ion-col>
+        } @for (image of newTree.images; track $index) {
+        <ion-col size="3">
+          <ion-img
+            [src]="image.webviewPath"
+            (click)="showDeleteImageActionSheet(image)"
+          ></ion-img>
+        </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+    } @if(newTree.type === TreetType.Individual){
     <ion-item>
       <ion-segment
         [scrollable]="true"
@@ -123,11 +136,23 @@
     <!-- individual images -->
     <ion-grid>
       <ion-row>
-        @for (image of individualImages; track $index) {
+        <ion-col>
+          <ion-label>Images</ion-label>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        @if(individualImages.length === 0){
+        <ion-col size="3">
+          <ion-img
+            src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
+            (click)="addPhotoToGallery()"
+          ></ion-img>
+        </ion-col>
+        } @for (image of individualImages; track $index) {
         <ion-col size="3">
           <ion-img
             [src]="image.webviewPath"
-            (click)="showImageActionSheet(image)"
+            (click)="showDeleteImageActionSheet(image)"
           ></ion-img>
         </ion-col>
         }
@@ -143,13 +168,13 @@
         [autoGrow]="true"
         (ionChange)="textInputChanged('individualDescription', $event)"
       ></ion-textarea>
-      <!-- [value]="infoDescription" -->
     </ion-item>
     }
   </ion-list>
   <div class="save-button-container">
     <ion-button shape="round" (click)="onSubmit()">Save</ion-button>
   </div>
+  }
 
   <ion-fab vertical="bottom" horizontal="center" slot="fixed">
     <ion-fab-button (click)="addPhotoToGallery()">
@@ -157,19 +182,3 @@
     </ion-fab-button>
   </ion-fab>
 </ion-content>
-
-<ion-toast
-  [isOpen]="isErrorToastOpen"
-  [message]="errorMessage"
-  [duration]="3000"
-  (didDismiss)="isErrorToastOpen = false"
-></ion-toast>
-
-<ion-toast
-  icon="checkmark"
-  [isOpen]="isSavedToastOpen"
-  message="Tree Saved Successfully"
-  [duration]="3000"
-  (didDismiss)="isSavedToastOpen = false"
-  class="successful-toast"
-></ion-toast>

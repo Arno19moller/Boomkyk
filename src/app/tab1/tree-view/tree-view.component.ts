@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, LocationStrategy } from '@angular/common';
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
@@ -6,7 +6,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ModalController } from '@ionic/angular';
 import {
   IonButton,
   IonButtons,
@@ -31,8 +30,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { ImageType } from 'src/app/models/image-type.enum';
 import { BoomkykPhoto } from 'src/app/models/photo.interface';
 import { Tree } from 'src/app/models/tree.interface';
+import { ActionsService } from 'src/app/services/actions.service';
 import { DatabaseService } from 'src/app/services/database.service';
-import { Tab2Page } from 'src/app/tab2/tab2.page';
 import { register } from 'swiper/element/bundle';
 
 @Component({
@@ -63,7 +62,6 @@ import { register } from 'swiper/element/bundle';
     CommonModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [ModalController],
 })
 export class TreeViewComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject();
@@ -83,7 +81,8 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   constructor(
     private activatedRoute: ActivatedRoute,
     public databaseService: DatabaseService,
-    private modalController: ModalController
+    private actionsService: ActionsService,
+    private locationStrategy: LocationStrategy
   ) {
     register();
   }
@@ -98,18 +97,18 @@ export class TreeViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  async openEditModal(): Promise<void> {
-    const modal = await this.modalController.create({
-      component: Tab2Page,
-      componentProps: {
-        newTree: this.tree,
-        showBackButton: true,
-      },
-    });
-
-    await modal.present();
-    await modal.onDidDismiss();
+  async editClicked(): Promise<void> {
+    await this.actionsService.navigateToUpdate(this.tree?.id['value']);
     await this.loadTree(this.tree?.id['value']);
+  }
+
+  async deleteClicked(): Promise<void> {
+    const val = await this.actionsService.openDeleteConfirmation(
+      this.tree?.id['value']
+    );
+    if (val === 'confirm') {
+      this.locationStrategy.back();
+    }
   }
 
   private async loadTree(id: string): Promise<void> {

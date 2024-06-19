@@ -3,7 +3,7 @@ import { Tab1Page } from './tab1.page';
 
 export const routes: Routes = [
   {
-    path: '',
+    path: 'home',
     component: Tab1Page,
   },
   {
@@ -19,5 +19,14 @@ export const routes: Routes = [
       import('./tree-view/tree-view.component').then(
         (m) => m.TreeViewComponent
       ),
+  },
+  {
+    path: 'create',
+    loadComponent: () => import('../tab2/tab2.page').then((m) => m.Tab2Page),
+  },
+  {
+    path: '',
+    redirectTo: '/home',
+    pathMatch: 'full',
   },
 ];

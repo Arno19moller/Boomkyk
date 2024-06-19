@@ -1,8 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { AlertController, ModalController } from '@ionic/angular';
+import {
+  ActionSheetController,
+  AlertController,
+  ModalController,
+} from '@ionic/angular';
 import {
   IonActionSheet,
+  IonButtons,
   IonCard,
   IonCardContent,
   IonCardHeader,
@@ -10,13 +15,14 @@ import {
   IonCardTitle,
   IonContent,
   IonHeader,
+  IonIcon,
   IonSearchbar,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { Subject, takeUntil } from 'rxjs';
 import { Tree } from 'src/app/models/tree.interface';
-import { Tab2Page } from 'src/app/tab2/tab2.page';
+import { ActionsService } from 'src/app/services/actions.service';
 import { DatabaseService } from '../../services/database.service';
 
 @Component({
@@ -37,50 +43,20 @@ import { DatabaseService } from '../../services/database.service';
     RouterModule,
     IonSearchbar,
     IonActionSheet,
+    IonButtons,
+    IonIcon,
   ],
-  providers: [ModalController, AlertController],
+  providers: [ModalController, AlertController, ActionSheetController],
 })
 export class TreeGroupsComponent implements OnInit, OnDestroy {
   private selectedTreeId: string = '';
   private destroy$ = new Subject();
 
   public groups: Tree[] = [];
-  public isActionSheetOpen = false;
-  public actionSheetButtons = [
-    {
-      text: 'Edit',
-      role: 'destructive',
-      icon: 'create',
-      data: {
-        action: 'edit',
-      },
-      handler: async () => {
-        await this.updateClicked();
-      },
-    },
-    {
-      text: 'Delete',
-      role: 'destructive',
-      icon: 'trash',
-      data: {
-        action: 'delete',
-      },
-      handler: async () => {
-        await this.deleteClicked();
-      },
-    },
-    {
-      text: 'Cancel',
-      role: 'cancel',
-      data: {
-        action: 'cancel',
-      },
-    },
-  ];
 
   constructor(
     private databaseService: DatabaseService,
-    private modalController: ModalController,
+    private actionsServie: ActionsService,
     private activeRoute: ActivatedRoute
   ) {}
 
@@ -88,51 +64,39 @@ export class TreeGroupsComponent implements OnInit, OnDestroy {
     this.activeRoute.url.pipe(takeUntil(this.destroy$)).subscribe({
       next: async () => {
         this.databaseService.startLoading('Loading Tree Groups');
-        this.groups = await this.databaseService.getTreeGroups();
-        this.initialiseLongPress();
+        // this.groups = await this.databaseService.getTreeGroups();
+        this.initialiseLongPress(await this.databaseService.getTreeGroups());
         this.databaseService.stopLoading();
       },
     });
   }
 
-  initialiseLongPress(): void {
+  initialiseLongPress(groups: Tree[]): void {
+    const prevGroupList = [...this.groups];
+    this.groups = groups;
     setTimeout(() => {
       const cardElements = document.querySelectorAll('ion-card');
 
       for (let i = 0; i < cardElements.length; i++) {
-        const hammer = new Hammer(cardElements[i]!);
+        const id = cardElements[i]?.getAttribute('id');
 
-        hammer.get('press').set({ time: 500 });
-        hammer.on('press', () => {
-          const id = cardElements[i]?.getAttribute('id');
-          return this.cardClicked(id);
-        });
+        // Only assign long press when new
+        if (!prevGroupList.some((x) => x.id['value'] === id)) {
+          const hammer = new Hammer(cardElements[i]!);
+
+          hammer.get('press').set({ time: 500 });
+          hammer.on('press', async () => {
+            return await this.cardClicked(id);
+          });
+        }
       }
-    }, 100);
+    }, 200);
   }
 
-  cardClicked(id: string | undefined | null): void {
+  async cardClicked(id: string | undefined | null): Promise<void> {
     this.selectedTreeId = id ?? '';
-    this.isActionSheetOpen = true;
-  }
-
-  async updateClicked(): Promise<void> {
-    const tree = await this.databaseService.getSelectedTree(
-      this.selectedTreeId
-    );
-
-    const modal = await this.modalController.create({
-      component: Tab2Page,
-      componentProps: {
-        newTree: tree,
-        showBackButton: true,
-      },
-    });
-    await modal.present();
-    await modal.onDidDismiss();
-
-    this.groups = await this.databaseService.getTreeGroups();
-    this.initialiseLongPress();
+    await this.actionsServie.openEditOrDeleteModal(this.selectedTreeId);
+    this.initialiseLongPress(await this.databaseService.getTreeGroups());
   }
 
   getDescription(tree: Tree): string {
@@ -142,19 +106,16 @@ export class TreeGroupsComponent implements OnInit, OnDestroy {
   async filterGroups(filterString: any): Promise<void> {
     if (filterString) {
       filterString = filterString.toLowerCase();
-      this.groups = (await this.databaseService.getTreeGroups()).filter((x) =>
-        x.title.toLowerCase().includes(filterString)
+      this.initialiseLongPress(
+        (await this.databaseService.getTreeGroups()).filter((x) =>
+          x.title.toLowerCase().includes(filterString)
+        )
       );
     } else {
-      this.groups = await this.databaseService.getTreeGroups();
+      this.initialiseLongPress(
+        (this.groups = await this.databaseService.getTreeGroups())
+      );
     }
-    this.initialiseLongPress();
-  }
-
-  async deleteClicked(): Promise<void> {
-    await this.databaseService.openDeleteTreeAlert(this.selectedTreeId);
-    this.groups = await this.databaseService.getTreeGroups();
-    this.initialiseLongPress();
   }
 
   ngOnDestroy(): void {

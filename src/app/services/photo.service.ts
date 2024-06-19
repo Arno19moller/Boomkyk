@@ -29,7 +29,7 @@ export class PhotoService {
     type?: ImageType
   ): Promise<void> {
     const images = await Camera.pickImages({
-      quality: 100,
+      quality: 60,
       limit: 10,
     }).catch(() => {
       return;
@@ -55,8 +55,7 @@ export class PhotoService {
     const capturedPhoto = await Camera.getPhoto({
       resultType: CameraResultType.Uri,
       source: CameraSource.Camera,
-      allowEditing: true,
-      quality: 100,
+      quality: 60,
     }).catch(() => {
       return;
     });

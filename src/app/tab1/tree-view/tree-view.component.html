@@ -1,13 +1,16 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="clear" [routerLink]="['/tabs/tab1/list']">
+      <ion-button fill="clear" [routerLink]="['/list']">
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title> {{ tree?.title }} </ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="openEditModal()">
+      <ion-button fill="clear" (click)="deleteClicked()">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="editClicked()">
         <ion-icon slot="icon-only" name="create"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -17,7 +20,7 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-buttons slot="start">
-      <ion-button fill="clear" [routerLink]="['/tabs/tab1/list']">
+      <ion-button fill="clear" [routerLink]="['/list']">
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -26,7 +29,7 @@
       <ion-title size="large">{{ tree?.title }}</ion-title>
     </ion-toolbar>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="openEditModal()">
+      <ion-button fill="clear" (click)="editClicked()">
         <ion-icon slot="icon-only" name="create"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -111,3 +114,9 @@
     }
   </swiper-container>
 </ng-template>
+
+<ion-popover trigger="click-trigger" triggerAction="click">
+  <ng-template>
+    <app-popover-content></app-popover-content>
+  </ng-template>
+</ion-popover>

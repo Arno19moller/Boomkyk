@@ -1,11 +1,16 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="clear" [routerLink]="['/tabs/tab1']">
+      <ion-button fill="clear" [routerLink]="['/home']">
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title> {{ title }} </ion-title>
+    <ion-buttons slot="end">
+      <ion-button shape="round" (click)="createNewClicked()" color="primary">
+        <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <ion-toolbar>
     <ion-searchbar
@@ -31,7 +36,7 @@
       <ion-col size="6">
         <ion-card
           [attr.id]="tree.id['value']"
-          [routerLink]="['/tabs/tab1/view', { id: tree.id['value'] }]"
+          [routerLink]="['/view', { id: tree.id['value'] }]"
         >
           <img
             class="tree-image"
@@ -53,10 +58,3 @@
     </ion-row>
   </ion-grid>
 </ion-content>
-
-<ion-action-sheet
-  [isOpen]="isActionSheetOpen"
-  header="Actions"
-  [buttons]="actionSheetButtons"
-  (didDismiss)="isActionSheetOpen = false"
-></ion-action-sheet>

@@ -2,8 +2,11 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'boomkyk',
-  webDir: 'www'
+  appName: 'Boomkyk',
+  webDir: 'www',
+  server: {
+    androidScheme: 'http',
+  },
 };
 
 export default config;

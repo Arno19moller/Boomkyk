@@ -11,6 +11,11 @@ import {
   provideIonicAngular,
 } from '@ionic/angular/standalone';
 
+import {
+  ActionSheetController,
+  AlertController,
+  ModalController,
+} from '@ionic/angular';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import 'hammerjs';
@@ -24,14 +29,14 @@ if (environment.production) {
 
 defineCustomElements(window);
 
-const ionicStorageProviders = IonicStorageModule.forRoot().providers || [];
-
 bootstrapApplication(AppComponent, {
   providers: [
-    // ionicStorageProviders,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     importProvidersFrom(IonicStorageModule.forRoot({})),
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
+    ActionSheetController,
+    AlertController,
+    ModalController,
   ],
 });

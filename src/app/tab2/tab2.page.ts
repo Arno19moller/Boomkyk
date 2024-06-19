@@ -1,11 +1,12 @@
+import { LocationStrategy } from '@angular/common';
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
-  Input,
+  OnDestroy,
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { ActionSheetController, ModalController } from '@ionic/angular';
+import { ActionSheetController } from '@ionic/angular';
 import {
   IonCol,
   IonContent,
@@ -27,10 +28,12 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
+import { Subject } from 'rxjs';
 import { ImageType } from '../models/image-type.enum';
 import { BoomkykPhoto } from '../models/photo.interface';
 import { TreeType } from '../models/tree-type.enum';
 import { Tree } from '../models/tree.interface';
+import { ActionsService } from '../services/actions.service';
 import { DatabaseService } from '../services/database.service';
 import { PhotoService } from '../services/photo.service';
 import { TreeGroupsComponent } from '../tab1/tree-groups/tree-groups.component';
@@ -62,22 +65,17 @@ import { TreeGroupsComponent } from '../tab1/tree-groups/tree-groups.component';
     IonToast,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [ModalController],
 })
-export class Tab2Page implements OnInit {
+export class Tab2Page implements OnInit, OnDestroy {
   @ViewChild('ionInputEl') ionInputEl!: IonInput;
 
-  @Input() showBackButton: boolean = false;
-  @Input() public newTree: Tree;
+  private destroy$ = new Subject();
 
-  private newId: Guid;
-
+  public newTree: Tree | undefined = undefined;
   public isEdit: boolean = false;
   public TreetType = TreeType;
   public parentGroup: Tree | undefined = undefined;
   public infoType: string = 'overview';
-  public isErrorToastOpen: boolean = false;
-  public isSavedToastOpen: boolean = false;
   public individualImages: BoomkykPhoto[] = [];
   public selectedImageType: ImageType = ImageType.Overview;
   public treeGroups: Tree[] = [];
@@ -87,33 +85,32 @@ export class Tab2Page implements OnInit {
     public photoService: PhotoService,
     private databaseService: DatabaseService,
     public actionSheetController: ActionSheetController,
-    private modalCtrl: ModalController
-  ) {
-    this.newId = Guid.create();
-    this.newTree = {
-      id: this.newId,
+    private locationStrategy: LocationStrategy,
+    private actionsService: ActionsService
+  ) {}
+
+  async ngOnInit(): Promise<void> {
+    this.newTree = this.actionsService.selectedTree ?? {
+      id: Guid.create(),
       images: [],
       title: '',
       subTitle: '',
       description: '',
-      type: TreeType.Group,
+      type: this.actionsService.selectedTreeType ?? TreeType.Group,
     };
-  }
 
-  async ngOnInit(): Promise<void> {
-    if (this.newTree.id !== this.newId) {
+    this.isEdit = this.actionsService.selectedTree != undefined;
+
+    if (this.actionsService.selectedTreeType === TreeType.Individual) {
       this.typeSelected(this.newTree.type);
-      if (this.newTree.type === TreeType.Individual) {
-        setTimeout(() => {
-          this.infoTypeChanged('overview');
-        }, 100);
-      }
-      this.isEdit = true;
+      setTimeout(() => {
+        this.infoTypeChanged('overview');
+      }, 100);
     }
   }
 
   backClicked(): void {
-    this.modalCtrl.dismiss();
+    this.locationStrategy.back();
   }
 
   async addPhotoToGallery() {
@@ -126,10 +123,10 @@ export class Tab2Page implements OnInit {
           icon: 'image',
           handler: async () => {
             await this.photoService.addMultipleImages(
-              this.newTree.images,
+              this.newTree!.images,
               this.selectedImageType
             );
-            this.individualImages = this.newTree.images.filter(
+            this.individualImages = this.newTree!.images.filter(
               (x) => x.type === this.selectedImageType
             );
           },
@@ -140,10 +137,10 @@ export class Tab2Page implements OnInit {
           icon: 'camera',
           handler: async () => {
             await this.photoService.addSingleImage(
-              this.newTree.images,
+              this.newTree!.images,
               this.selectedImageType
             );
-            this.individualImages = this.newTree.images.filter(
+            this.individualImages = this.newTree!.images.filter(
               (x) => x.type === this.selectedImageType
             );
           },
@@ -157,7 +154,7 @@ export class Tab2Page implements OnInit {
     await actionSheet.present();
   }
 
-  public async showImageActionSheet(photo: BoomkykPhoto) {
+  public async showDeleteImageActionSheet(photo: BoomkykPhoto) {
     const actionSheet = await this.actionSheetController.create({
       header: 'Photos',
       buttons: [
@@ -166,8 +163,8 @@ export class Tab2Page implements OnInit {
           role: 'destructive',
           icon: 'trash',
           handler: () => {
-            this.photoService.deletePicture(this.newTree.images, photo);
-            this.individualImages = this.newTree.images.filter(
+            this.photoService.deletePicture(this.newTree!.images, photo);
+            this.individualImages = this.newTree!.images.filter(
               (x) => x.type === this.selectedImageType
             );
           },
@@ -183,10 +180,10 @@ export class Tab2Page implements OnInit {
   }
 
   async typeSelected(type: any) {
-    this.newTree.type = type;
-    if (this.newTree.type === this.TreetType.Individual) {
-      this.newTree.description = '';
-      this.newTree.treeInfo = this.newTree.treeInfo ?? {
+    this.newTree!.type = type;
+    if (this.newTree!.type === this.TreetType.Individual) {
+      this.newTree!.description = '';
+      this.newTree!.treeInfo = this.newTree!.treeInfo ?? {
         overview: '',
         leaves: '',
         bark: '',
@@ -194,40 +191,40 @@ export class Tab2Page implements OnInit {
         flower: '',
       };
 
-      this.newTree.groupId = this.parentGroup?.id ?? this.newTree.groupId;
-      this.individualImages = this.newTree.images.filter(
+      this.newTree!.groupId = this.parentGroup?.id ?? this.newTree!.groupId;
+      this.individualImages = this.newTree!.images.filter(
         (x) => x.type === ImageType.Overview
       );
 
       this.treeGroups = await this.databaseService.getTreeGroups();
     } else {
-      this.newTree.treeInfo = undefined;
-      this.newTree.groupId = undefined;
+      this.newTree!.treeInfo = undefined;
+      this.newTree!.groupId = undefined;
     }
   }
 
   groupSelected(e: any): void {
-    this.newTree.groupId = e.detail.value;
+    this.newTree!.groupId = e.detail.value;
   }
 
   textInputChanged(control: string, e: any): void {
     if (control === 'title') {
-      this.newTree.title = e.target.value;
+      this.newTree!.title = e.target.value;
     } else if (control === 'science') {
-      this.newTree.subTitle = e.target.value;
+      this.newTree!.subTitle = e.target.value;
     } else if (control === 'groupDescription') {
-      this.newTree.description = e.target.value;
+      this.newTree!.description = e.target.value;
     } else if (control === 'individualDescription') {
       if (this.infoType === 'overview') {
-        this.newTree.treeInfo!.overview = e.target.value;
+        this.newTree!.treeInfo!.overview = e.target.value;
       } else if (this.infoType === 'leaves') {
-        this.newTree.treeInfo!.leaves = e.target.value;
+        this.newTree!.treeInfo!.leaves = e.target.value;
       } else if (this.infoType === 'bark') {
-        this.newTree.treeInfo!.bark = e.target.value;
+        this.newTree!.treeInfo!.bark = e.target.value;
       } else if (this.infoType === 'fruit') {
-        this.newTree.treeInfo!.fruit = e.target.value;
+        this.newTree!.treeInfo!.fruit = e.target.value;
       } else if (this.infoType === 'flower') {
-        this.newTree.treeInfo!.flower = e.target.value;
+        this.newTree!.treeInfo!.flower = e.target.value;
       }
     }
   }
@@ -236,60 +233,52 @@ export class Tab2Page implements OnInit {
     this.infoType = type;
     if (this.infoType === 'overview') {
       this.selectedImageType = ImageType.Overview;
-      this.ionInputEl.value = this.newTree.treeInfo!.overview;
+      this.ionInputEl.value = this.newTree!.treeInfo!.overview;
     } else if (this.infoType === 'leaves') {
       this.selectedImageType = ImageType.Leaves;
-      this.ionInputEl.value = this.newTree.treeInfo!.leaves;
+      this.ionInputEl.value = this.newTree!.treeInfo!.leaves;
     } else if (this.infoType === 'bark') {
       this.selectedImageType = ImageType.Bark;
-      this.ionInputEl.value = this.newTree.treeInfo!.bark;
+      this.ionInputEl.value = this.newTree!.treeInfo!.bark;
     } else if (this.infoType === 'fruit') {
       this.selectedImageType = ImageType.Fruit;
-      this.ionInputEl.value = this.newTree.treeInfo!.fruit;
+      this.ionInputEl.value = this.newTree!.treeInfo!.fruit;
     } else if (this.infoType === 'flower') {
       this.selectedImageType = ImageType.Flower;
-      this.ionInputEl.value = this.newTree.treeInfo!.flower;
+      this.ionInputEl.value = this.newTree!.treeInfo!.flower;
     }
-    this.individualImages = this.newTree.images.filter(
+    this.individualImages = this.newTree!.images.filter(
       (x) => x.type === this.selectedImageType
     );
   }
 
   async onSubmit(): Promise<void> {
     if (
-      this.newTree.title === '' ||
-      (this.newTree.description === '' &&
-        this.newTree.type === this.TreetType.Group)
+      this.newTree!.title === '' ||
+      (this.newTree!.description === '' &&
+        this.newTree!.type === this.TreetType.Group)
     ) {
-      this.errorMessage = 'Please fill out all required fields';
-      this.isErrorToastOpen = true;
-    } else if (this.newTree.images.length === 0) {
-      this.errorMessage = 'Please add at least one image';
-      this.isErrorToastOpen = true;
+      this.databaseService.toastMessage = 'Please fill out all required fields';
+      this.databaseService.openToast = true;
+    } else if (this.newTree!.images.length === 0) {
+      this.databaseService.toastMessage = 'Please add at least one image';
+      this.databaseService.openToast = true;
     } else {
       if (this.isEdit) {
-        await this.databaseService.updateTree(this.newTree);
+        await this.databaseService.updateTree(this.newTree!);
       } else {
-        await this.databaseService.addTree(this.newTree);
+        await this.databaseService.addTree(this.newTree!);
       }
-      this.isSavedToastOpen = true;
-      this.resetNewTree();
+      this.databaseService.toastMessage = 'Tree Saved Successfully';
+      this.databaseService.openToast = true;
       this.backClicked();
     }
   }
 
-  resetNewTree(): void {
-    this.newTree = {
-      id: Guid.create(),
-      images: [],
-      title: '',
-      subTitle: '',
-      description: '',
-      type: TreeType.Group,
-    };
-  }
-
-  ionViewWillLeave(): void {
-    this.resetNewTree();
+  ngOnDestroy(): void {
+    this.destroy$.next(null);
+    this.destroy$.complete();
+    this.actionsService.selectedTree = undefined;
+    this.actionsService.selectedTreeType = undefined;
   }
 }

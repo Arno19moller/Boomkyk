@@ -1,3 +1,15 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
 </ion-app>
+
+<ion-loading
+  [isOpen]="databaseService.isLoading"
+  [message]="databaseService.loadingMessage"
+></ion-loading>
+
+<ion-toast
+  [isOpen]="databaseService.openToast"
+  [message]="databaseService.toastMessage"
+  [duration]="3000"
+  (didDismiss)="databaseService.openToast = false"
+></ion-toast>

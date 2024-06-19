@@ -1,6 +1,11 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title> Boomkyk </ion-title>
+    <ion-buttons slot="end">
+      <ion-button shape="round" [routerLink]="['/create']" color="primary">
+        <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <ion-toolbar>
     <ion-searchbar
@@ -21,7 +26,7 @@
 
   @if (groups.length > 0) { @for (group of groups; track $index) {
   <ion-card
-    [routerLink]="['/tabs/tab1/list', { id: group.id['value'] }]"
+    [routerLink]="['/list', { id: group.id['value'] }]"
     [attr.id]="group.id['value']"
   >
     <img
@@ -47,10 +52,3 @@
   </ion-card>
   }
 </ion-content>
-
-<ion-action-sheet
-  [isOpen]="isActionSheetOpen"
-  header="Actions"
-  [buttons]="actionSheetButtons"
-  (didDismiss)="isActionSheetOpen = false"
-></ion-action-sheet>
