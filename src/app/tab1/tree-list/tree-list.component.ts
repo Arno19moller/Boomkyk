@@ -188,6 +188,8 @@ export class TreeListComponent implements OnInit, OnDestroy {
 
   async deleteClicked(): Promise<void> {
     await this.databaseService.openDeleteTreeAlert(this.selectedTreeId);
+    this.treesList = await this.databaseService.getTreesList(this.treeGroupId);
+    this.setLongPress();
   }
 
   ngOnDestroy(): void {

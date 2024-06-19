@@ -14,6 +14,7 @@ export class DatabaseService {
   public isLoading: boolean = false;
   public loadingMessage: string = '';
 
+  private _storage: Storage | null = null;
   private TREE_STORAGE: string = 'trees';
   private selectedTreeGroup: Tree | undefined = undefined; // used when navigating back
   private deleteTreeId: string = '';
@@ -47,7 +48,10 @@ export class DatabaseService {
   }
 
   async initialiseStorage(): Promise<void> {
-    await this.storage.create();
+    if (this._storage == null) {
+      const storage = await this.storage.create();
+      this._storage = storage;
+    }
   }
 
   async getTreeGroups(): Promise<Tree[]> {
@@ -152,11 +156,19 @@ export class DatabaseService {
 
   // private
   private async saveTrees(trees: Tree[]): Promise<void> {
-    await this.storage.set(this.TREE_STORAGE, JSON.stringify(trees));
+    if (this._storage == null) {
+      await this.initialiseStorage();
+    }
+
+    await this._storage?.set(this.TREE_STORAGE, JSON.stringify(trees));
   }
 
   private async getTrees(): Promise<Tree[]> {
-    const { value } = (await this.storage.get(this.TREE_STORAGE)) ?? [];
+    if (this._storage == null) {
+      await this.initialiseStorage();
+    }
+
+    const value = (await this._storage?.get(this.TREE_STORAGE)) ?? [];
     return (value ? JSON.parse(value) : []) as Tree[];
   }
 

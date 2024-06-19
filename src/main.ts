@@ -1,4 +1,4 @@
-import { enableProdMode } from '@angular/core';
+import { enableProdMode, importProvidersFrom } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
   PreloadAllModules,
@@ -28,8 +28,9 @@ const ionicStorageProviders = IonicStorageModule.forRoot().providers || [];
 
 bootstrapApplication(AppComponent, {
   providers: [
-    ionicStorageProviders,
+    // ionicStorageProviders,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    importProvidersFrom(IonicStorageModule.forRoot({})),
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
   ],
