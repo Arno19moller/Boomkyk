@@ -168,8 +168,13 @@ export class DatabaseService {
       await this.initialiseStorage();
     }
 
-    const value = (await this._storage?.get(this.TREE_STORAGE)) ?? [];
-    return (value ? JSON.parse(value) : []) as Tree[];
+    try {
+      const value = (await this._storage?.get(this.TREE_STORAGE)) ?? [];
+      return (value ? JSON.parse(value) : []) as Tree[];
+    } catch (error) {
+      await this._storage?.set(this.TREE_STORAGE, '[]');
+      return [] as Tree[];
+    }
   }
 
   private async updateImagePaths(tree: Tree): Promise<void> {
