@@ -22,155 +22,158 @@
   </ion-header>
 
   @if(newTree){
-  <ion-list class="form-container">
-    @if(!isEdit){
-    <ion-item>
-      <ion-select
-        interface="popover"
-        placeholder="Select Type"
-        label="Type*"
-        label-placement="stacked"
-        (ionChange)="typeSelected($event.detail.value)"
-        [required]="true"
-        [value]="newTree.type"
-      >
-        <ion-select-option [value]="TreetType.Group">Group</ion-select-option>
-        <ion-select-option [value]="TreetType.Individual">
-          Individual Tree
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
-    }
-    <ion-item>
-      <ion-input
-        label="Title*"
-        labelPlacement="stacked"
-        placeholder="Enter Title"
-        (ionChange)="textInputChanged('title', $event)"
-        [value]="newTree.title"
-      ></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-input
-        label="Scientific Name"
-        labelPlacement="stacked"
-        placeholder="Enter Scientific Name"
-        (ionChange)="textInputChanged('science', $event)"
-        [value]="newTree.subTitle"
-      ></ion-input>
-    </ion-item>
-    @if (newTree.type === TreetType.Group) {
-    <ion-item>
-      <ion-textarea
-        label="Description*"
-        labelPlacement="stacked"
-        placeholder="Enter Description"
-        [value]="newTree.description"
-        [autoGrow]="true"
-        (ionChange)="textInputChanged('groupDescription', $event)"
-      ></ion-textarea>
-    </ion-item>
-    } @else if(newTree.type === TreetType.Individual && !isEdit){
-    <ion-item>
-      <ion-select
-        interface="popover"
-        placeholder="Select Group"
-        label="Tree Group*"
-        label-placement="stacked"
-        (ionChange)="groupSelected($event)"
-        [required]="true"
-        [value]="newTree.groupId"
-      >
-        @for (group of treeGroups; track $index) {
-        <ion-select-option [value]="group.id">
-          {{group.title}}
-        </ion-select-option>
-        }
-      </ion-select>
-    </ion-item>
-    }
-  </ion-list>
-  <br />
-  <ion-list>
-    @if(newTree.type === TreetType.Group){
-    <!-- Group images -->
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <ion-label>Image</ion-label>
-        </ion-col>
-      </ion-row>
-      <ion-row class="image-column">
-        @if(individualImages.length === 0){
-        <ion-col size="6">
-          <ion-img
-            src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
-            (click)="addPhotoToGallery()"
-          ></ion-img>
-        </ion-col>
-        } @for (image of newTree.images; track $index) {
-        <ion-col size="3">
-          <ion-img
-            [src]="image.webviewPath"
-            (click)="showDeleteImageActionSheet(image)"
-          ></ion-img>
-        </ion-col>
-        }
-      </ion-row>
-    </ion-grid>
-    } @if(newTree.type === TreetType.Individual){
-    <ion-item>
-      <ion-segment
-        [scrollable]="true"
-        value="overview"
-        (ionChange)="infoTypeChanged($event.target?.value?.toString() ?? '')"
-      >
-        <ion-segment-button value="overview">Overview</ion-segment-button>
-        <ion-segment-button value="leaves">Leaves</ion-segment-button>
-        <ion-segment-button value="bark">Bark</ion-segment-button>
-        <ion-segment-button value="fruit">Fruit</ion-segment-button>
-        <ion-segment-button value="flower">Flower</ion-segment-button>
-      </ion-segment>
-    </ion-item>
+  <ion-card>
+    <ion-list class="form-container">
+      @if(!isEdit){
+      <ion-item>
+        <ion-select
+          interface="popover"
+          placeholder="Select Type"
+          label="Type*"
+          label-placement="stacked"
+          (ionChange)="typeSelected($event.detail.value)"
+          [required]="true"
+          [value]="newTree.type"
+        >
+          <ion-select-option [value]="TreetType.Group">Group</ion-select-option>
+          <ion-select-option [value]="TreetType.Individual">
+            Individual Tree
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      }
+      <ion-item>
+        <ion-input
+          label="Title*"
+          labelPlacement="stacked"
+          placeholder="Enter Title"
+          (ionChange)="textInputChanged('title', $event)"
+          [value]="newTree.title"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Scientific Name"
+          labelPlacement="stacked"
+          placeholder="Enter Scientific Name"
+          (ionChange)="textInputChanged('science', $event)"
+          [value]="newTree.subTitle"
+        ></ion-input>
+      </ion-item>
+      @if (newTree.type === TreetType.Group) {
+      <ion-item>
+        <ion-textarea
+          label="Description*"
+          labelPlacement="stacked"
+          placeholder="Enter Description"
+          [value]="newTree.description"
+          [autoGrow]="true"
+          (ionChange)="textInputChanged('groupDescription', $event)"
+        ></ion-textarea>
+      </ion-item>
+      } @else if(newTree.type === TreetType.Individual && !isEdit){
+      <ion-item>
+        <ion-select
+          interface="popover"
+          placeholder="Select Group"
+          label="Tree Group*"
+          label-placement="stacked"
+          (ionChange)="groupSelected($event)"
+          [required]="true"
+          [value]="newTree.groupId"
+        >
+          @for (group of treeGroups; track $index) {
+          <ion-select-option [value]="group.id">
+            {{group.title}}
+          </ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+      }
+    </ion-list>
+  </ion-card>
+  <ion-card>
+    <ion-list>
+      @if(newTree.type === TreetType.Group){
+      <!-- Group images -->
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <ion-label>Image</ion-label>
+          </ion-col>
+        </ion-row>
+        <ion-row class="image-column">
+          @if(individualImages.length === 0){
+          <ion-col size="6">
+            <ion-img
+              src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
+              (click)="addPhotoToGallery()"
+            ></ion-img>
+          </ion-col>
+          } @for (image of newTree.images; track $index) {
+          <ion-col size="3">
+            <ion-img
+              [src]="image.webviewPath"
+              (click)="showDeleteImageActionSheet(image)"
+            ></ion-img>
+          </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
+      } @if(newTree.type === TreetType.Individual){
+      <ion-item>
+        <ion-segment
+          [scrollable]="true"
+          value="overview"
+          (ionChange)="infoTypeChanged($event.target?.value?.toString() ?? '')"
+        >
+          <ion-segment-button value="overview">Overview</ion-segment-button>
+          <ion-segment-button value="leaves">Leaves</ion-segment-button>
+          <ion-segment-button value="bark">Bark</ion-segment-button>
+          <ion-segment-button value="fruit">Fruit</ion-segment-button>
+          <ion-segment-button value="flower">Flower</ion-segment-button>
+        </ion-segment>
+      </ion-item>
 
-    <!-- individual images -->
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <ion-label>Images</ion-label>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        @if(individualImages.length === 0){
-        <ion-col size="3">
-          <ion-img
-            src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
-            (click)="addPhotoToGallery()"
-          ></ion-img>
-        </ion-col>
-        } @for (image of individualImages; track $index) {
-        <ion-col size="3">
-          <ion-img
-            [src]="image.webviewPath"
-            (click)="showDeleteImageActionSheet(image)"
-          ></ion-img>
-        </ion-col>
-        }
-      </ion-row>
-    </ion-grid>
+      <!-- individual images -->
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <ion-label>Images</ion-label>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          @if(individualImages.length === 0){
+          <ion-col size="3">
+            <ion-img
+              src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
+              (click)="addPhotoToGallery()"
+            ></ion-img>
+          </ion-col>
+          } @for (image of individualImages; track $index) {
+          <ion-col size="3">
+            <ion-img
+              [src]="image.webviewPath"
+              (click)="showDeleteImageActionSheet(image)"
+            ></ion-img>
+          </ion-col>
+          }
+        </ion-row>
+      </ion-grid>
 
-    <ion-item>
-      <ion-textarea
-        #ionInputEl
-        label="Description"
-        labelPlacement="stacked"
-        placeholder="Enter Description"
-        [autoGrow]="true"
-        (ionChange)="textInputChanged('individualDescription', $event)"
-      ></ion-textarea>
-    </ion-item>
-    }
-  </ion-list>
+      <ion-item>
+        <ion-textarea
+          #ionInputEl
+          label="Description"
+          labelPlacement="stacked"
+          placeholder="Enter Description"
+          [autoGrow]="true"
+          (ionChange)="textInputChanged('individualDescription', $event)"
+        ></ion-textarea>
+      </ion-item>
+      }
+    </ion-list>
+  </ion-card>
   <div class="save-button-container">
     <ion-button shape="round" (click)="onSubmit()">Save</ion-button>
   </div>

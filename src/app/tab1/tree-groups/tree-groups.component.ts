@@ -64,7 +64,6 @@ export class TreeGroupsComponent implements OnInit, OnDestroy {
     this.activeRoute.url.pipe(takeUntil(this.destroy$)).subscribe({
       next: async () => {
         this.databaseService.startLoading('Loading Tree Groups');
-        // this.groups = await this.databaseService.getTreeGroups();
         this.initialiseLongPress(await this.databaseService.getTreeGroups());
         this.databaseService.stopLoading();
       },
@@ -72,16 +71,18 @@ export class TreeGroupsComponent implements OnInit, OnDestroy {
   }
 
   initialiseLongPress(groups: Tree[]): void {
-    const prevGroupList = [...this.groups];
     this.groups = groups;
     setTimeout(() => {
       const cardElements = document.querySelectorAll('ion-card');
 
       for (let i = 0; i < cardElements.length; i++) {
-        const id = cardElements[i]?.getAttribute('id');
+        const hasLongPress = cardElements[i]!.getAttribute('longPress');
 
         // Only assign long press when new
-        if (!prevGroupList.some((x) => x.id['value'] === id)) {
+        if (hasLongPress == null) {
+          const id = cardElements[i]!.getAttribute('id');
+          cardElements[i]!.setAttribute('longPress', 'true');
+
           const hammer = new Hammer(cardElements[i]!);
 
           hammer.get('press').set({ time: 500 });

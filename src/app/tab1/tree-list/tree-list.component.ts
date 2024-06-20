@@ -113,13 +113,19 @@ export class TreeListComponent implements OnInit, OnDestroy {
   setLongPress(): void {
     const cardElements = document.querySelectorAll('ion-card');
     for (let i = 0; i < cardElements.length; i++) {
-      const hammer = new Hammer(cardElements[i]!);
+      const hasLongPress = cardElements[i]!.getAttribute('longPress');
 
-      hammer.get('press').set({ time: 500 });
-      hammer.on('press', async () => {
-        const id = cardElements[i]?.getAttribute('id');
-        return await this.cardClicked(id);
-      });
+      // Only assign long press when new
+      if (hasLongPress == null) {
+        cardElements[i]!.setAttribute('longPress', 'true');
+        const hammer = new Hammer(cardElements[i]!);
+
+        hammer.get('press').set({ time: 500 });
+        hammer.on('press', async () => {
+          const id = cardElements[i]?.getAttribute('id');
+          return await this.cardClicked(id);
+        });
+      }
     }
   }
 
