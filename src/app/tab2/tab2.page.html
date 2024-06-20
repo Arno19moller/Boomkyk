@@ -103,7 +103,8 @@
           </ion-col>
         </ion-row>
         <ion-row class="image-column">
-          @if(individualImages.length === 0){
+          <ion-col size="3"></ion-col>
+          @if(newTree.images.length === 0){
           <ion-col size="6">
             <ion-img
               src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
@@ -111,13 +112,14 @@
             ></ion-img>
           </ion-col>
           } @for (image of newTree.images; track $index) {
-          <ion-col size="3">
+          <ion-col size="6">
             <ion-img
               [src]="image.webviewPath"
               (click)="showDeleteImageActionSheet(image)"
             ></ion-img>
           </ion-col>
           }
+          <ion-col size="3"></ion-col>
         </ion-row>
       </ion-grid>
       } @if(newTree.type === TreetType.Individual){

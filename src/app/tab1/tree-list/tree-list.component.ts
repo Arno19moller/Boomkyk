@@ -108,6 +108,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
         this.treeGroupId
       );
     }
+    this.setLongPress();
   }
 
   setLongPress(): void {
