@@ -1,3 +1,4 @@
+import { LocationStrategy } from '@angular/common';
 import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
@@ -70,6 +71,20 @@ export class TreeListComponent implements OnInit, OnDestroy {
 
   public treesList: Tree[] = [];
   public title: string = '';
+  public currentTreeType: number = 1;
+  public TreeType = TreeType;
+  public pastelColors: string[] = [
+    'rgba(137, 144, 179, 0.6)', // Pigeon Blue
+    'rgba(255, 211, 196, 0.6)', // Peach
+    'rgba(222, 227, 255, 0.6)', // Thistle
+    'rgba(222, 255, 196, 0.6)', // Pastel Green
+    'rgba(160, 179, 146, 0.6)', // Sage Green
+    'rgba(247, 173, 195, 0.6)', // Cherry Blossom Pink
+    'rgba(252, 197, 217, 0.6)', // Fairy Tale Pink
+    'rgba(250, 221, 227, 0.6)', // Mimi Pink
+    'rgba(247, 245, 237, 0.6)', // Floral White
+    'rgba(114, 221, 247, 0.6)', // Sky Blue
+  ];
 
   @ViewChild('longPressElement') longPressElement: ElementRef | undefined;
 
@@ -77,7 +92,8 @@ export class TreeListComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     public databaseService: DatabaseService,
-    private actionsService: ActionsService
+    private actionsService: ActionsService,
+    private locationStrategy: LocationStrategy
   ) {}
 
   ngOnInit() {
@@ -85,8 +101,13 @@ export class TreeListComponent implements OnInit, OnDestroy {
       next: async (param) => {
         this.databaseService.startLoading('Loading Trees');
         this.treeGroupId = param['id'];
+        this.currentTreeType = param['type'] as TreeType;
+
         await this.databaseService.setSelectedTreeGroup(param['id']);
-        this.treesList = await this.databaseService.getTreesList(param['id']);
+        this.treesList = await this.databaseService.getTreesList(
+          param['type'] as TreeType,
+          param['id']
+        );
         this.title =
           (await this.databaseService.getSelectedTree(param['id']))?.title ??
           'Not Found';
@@ -101,10 +122,14 @@ export class TreeListComponent implements OnInit, OnDestroy {
     if (filterString) {
       filterString = filterString.toLowerCase();
       this.treesList = (
-        await this.databaseService.getTreesList(this.treeGroupId)
+        await this.databaseService.getTreesList(
+          TreeType.Genus,
+          this.treeGroupId
+        )
       ).filter((x) => x.title.toLowerCase().includes(filterString));
     } else {
       this.treesList = await this.databaseService.getTreesList(
+        TreeType.Genus,
         this.treeGroupId
       );
     }
@@ -132,18 +157,25 @@ export class TreeListComponent implements OnInit, OnDestroy {
 
   async cardClicked(id: string | undefined | null): Promise<void> {
     await this.actionsService.openEditOrDeleteModal(id ?? '');
-    this.treesList = await this.databaseService.getTreesList(this.treeGroupId);
+    this.treesList = await this.databaseService.getTreesList(
+      TreeType.Genus,
+      this.treeGroupId
+    );
   }
 
   createNewClicked(): void {
-    this.actionsService.selectedTreeType = TreeType.Individual;
+    this.actionsService.selectedTreeType = TreeType.Genus;
     this.router.navigate(['/create']);
   }
 
   getImage(tree: Tree): BoomkykPhoto | undefined {
-    const images = tree.images.filter((x) => x.type === ImageType.Overview);
+    const images = tree.images!.filter((x) => x.type === ImageType.Overview);
     if (images.length > 0) return images[0];
     return undefined;
+  }
+
+  backClicked(): void {
+    this.locationStrategy.back();
   }
 
   ionViewWillLeave(): void {

@@ -99,7 +99,7 @@ export class ActionsService {
       header: 'Delete',
       subHeader: `Are you sure you want to delete ${trees[index].title}`,
       message:
-        trees[index].type === TreeType.Group
+        trees[index].type === TreeType.Family
           ? 'Deleting a group also deletes all related trees'
           : '',
       buttons: this.deleteAlertButtons,

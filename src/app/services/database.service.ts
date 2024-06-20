@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Platform } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
+import { Guid } from 'guid-typescript';
 import { BoomkykPhoto } from '../models/photo.interface';
 import { TreeType } from '../models/tree-type.enum';
 import { Tree } from '../models/tree.interface';
@@ -34,10 +35,13 @@ export class DatabaseService {
     }
   }
 
-  async getTreeGroups(): Promise<Tree[]> {
+  async getTreesByType(type: TreeType): Promise<Tree[]> {
     let trees = await this.getTrees();
 
-    trees = trees.filter((x) => x.type === TreeType.Group);
+    trees = trees.filter((x) => x.type === type);
+    trees.sort((a, b) => {
+      return a.title.localeCompare(b.title);
+    });
 
     // Only for web
     if (this.isWebPlatform) {
@@ -63,12 +67,34 @@ export class DatabaseService {
     return tree;
   }
 
-  async getTreesList(groupId?: string): Promise<Tree[]> {
+  async getTreeByName(name: string): Promise<Tree | undefined> {
+    const trees = await this.getTrees();
+    // Add Nursery if not already added
+    if (!trees.some((x) => x.title === 'Nursery')) {
+      const nursery: Tree = {
+        id: Guid.create(),
+        title: 'Nursery',
+        type: TreeType.Genus,
+      };
+      await this.addTree(nursery);
+      return nursery;
+    }
+
+    const tree = trees.find((x) => x.title === name);
+
+    if (this.isWebPlatform && tree) {
+      await this.updateImagePaths(tree);
+    }
+
+    return tree;
+  }
+
+  async getTreesList(type: TreeType, groupId?: string): Promise<Tree[]> {
     let trees = await this.getTrees();
 
     trees = trees.filter(
       (x) =>
-        x.type === TreeType.Individual &&
+        x.type == type &&
         x.groupId !== undefined &&
         x.groupId['value'] === (groupId ?? this.selectedTreeGroup?.id['value'])
     );
@@ -139,7 +165,7 @@ export class DatabaseService {
   }
 
   private async updateImagePaths(tree: Tree): Promise<void> {
-    for (let photo of tree.images) {
+    for (let photo of tree.images ?? []) {
       const readFile = await Filesystem.readFile({
         path: photo.filepath,
         directory: Directory.Data,
@@ -154,7 +180,7 @@ export class DatabaseService {
     const trees = await this.getTrees();
     let index = trees.findIndex((x) => x.id['value'] === deleteTreeId);
 
-    if (trees[index].type === TreeType.Group) {
+    if (trees[index].type === TreeType.Family) {
       let childTrees = trees.filter(
         (x) =>
           x.groupId != undefined &&
@@ -162,17 +188,7 @@ export class DatabaseService {
       );
 
       // remove child trees from storage list
-      childTrees.map(async (tree) => {
-        let childIndex = trees.findIndex(
-          (x) => x.id['value'] === tree.id['value']
-        );
-        trees.splice(childIndex, 1);
-
-        // Delete all tree images
-        for (let i = 0; i < tree.images.length; i++) {
-          await this.deletePicture(tree.images[i]);
-        }
-      });
+      this.deleteChildTrees(trees, childTrees);
     }
 
     trees.splice(index, 1);
@@ -183,15 +199,36 @@ export class DatabaseService {
     this.openToast = true;
   }
 
-  private async deletePicture(photo: BoomkykPhoto) {
-    // delete photo file from filesystem
-    const filename = photo.filepath.substring(
-      photo.filepath.lastIndexOf('/') + 1
-    );
+  deleteChildTrees(trees: Tree[], childTrees: Tree[]): void {
+    childTrees.map(async (tree) => {
+      const subSubTrees = trees.filter(
+        (x) => x.groupId != undefined && x.groupId['value'] === tree.id['value']
+      );
+      if (subSubTrees?.length > 0) {
+        this.deleteChildTrees(trees, subSubTrees);
+      }
 
-    await Filesystem.deleteFile({
-      path: filename,
-      directory: Directory.Data,
+      let childIndex = trees.findIndex(
+        (x) => x.id['value'] === tree.id['value']
+      );
+      trees.splice(childIndex, 1);
+
+      // Delete all tree images
+      await this.deletePicture(tree.images ?? []);
     });
+  }
+
+  private async deletePicture(photos: BoomkykPhoto[]) {
+    for (let i = 0; i < photos.length; i++) {
+      // delete photo file from filesystem
+      const filename = photos[i].filepath.substring(
+        photos[i].filepath.lastIndexOf('/') + 1
+      );
+
+      await Filesystem.deleteFile({
+        path: filename,
+        directory: Directory.Data,
+      });
+    }
   }
 }

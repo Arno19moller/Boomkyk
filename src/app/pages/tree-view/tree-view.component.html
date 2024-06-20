@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="clear" [routerLink]="['/list']">
+      <ion-button fill="clear" (click)="backClicked()">
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -20,7 +20,7 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-buttons slot="start">
-      <ion-button fill="clear" [routerLink]="['/list']">
+      <ion-button fill="clear" (click)="backClicked()">
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>

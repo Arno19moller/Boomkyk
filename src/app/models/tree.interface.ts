@@ -4,10 +4,8 @@ import { TreeType } from './tree-type.enum';
 
 export interface Tree {
   id: Guid;
-  images: BoomkykPhoto[];
+  images?: BoomkykPhoto[];
   title: string;
-  subTitle?: string;
-  description: string;
   type: TreeType;
   groupId?: Guid;
   treeInfo?: {

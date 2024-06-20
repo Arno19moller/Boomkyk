@@ -115,15 +115,15 @@ export class TreeViewComponent implements OnInit, OnDestroy {
     this.tree = await this.databaseService.getSelectedTree(id);
 
     this.overviewImages =
-      this.tree?.images.filter((x) => x.type === ImageType.Overview) ?? [];
+      this.tree?.images!.filter((x) => x.type === ImageType.Overview) ?? [];
     this.leafImages =
-      this.tree?.images.filter((x) => x.type === ImageType.Leaves) ?? [];
+      this.tree?.images!.filter((x) => x.type === ImageType.Leaves) ?? [];
     this.barkImages =
-      this.tree?.images.filter((x) => x.type === ImageType.Bark) ?? [];
+      this.tree?.images!.filter((x) => x.type === ImageType.Bark) ?? [];
     this.fruitImages =
-      this.tree?.images.filter((x) => x.type === ImageType.Fruit) ?? [];
+      this.tree?.images!.filter((x) => x.type === ImageType.Fruit) ?? [];
     this.flowerImages =
-      this.tree?.images.filter((x) => x.type === ImageType.Flower) ?? [];
+      this.tree?.images!.filter((x) => x.type === ImageType.Flower) ?? [];
 
     if (this.tree?.treeInfo) {
       this.overviewDescription = this.tree.treeInfo.overview.replace(
@@ -135,6 +135,10 @@ export class TreeViewComponent implements OnInit, OnDestroy {
       this.fruitDescription = this.tree.treeInfo.fruit.replace(/\n/g, '<br>');
       this.flowerDescription = this.tree.treeInfo.flower.replace(/\n/g, '<br>');
     }
+  }
+
+  backClicked(): void {
+    this.locationStrategy.back();
   }
 
   ngOnDestroy(): void {

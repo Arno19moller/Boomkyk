@@ -1,0 +1,22 @@
+.tree-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.icon-container {
+  display: flex;
+
+  .ion-image {
+    width: 50px;
+    margin-left: 10px;
+    display: block;
+  }
+}
+
+.family-tile {
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  direction: rtl;
+}

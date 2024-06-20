@@ -1,6 +1,10 @@
 .tree-image {
-  //   max-height: 115px;
+  max-height: 115px;
   display: block;
   margin-left: auto;
   margin-right: auto;
+}
+
+ion-card {
+  min-height: 100%;
 }
