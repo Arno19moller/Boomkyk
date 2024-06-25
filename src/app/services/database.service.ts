@@ -19,7 +19,7 @@ export class DatabaseService {
 
   private _storage: Storage | null = null;
   private TREE_STORAGE: string = 'trees';
-  private selectedTreeGroup: Tree | undefined = undefined; // used when navigating back
+  private selectedTree: Tree | undefined = undefined; // used when navigating back
   private platform: Platform;
 
   constructor(
@@ -42,9 +42,6 @@ export class DatabaseService {
     let trees = await this.getTrees();
 
     trees = trees.filter((x) => x.type === type);
-    trees.sort((a, b) => {
-      return a.title.localeCompare(b.title);
-    });
 
     // Only for web
     if (this.isWebPlatform) {
@@ -59,7 +56,7 @@ export class DatabaseService {
   async getSelectedTree(id?: string): Promise<Tree | undefined> {
     const trees = await this.getTrees();
 
-    const tree = trees.find((x) => x.id['value'] === (id ?? this.selectedTreeGroup?.id['value']));
+    const tree = trees.find((x) => x.id['value'] === (id ?? this.selectedTree?.id['value']));
 
     if (this.isWebPlatform && tree) {
       await this.updateImagePaths(tree);
@@ -99,7 +96,7 @@ export class DatabaseService {
         (x) =>
           (x.type == type &&
             x.groupId !== undefined &&
-            x.groupId['value'] === (id ?? this.selectedTreeGroup?.id['value'])) ||
+            x.groupId['value'] === (id ?? this.selectedTree?.id['value'])) ||
           (x.type !== TreeType.Family && x.groupId == undefined && x.id['value'] !== id),
       );
     }
@@ -107,9 +104,7 @@ export class DatabaseService {
     else {
       trees = trees.filter(
         (x) =>
-          x.type == type &&
-          x.groupId !== undefined &&
-          x.groupId['value'] === (id ?? this.selectedTreeGroup?.id['value']),
+          x.type == type && x.groupId !== undefined && x.groupId['value'] === (id ?? this.selectedTree?.id['value']),
       );
     }
 
@@ -123,7 +118,7 @@ export class DatabaseService {
   }
 
   async setSelectedTreeGroup(id: string): Promise<void> {
-    this.selectedTreeGroup = await this.getSelectedTree(id);
+    this.selectedTree = await this.getSelectedTree(id);
   }
 
   async addTree(tree: Tree): Promise<void> {
@@ -171,7 +166,11 @@ export class DatabaseService {
 
     try {
       const value = (await this._storage?.get(this.TREE_STORAGE)) ?? [];
-      return (value ? JSON.parse(value) : []) as Tree[];
+      const trees = (value ? JSON.parse(value) : []) as Tree[];
+      trees.sort((a, b) => {
+        return a.title.localeCompare(b.title);
+      });
+      return trees;
     } catch (error) {
       await this._storage?.set(this.TREE_STORAGE, '[]');
       return [] as Tree[];

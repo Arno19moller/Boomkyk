@@ -29,47 +29,48 @@
 
   <ion-grid>
     @if (groups.length > 0) {
-    <ion-row>
-      @for (group of groups; track $index) {
-      <ion-col size="6">
-        <ion-card
-          class="family-tile"
-          [style.background-color]="pastelColors[$index % pastelColors.length]"
-          [routerLink]="['/list', { id: group.id['value'], type: TreeType.Genus }]"
-          [attr.id]="group.id['value']"
-        >
-          <ion-card-header>
-            <ion-card-title>{{ group.title }}</ion-card-title>
-          </ion-card-header>
-        </ion-card>
-      </ion-col>
-      }
-    </ion-row>
+      <ion-row>
+        @for (group of groups; track $index) {
+          <ion-col size="6">
+            <ion-card
+              class="family-tile"
+              [style.background-color]="pastelColors[$index % pastelColors.length]"
+              [routerLink]="['/list', { id: group.id['value'], type: TreeType.Genus }]"
+              [attr.id]="group.id['value']"
+            >
+              <ion-card-header>
+                <ion-card-title>{{ group.title }}</ion-card-title>
+              </ion-card-header>
+            </ion-card>
+          </ion-col>
+        }
+      </ion-row>
     } @else {
-    <ion-row>
-      <ion-col size="12">
-        <ion-card class="family-tile" [style.background-color]="pastelColors[0]">
-          <ion-card-header>
-            <ion-card-title>No Families Found</ion-card-title>
-          </ion-card-header>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-    } @if(nursery !== undefined){
-    <ion-row>
-      <ion-col size="12">
-        <ion-card
-          class="family-tile"
-          style="border: 2px solid white"
-          [routerLink]="['/list', { id: nursery.id['value'], type: TreeType.Species }]"
-        >
-          <ion-card-header>
-            <ion-card-title>Nursery</ion-card-title>
-            <ion-card-subtitle> All Trees Not Belonging To A Parent </ion-card-subtitle>
-          </ion-card-header>
-        </ion-card>
-      </ion-col>
-    </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <ion-card class="family-tile" [style.background-color]="pastelColors[0]">
+            <ion-card-header>
+              <ion-card-title>No Families Found</ion-card-title>
+            </ion-card-header>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    }
+    @if (nursery !== undefined) {
+      <ion-row>
+        <ion-col size="12">
+          <ion-card
+            class="family-tile"
+            style="border: 2px solid white"
+            [routerLink]="['/list', { id: nursery.id['value'], type: TreeType.Species }]"
+          >
+            <ion-card-header>
+              <ion-card-title>Nursery</ion-card-title>
+              <ion-card-subtitle> All Trees Not Belonging To A Parent </ion-card-subtitle>
+            </ion-card-header>
+          </ion-card>
+        </ion-col>
+      </ion-row>
     }
   </ion-grid>
 </ion-content>

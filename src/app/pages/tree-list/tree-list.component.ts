@@ -64,7 +64,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
 
   public treesList: Tree[] = [];
   public title: string = '';
-  public currentTreeType: number = 1;
+  public currentTreeType: TreeType = TreeType.Genus;
   public TreeType = TreeType;
   public pastelColors: string[] = [
     'rgba(137, 144, 179, 0.6)', // Pigeon Blue
@@ -86,7 +86,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
     private router: Router,
     public databaseService: DatabaseService,
     private actionsService: ActionsService,
-    private locationStrategy: LocationStrategy
+    private locationStrategy: LocationStrategy,
   ) {}
 
   ngOnInit() {
@@ -94,7 +94,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
       next: async (param) => {
         this.databaseService.startLoading('Loading Trees');
         this.treeGroupId = param['id'];
-        this.currentTreeType = param['type'] as TreeType;
+        this.currentTreeType = +param['type'] as TreeType;
 
         await this.databaseService.setSelectedTreeGroup(param['id']);
         this.treesList = await this.databaseService.getTreesList(param['type'] as TreeType, param['id']);
@@ -110,7 +110,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
     if (filterString) {
       filterString = filterString.toLowerCase();
       this.treesList = (await this.databaseService.getTreesList(TreeType.Genus, this.treeGroupId)).filter((x) =>
-        x.title.toLowerCase().includes(filterString)
+        x.title.toLowerCase().includes(filterString),
       );
     } else {
       this.treesList = await this.databaseService.getTreesList(TreeType.Genus, this.treeGroupId);
@@ -122,9 +122,10 @@ export class TreeListComponent implements OnInit, OnDestroy {
     const cardElements = document.querySelectorAll('ion-card');
     for (let i = 0; i < cardElements.length; i++) {
       const hasLongPress = cardElements[i]!.getAttribute('longPress');
+      const isIdNull = cardElements[i]!.getAttribute('id') == null;
 
       // Only assign long press when new
-      if (hasLongPress == null) {
+      if (hasLongPress == null && !isIdNull) {
         cardElements[i]!.setAttribute('longPress', 'true');
         const hammer = new Hammer(cardElements[i]!);
 
@@ -143,7 +144,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
   }
 
   createNewClicked(): void {
-    this.actionsService.selectedTreeType = TreeType.Genus;
+    this.actionsService.selectedTreeType = this.currentTreeType;
     this.router.navigate(['/create']);
   }
 

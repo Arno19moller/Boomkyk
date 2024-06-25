@@ -1,11 +1,5 @@
 import { LocationStrategy } from '@angular/common';
-import {
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
 import {
   IonCol,
@@ -86,8 +80,8 @@ export class Tab2Page implements OnInit, OnDestroy {
     private databaseService: DatabaseService,
     public actionSheetController: ActionSheetController,
     private locationStrategy: LocationStrategy,
-    private actionsService: ActionsService
-  ) { }
+    private actionsService: ActionsService,
+  ) {}
 
   async ngOnInit(): Promise<void> {
     this.newTree = this.actionsService.selectedTree ?? {
@@ -122,13 +116,8 @@ export class Tab2Page implements OnInit, OnDestroy {
           role: 'destructive',
           icon: 'image',
           handler: async () => {
-            await this.photoService.addMultipleImages(
-              this.newTree!.images!,
-              this.selectedImageType
-            );
-            this.individualImages = this.newTree!.images!.filter(
-              (x) => x.type === this.selectedImageType
-            );
+            await this.photoService.addMultipleImages(this.newTree!.images!, this.selectedImageType);
+            this.individualImages = this.newTree!.images!.filter((x) => x.type === this.selectedImageType);
           },
         },
         {
@@ -136,13 +125,8 @@ export class Tab2Page implements OnInit, OnDestroy {
           role: 'destructive',
           icon: 'camera',
           handler: async () => {
-            await this.photoService.addSingleImage(
-              this.newTree!.images!,
-              this.selectedImageType
-            );
-            this.individualImages = this.newTree!.images!.filter(
-              (x) => x.type === this.selectedImageType
-            );
+            await this.photoService.addSingleImage(this.newTree!.images!, this.selectedImageType);
+            this.individualImages = this.newTree!.images!.filter((x) => x.type === this.selectedImageType);
           },
         },
         {
@@ -164,9 +148,7 @@ export class Tab2Page implements OnInit, OnDestroy {
           icon: 'trash',
           handler: () => {
             this.photoService.deletePicture(this.newTree!.images!, photo);
-            this.individualImages = this.newTree!.images!.filter(
-              (x) => x.type === this.selectedImageType
-            );
+            this.individualImages = this.newTree!.images!.filter((x) => x.type === this.selectedImageType);
           },
         },
         {
@@ -193,18 +175,12 @@ export class Tab2Page implements OnInit, OnDestroy {
 
     if (this.newTree!.type !== this.TreeType.Family) {
       this.newTree!.groupId = this.parentGroup?.id ?? this.newTree!.groupId;
-      this.individualImages = this.newTree!.images!.filter(
-        (x) => x.type === ImageType.Overview
-      );
+      this.individualImages = this.newTree!.images!.filter((x) => x.type === ImageType.Overview);
 
       if (type === TreeType.Genus) {
-        this.treeGroups = await this.databaseService.getTreesByType(
-          TreeType.Family
-        );
+        this.treeGroups = await this.databaseService.getTreesByType(TreeType.Family);
       } else if (type === TreeType.Species) {
-        this.treeGroups = await this.databaseService.getTreesByType(
-          TreeType.Genus
-        );
+        this.treeGroups = await this.databaseService.getTreesByType(TreeType.Genus);
       }
     } else {
       this.newTree!.treeInfo = undefined;
@@ -252,19 +228,14 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.selectedImageType = ImageType.Flower;
       this.ionInputEl.value = this.newTree!.treeInfo!.flower;
     }
-    this.individualImages = this.newTree!.images!.filter(
-      (x) => x.type === this.selectedImageType
-    );
+    this.individualImages = this.newTree!.images!.filter((x) => x.type === this.selectedImageType);
   }
 
   async onSubmit(): Promise<void> {
     if (this.newTree!.title === '') {
       this.databaseService.toastMessage = 'Please fill out all required fields';
       this.databaseService.openToast = true;
-    } else if (
-      this.newTree?.type === this.TreeType.Species &&
-      this.newTree!.images?.length === 0
-    ) {
+    } else if (this.newTree?.type === this.TreeType.Species && this.newTree!.images?.length === 0) {
       this.databaseService.toastMessage = 'Please add at least one image';
       this.databaseService.openToast = true;
     } else {

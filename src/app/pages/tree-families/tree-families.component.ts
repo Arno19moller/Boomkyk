@@ -76,7 +76,7 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
   constructor(
     private databaseService: DatabaseService,
     private actionsServie: ActionsService,
-    private activeRoute: ActivatedRoute
+    private activeRoute: ActivatedRoute,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -98,16 +98,17 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
 
       for (let i = 0; i < cardElements.length; i++) {
         const hasLongPress = cardElements[i]!.getAttribute('longPress');
-        const id = cardElements[i]!.getAttribute('id');
+        const isIdNull = cardElements[i]!.getAttribute('id') == null;
 
         // Only assign long press when new
-        if (hasLongPress == null && id != null) {
+        if (hasLongPress == null && !isIdNull) {
           cardElements[i]!.setAttribute('longPress', 'true');
 
           const hammer = new Hammer(cardElements[i]!);
 
           hammer.get('press').set({ time: 500 });
           hammer.on('press', async () => {
+            const id = cardElements[i]!.getAttribute('id');
             return await this.cardClicked(id);
           });
         }
@@ -121,17 +122,13 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
     this.initialiseLongPress(await this.databaseService.getTreesByType(TreeType.Family));
   }
 
-  // getDescription(tree: Tree): string {
-  //   return tree.description!.replace(/\n/g, '<br>');
-  // }
-
   async filterGroups(filterString: any): Promise<void> {
     if (filterString) {
       filterString = filterString.toLowerCase();
       this.initialiseLongPress(
         (await this.databaseService.getTreesByType(TreeType.Family)).filter((x) =>
-          x.title.toLowerCase().includes(filterString)
-        )
+          x.title.toLowerCase().includes(filterString),
+        ),
       );
     } else {
       this.initialiseLongPress((this.groups = await this.databaseService.getTreesByType(TreeType.Family)));

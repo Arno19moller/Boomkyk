@@ -36,15 +36,9 @@
           [required]="true"
           [value]="newTree.type"
         >
-          <ion-select-option [value]="TreeType.Family">
-            Family
-          </ion-select-option>
-          <ion-select-option [value]="TreeType.Genus">
-            Genus
-          </ion-select-option>
-          <ion-select-option [value]="TreeType.Species">
-            Species
-          </ion-select-option>
+          <ion-select-option [value]="TreeType.Family"> Family </ion-select-option>
+          <ion-select-option [value]="TreeType.Genus"> Genus </ion-select-option>
+          <ion-select-option [value]="TreeType.Species"> Species </ion-select-option>
         </ion-select>
       </ion-item>
       }
@@ -71,9 +65,7 @@
           [value]="newTree.groupId"
         >
           @for (group of treeGroups; track $index) {
-          <ion-select-option [value]="group.id">
-            {{group.title}}
-          </ion-select-option>
+          <ion-select-option [value]="group.id"> {{group.title}} </ion-select-option>
           }
         </ion-select>
       </ion-item>
@@ -114,10 +106,7 @@
           </ion-col>
           } @for (image of individualImages; track $index) {
           <ion-col size="3">
-            <ion-img
-              [src]="image.webviewPath"
-              (click)="showDeleteImageActionSheet(image)"
-            ></ion-img>
+            <ion-img [src]="image.webviewPath" (click)="showDeleteImageActionSheet(image)"></ion-img>
           </ion-col>
           }
         </ion-row>
@@ -141,11 +130,11 @@
   <div class="save-button-container">
     <ion-button shape="round" (click)="onSubmit()">Save</ion-button>
   </div>
-  }
-
+  } @if(newTree != undefined && newTree.type === TreeType.Species){
   <ion-fab vertical="bottom" horizontal="center" slot="fixed">
     <ion-fab-button (click)="addPhotoToGallery()">
       <ion-icon name="camera"></ion-icon>
     </ion-fab-button>
   </ion-fab>
+  }
 </ion-content>
