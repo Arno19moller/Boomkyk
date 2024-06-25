@@ -46,45 +46,30 @@
 
     <ion-card>
       @if (infoSegment.value == 'overview') {
-      <ng-container
-        *ngTemplateOutlet="imageSwiper; context: { images: overviewImages }"
-      >
-      </ng-container>
+        <ng-container *ngTemplateOutlet="imageSwiper; context: { images: overviewImages }"> </ng-container>
       } @else if (infoSegment.value === 'leaves') {
-      <ng-container
-        *ngTemplateOutlet="imageSwiper; context: { images: leafImages }"
-      >
-      </ng-container>
-      }@else if (infoSegment.value === 'bark') {
-      <ng-container
-        *ngTemplateOutlet="imageSwiper; context: { images: barkImages }"
-      >
-      </ng-container>
+        <ng-container *ngTemplateOutlet="imageSwiper; context: { images: leafImages }"> </ng-container>
+      } @else if (infoSegment.value === 'bark') {
+        <ng-container *ngTemplateOutlet="imageSwiper; context: { images: barkImages }"> </ng-container>
       } @else if (infoSegment.value === 'fruit') {
-      <ng-container
-        *ngTemplateOutlet="imageSwiper; context: { images: fruitImages }"
-      >
-      </ng-container>
+        <ng-container *ngTemplateOutlet="imageSwiper; context: { images: fruitImages }"> </ng-container>
       } @else if (infoSegment.value === 'flower') {
-      <ng-container
-        *ngTemplateOutlet="imageSwiper; context: { images: flowerImages }"
-      >
-      </ng-container>
+        <ng-container *ngTemplateOutlet="imageSwiper; context: { images: flowerImages }"> </ng-container>
       }
     </ion-card>
 
     <ion-card>
       <ion-card-content>
         @if (infoSegment.value == 'overview') {
-        <p [innerHTML]="overviewDescription"></p>
+          <p [innerHTML]="overviewDescription"></p>
         } @else if (infoSegment.value === 'leaves') {
-        <p [innerHTML]="leafDescription"></p>
-        }@else if (infoSegment.value === 'bark') {
-        <p [innerHTML]="barkDescription"></p>
+          <p [innerHTML]="leafDescription"></p>
+        } @else if (infoSegment.value === 'bark') {
+          <p [innerHTML]="barkDescription"></p>
         } @else if (infoSegment.value === 'fruit') {
-        <p [innerHTML]="fruitDescription"></p>
+          <p [innerHTML]="fruitDescription"></p>
         } @else if (infoSegment.value === 'flower') {
-        <p [innerHTML]="flowerDescription"></p>
+          <p [innerHTML]="flowerDescription"></p>
         }
       </ion-card-content>
     </ion-card>
@@ -94,23 +79,24 @@
 <ng-template #imageSwiper let-images="images">
   <swiper-container>
     @for (image of images; track $index) {
-    <swiper-slide>
-      <img
-        class="tree-image"
-        [src]="
-          image.webviewPath !== ''
-            ? image.webviewPath
-            : 'https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg'
-        "
-      />
-    </swiper-slide>
-    } @if(images.length === 0){
-    <swiper-slide>
-      <img
-        class="tree-image"
-        src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
-      />
-    </swiper-slide>
+      <swiper-slide>
+        <img
+          class="tree-image"
+          [src]="
+            image.webviewPath !== ''
+              ? image.webviewPath
+              : 'https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg'
+          "
+        />
+      </swiper-slide>
+    }
+    @if (images.length === 0) {
+      <swiper-slide>
+        <img
+          class="tree-image"
+          src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
+        />
+      </swiper-slide>
     }
   </swiper-container>
 </ng-template>

@@ -22,7 +22,10 @@ export class DatabaseService {
   private selectedTreeGroup: Tree | undefined = undefined; // used when navigating back
   private platform: Platform;
 
-  constructor(platform: Platform, private storage: Storage) {
+  constructor(
+    platform: Platform,
+    private storage: Storage,
+  ) {
     this.platform = platform;
     this.isWebPlatform = !this.platform.is('hybrid');
     this.initialiseStorage();
@@ -56,9 +59,7 @@ export class DatabaseService {
   async getSelectedTree(id?: string): Promise<Tree | undefined> {
     const trees = await this.getTrees();
 
-    const tree = trees.find(
-      (x) => x.id['value'] === (id ?? this.selectedTreeGroup?.id['value'])
-    );
+    const tree = trees.find((x) => x.id['value'] === (id ?? this.selectedTreeGroup?.id['value']));
 
     if (this.isWebPlatform && tree) {
       await this.updateImagePaths(tree);
@@ -89,15 +90,28 @@ export class DatabaseService {
     return tree;
   }
 
-  async getTreesList(type: TreeType, groupId?: string): Promise<Tree[]> {
+  async getTreesList(type: TreeType, id?: string): Promise<Tree[]> {
     let trees = await this.getTrees();
 
-    trees = trees.filter(
-      (x) =>
-        x.type == type &&
-        x.groupId !== undefined &&
-        x.groupId['value'] === (groupId ?? this.selectedTreeGroup?.id['value'])
-    );
+    // Get all trees linked to Nursery & trees not linked to a parent
+    if (await this.isNursery(id ?? '')) {
+      trees = trees.filter(
+        (x) =>
+          (x.type == type &&
+            x.groupId !== undefined &&
+            x.groupId['value'] === (id ?? this.selectedTreeGroup?.id['value'])) ||
+          (x.type !== TreeType.Family && x.groupId == undefined && x.id['value'] !== id),
+      );
+    }
+    // Get all trees that match the specified type and groupId
+    else {
+      trees = trees.filter(
+        (x) =>
+          x.type == type &&
+          x.groupId !== undefined &&
+          x.groupId['value'] === (id ?? this.selectedTreeGroup?.id['value']),
+      );
+    }
 
     if (this.isWebPlatform) {
       for (let tree of trees) {
@@ -181,11 +195,7 @@ export class DatabaseService {
     let index = trees.findIndex((x) => x.id['value'] === deleteTreeId);
 
     if (trees[index].type === TreeType.Family) {
-      let childTrees = trees.filter(
-        (x) =>
-          x.groupId != undefined &&
-          x.groupId['value'] === trees[index].id['value']
-      );
+      let childTrees = trees.filter((x) => x.groupId != undefined && x.groupId['value'] === trees[index].id['value']);
 
       // remove child trees from storage list
       this.deleteChildTrees(trees, childTrees);
@@ -201,16 +211,12 @@ export class DatabaseService {
 
   deleteChildTrees(trees: Tree[], childTrees: Tree[]): void {
     childTrees.map(async (tree) => {
-      const subSubTrees = trees.filter(
-        (x) => x.groupId != undefined && x.groupId['value'] === tree.id['value']
-      );
+      const subSubTrees = trees.filter((x) => x.groupId != undefined && x.groupId['value'] === tree.id['value']);
       if (subSubTrees?.length > 0) {
         this.deleteChildTrees(trees, subSubTrees);
       }
 
-      let childIndex = trees.findIndex(
-        (x) => x.id['value'] === tree.id['value']
-      );
+      let childIndex = trees.findIndex((x) => x.id['value'] === tree.id['value']);
       trees.splice(childIndex, 1);
 
       // Delete all tree images
@@ -221,14 +227,18 @@ export class DatabaseService {
   private async deletePicture(photos: BoomkykPhoto[]) {
     for (let i = 0; i < photos.length; i++) {
       // delete photo file from filesystem
-      const filename = photos[i].filepath.substring(
-        photos[i].filepath.lastIndexOf('/') + 1
-      );
+      const filename = photos[i].filepath.substring(photos[i].filepath.lastIndexOf('/') + 1);
 
       await Filesystem.deleteFile({
         path: filename,
         directory: Directory.Data,
       });
     }
+  }
+
+  private async isNursery(id: string): Promise<boolean> {
+    const trees = await this.getTrees();
+    const tree = trees.find((t) => t.id['value'] === id);
+    return tree?.title === 'Nursery';
   }
 }

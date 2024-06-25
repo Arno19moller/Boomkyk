@@ -1,10 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import {
-  ActionSheetController,
-  AlertController,
-  ModalController,
-} from '@ionic/angular';
+import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
 import {
   IonActionSheet,
   IonButtons,
@@ -85,14 +81,11 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.nursery = await this.databaseService.getTreeByName('Nursery');
-    console.log(this.nursery);
 
     this.activeRoute.url.pipe(takeUntil(this.destroy$)).subscribe({
       next: async () => {
         this.databaseService.startLoading('Loading Tree Groups');
-        this.initialiseLongPress(
-          await this.databaseService.getTreesByType(TreeType.Family)
-        );
+        this.initialiseLongPress(await this.databaseService.getTreesByType(TreeType.Family));
         this.databaseService.stopLoading();
       },
     });
@@ -125,9 +118,7 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
   async cardClicked(id: string | undefined | null): Promise<void> {
     this.selectedTreeId = id ?? '';
     await this.actionsServie.openEditOrDeleteModal(this.selectedTreeId);
-    this.initialiseLongPress(
-      await this.databaseService.getTreesByType(TreeType.Family)
-    );
+    this.initialiseLongPress(await this.databaseService.getTreesByType(TreeType.Family));
   }
 
   // getDescription(tree: Tree): string {
@@ -138,16 +129,12 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
     if (filterString) {
       filterString = filterString.toLowerCase();
       this.initialiseLongPress(
-        (await this.databaseService.getTreesByType(TreeType.Family)).filter(
-          (x) => x.title.toLowerCase().includes(filterString)
+        (await this.databaseService.getTreesByType(TreeType.Family)).filter((x) =>
+          x.title.toLowerCase().includes(filterString)
         )
       );
     } else {
-      this.initialiseLongPress(
-        (this.groups = await this.databaseService.getTreesByType(
-          TreeType.Family
-        ))
-      );
+      this.initialiseLongPress((this.groups = await this.databaseService.getTreesByType(TreeType.Family)));
     }
   }
 

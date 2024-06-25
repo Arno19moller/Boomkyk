@@ -1,11 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  Camera,
-  CameraResultType,
-  CameraSource,
-  GalleryPhoto,
-  Photo,
-} from '@capacitor/camera';
+import { Camera, CameraResultType, CameraSource, GalleryPhoto, Photo } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Platform } from '@ionic/angular';
@@ -20,14 +14,14 @@ import { DatabaseService } from './database.service';
 export class PhotoService {
   private platform: Platform;
 
-  constructor(platform: Platform, private databaseService: DatabaseService) {
+  constructor(
+    platform: Platform,
+    private databaseService: DatabaseService,
+  ) {
     this.platform = platform;
   }
 
-  public async addMultipleImages(
-    photos: BoomkykPhoto[],
-    type?: ImageType
-  ): Promise<void> {
+  public async addMultipleImages(photos: BoomkykPhoto[], type?: ImageType): Promise<void> {
     const images = await Camera.pickImages({
       quality: 60,
       limit: 10,
@@ -41,16 +35,13 @@ export class PhotoService {
         images.photos.map(async (image) => {
           const savedImageFile = await this.savePicture(image, type);
           photos.unshift(savedImageFile);
-        })
+        }),
       );
       this.databaseService.stopLoading();
     }
   }
 
-  public async addSingleImage(
-    photos: BoomkykPhoto[],
-    type?: ImageType
-  ): Promise<void> {
+  public async addSingleImage(photos: BoomkykPhoto[], type?: ImageType): Promise<void> {
     // Take a photo
     const capturedPhoto = await Camera.getPhoto({
       resultType: CameraResultType.Uri,
@@ -68,10 +59,7 @@ export class PhotoService {
     }
   }
 
-  private async savePicture(
-    photo: Photo | GalleryPhoto,
-    type?: ImageType
-  ): Promise<BoomkykPhoto> {
+  private async savePicture(photo: Photo | GalleryPhoto, type?: ImageType): Promise<BoomkykPhoto> {
     const base64Data = await this.readAsBase64(photo);
 
     const fileName = Date.now() + '.jpeg';
@@ -134,9 +122,7 @@ export class PhotoService {
     photos.splice(position, 1);
 
     // delete photo file from filesystem
-    const filename = photo.filepath.substring(
-      photo.filepath.lastIndexOf('/') + 1
-    );
+    const filename = photo.filepath.substring(photo.filepath.lastIndexOf('/') + 1);
 
     await Filesystem.deleteFile({
       path: filename,

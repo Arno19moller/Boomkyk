@@ -1,12 +1,5 @@
 import { LocationStrategy } from '@angular/common';
-import {
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   IonActionSheet,
@@ -104,13 +97,8 @@ export class TreeListComponent implements OnInit, OnDestroy {
         this.currentTreeType = param['type'] as TreeType;
 
         await this.databaseService.setSelectedTreeGroup(param['id']);
-        this.treesList = await this.databaseService.getTreesList(
-          param['type'] as TreeType,
-          param['id']
-        );
-        this.title =
-          (await this.databaseService.getSelectedTree(param['id']))?.title ??
-          'Not Found';
+        this.treesList = await this.databaseService.getTreesList(param['type'] as TreeType, param['id']);
+        this.title = (await this.databaseService.getSelectedTree(param['id']))?.title ?? 'Not Found';
 
         this.setLongPress();
         this.databaseService.stopLoading();
@@ -121,17 +109,11 @@ export class TreeListComponent implements OnInit, OnDestroy {
   async filterTrees(filterString: any): Promise<void> {
     if (filterString) {
       filterString = filterString.toLowerCase();
-      this.treesList = (
-        await this.databaseService.getTreesList(
-          TreeType.Genus,
-          this.treeGroupId
-        )
-      ).filter((x) => x.title.toLowerCase().includes(filterString));
-    } else {
-      this.treesList = await this.databaseService.getTreesList(
-        TreeType.Genus,
-        this.treeGroupId
+      this.treesList = (await this.databaseService.getTreesList(TreeType.Genus, this.treeGroupId)).filter((x) =>
+        x.title.toLowerCase().includes(filterString)
       );
+    } else {
+      this.treesList = await this.databaseService.getTreesList(TreeType.Genus, this.treeGroupId);
     }
     this.setLongPress();
   }
@@ -157,10 +139,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
 
   async cardClicked(id: string | undefined | null): Promise<void> {
     await this.actionsService.openEditOrDeleteModal(id ?? '');
-    this.treesList = await this.databaseService.getTreesList(
-      TreeType.Genus,
-      this.treeGroupId
-    );
+    this.treesList = await this.databaseService.getTreesList(TreeType.Genus, this.treeGroupId);
   }
 
   createNewClicked(): void {
@@ -169,8 +148,10 @@ export class TreeListComponent implements OnInit, OnDestroy {
   }
 
   getImage(tree: Tree): BoomkykPhoto | undefined {
-    const images = tree.images!.filter((x) => x.type === ImageType.Overview);
-    if (images.length > 0) return images[0];
+    if (tree.images !== undefined && tree.images.length > 0) {
+      const images = tree.images.filter((x) => x.type === ImageType.Overview);
+      if (images.length > 0) return images[0];
+    }
     return undefined;
   }
 

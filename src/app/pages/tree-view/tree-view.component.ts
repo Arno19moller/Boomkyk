@@ -1,10 +1,5 @@
 import { CommonModule, LocationStrategy } from '@angular/common';
-import {
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
   IonButton,
@@ -82,7 +77,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     public databaseService: DatabaseService,
     private actionsService: ActionsService,
-    private locationStrategy: LocationStrategy
+    private locationStrategy: LocationStrategy,
   ) {
     register();
   }
@@ -103,9 +98,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   }
 
   async deleteClicked(): Promise<void> {
-    const val = await this.actionsService.openDeleteConfirmation(
-      this.tree?.id['value']
-    );
+    const val = await this.actionsService.openDeleteConfirmation(this.tree?.id['value']);
     if (val === 'confirm') {
       this.locationStrategy.back();
     }
@@ -114,22 +107,14 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   private async loadTree(id: string): Promise<void> {
     this.tree = await this.databaseService.getSelectedTree(id);
 
-    this.overviewImages =
-      this.tree?.images!.filter((x) => x.type === ImageType.Overview) ?? [];
-    this.leafImages =
-      this.tree?.images!.filter((x) => x.type === ImageType.Leaves) ?? [];
-    this.barkImages =
-      this.tree?.images!.filter((x) => x.type === ImageType.Bark) ?? [];
-    this.fruitImages =
-      this.tree?.images!.filter((x) => x.type === ImageType.Fruit) ?? [];
-    this.flowerImages =
-      this.tree?.images!.filter((x) => x.type === ImageType.Flower) ?? [];
+    this.overviewImages = this.tree?.images!.filter((x) => x.type === ImageType.Overview) ?? [];
+    this.leafImages = this.tree?.images!.filter((x) => x.type === ImageType.Leaves) ?? [];
+    this.barkImages = this.tree?.images!.filter((x) => x.type === ImageType.Bark) ?? [];
+    this.fruitImages = this.tree?.images!.filter((x) => x.type === ImageType.Fruit) ?? [];
+    this.flowerImages = this.tree?.images!.filter((x) => x.type === ImageType.Flower) ?? [];
 
     if (this.tree?.treeInfo) {
-      this.overviewDescription = this.tree.treeInfo.overview.replace(
-        /\n/g,
-        '<br>'
-      );
+      this.overviewDescription = this.tree.treeInfo.overview.replace(/\n/g, '<br>');
       this.leafDescription = this.tree.treeInfo.leaves.replace(/\n/g, '<br>');
       this.barkDescription = this.tree.treeInfo.bark.replace(/\n/g, '<br>');
       this.fruitDescription = this.tree.treeInfo.fruit.replace(/\n/g, '<br>');

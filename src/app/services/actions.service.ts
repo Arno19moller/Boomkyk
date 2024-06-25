@@ -65,7 +65,7 @@ export class ActionsService {
     private databaseService: DatabaseService,
     private alertController: AlertController,
     private actionSheetCtrl: ActionSheetController,
-    private router: Router
+    private router: Router,
   ) {}
 
   public async openEditOrDeleteModal(id: string): Promise<void> {
@@ -80,16 +80,12 @@ export class ActionsService {
   }
 
   public async navigateToUpdate(id?: string): Promise<void> {
-    this.selectedTree = await this.databaseService.getSelectedTree(
-      id ?? this.selectedTreeId
-    );
+    this.selectedTree = await this.databaseService.getSelectedTree(id ?? this.selectedTreeId);
     this.selectedTreeType = this.selectedTree?.type;
     this.router.navigate(['/create']);
   }
 
-  public async openDeleteConfirmation(
-    id?: string
-  ): Promise<string | undefined> {
+  public async openDeleteConfirmation(id?: string): Promise<string | undefined> {
     this.selectedTreeId = id ?? this.selectedTreeId;
 
     const trees = await this.databaseService.getTrees();
@@ -98,10 +94,7 @@ export class ActionsService {
     const alert = await this.alertController.create({
       header: 'Delete',
       subHeader: `Are you sure you want to delete ${trees[index].title}`,
-      message:
-        trees[index].type === TreeType.Family
-          ? 'Deleting a group also deletes all related trees'
-          : '',
+      message: trees[index].type === TreeType.Family ? 'Deleting a group also deletes all related trees' : '',
       buttons: this.deleteAlertButtons,
     });
 

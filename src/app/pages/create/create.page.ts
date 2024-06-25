@@ -87,7 +87,7 @@ export class Tab2Page implements OnInit, OnDestroy {
     public actionSheetController: ActionSheetController,
     private locationStrategy: LocationStrategy,
     private actionsService: ActionsService
-  ) {}
+  ) { }
 
   async ngOnInit(): Promise<void> {
     this.newTree = this.actionsService.selectedTree ?? {

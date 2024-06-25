@@ -1,10 +1,5 @@
 import { Component } from '@angular/core';
-import {
-  IonApp,
-  IonLoading,
-  IonRouterOutlet,
-  IonToast,
-} from '@ionic/angular/standalone';
+import { IonApp, IonLoading, IonRouterOutlet, IonToast } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   addCircleOutline,
