@@ -77,17 +77,19 @@
 </ion-content>
 
 <ng-template #imageSwiper let-images="images">
-  <swiper-container>
+  <swiper-container #swiper [pagination]="true" [zoom]="true" [minZoom]="1">
     @for (image of images; track $index) {
       <swiper-slide>
-        <img
-          class="tree-image"
-          [src]="
-            image.webviewPath !== ''
-              ? image.webviewPath
-              : 'https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg'
-          "
-        />
+        <div class="swiper-zoom-container">
+          <img
+            class="tree-image"
+            [src]="
+              image.webviewPath !== ''
+                ? image.webviewPath
+                : 'https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg'
+            "
+          />
+        </div>
       </swiper-slide>
     }
     @if (images.length === 0) {

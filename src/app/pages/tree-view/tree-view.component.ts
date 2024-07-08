@@ -29,6 +29,7 @@ import { ActionsService } from 'src/app/services/actions.service';
 import { DatabaseService } from 'src/app/services/database.service';
 import { register } from 'swiper/element/bundle';
 
+register();
 @Component({
   selector: 'app-tree-view',
   templateUrl: './tree-view.component.html',
@@ -78,9 +79,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
     public databaseService: DatabaseService,
     private actionsService: ActionsService,
     private locationStrategy: LocationStrategy,
-  ) {
-    register();
-  }
+  ) {}
 
   ngOnInit() {
     this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe({
