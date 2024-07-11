@@ -36,7 +36,7 @@
   </ion-header>
 
   <ion-content>
-    <ion-segment [scrollable]="true" value="overview" #infoSegment>
+    <ion-segment [scrollable]="true" value="overview" #infoSegment (ionChange)="indexChanged()">
       <ion-segment-button value="overview">Overview</ion-segment-button>
       <ion-segment-button value="leaves">Leaves</ion-segment-button>
       <ion-segment-button value="bark">Bark</ion-segment-button>
@@ -80,8 +80,8 @@
   <swiper-container #swiper [pagination]="true" [zoom]="true" [minZoom]="1">
     @for (image of images; track $index) {
       <swiper-slide>
-        <div class="swiper-zoom-container">
-          <img
+        <div style="height: 100%; width: 100%; overflow: auto;">
+          <ion-img
             class="tree-image"
             [src]="
               image.webviewPath !== ''

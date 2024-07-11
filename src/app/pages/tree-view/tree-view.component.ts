@@ -1,5 +1,5 @@
 import { CommonModule, LocationStrategy } from '@angular/common';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnDestroy, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
   IonButton,
@@ -60,7 +60,11 @@ register();
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TreeViewComponent implements OnInit, OnDestroy {
+  // @ViewChild('image') image: ElementRef | undefined = undefined;
+  @ViewChild('image', { read: ElementRef }) images: ElementRef<HTMLImageElement>[] | undefined;
+
   private destroy$ = new Subject();
+  private zoomLvl: number = 1;
 
   public tree: Tree | undefined = undefined;
   public overviewImages: BoomkykPhoto[] = [];
@@ -119,6 +123,52 @@ export class TreeViewComponent implements OnInit, OnDestroy {
       this.fruitDescription = this.tree.treeInfo.fruit.replace(/\n/g, '<br>');
       this.flowerDescription = this.tree.treeInfo.flower.replace(/\n/g, '<br>');
     }
+
+    this.initialiseDoubleClick();
+  }
+
+  indexChanged(): void {
+    this.initialiseDoubleClick();
+  }
+
+  initialiseDoubleClick(): void {
+    setTimeout(() => {
+      const imageElements = document.querySelectorAll('ion-img');
+
+      for (let i = 0; i < imageElements.length; i++) {
+        const hasDoubletap = imageElements[i]!.getAttribute('doubletap');
+
+        // Only assign long press when new
+        if (hasDoubletap == null) {
+          imageElements[i]!.setAttribute('doubletap', 'true');
+          imageElements[i]!.setAttribute('height', `${imageElements[i]!.parentElement?.clientHeight ?? 0}`);
+          imageElements[i]!.setAttribute('width', `${imageElements[i]!.parentElement?.clientWidth ?? 0}`);
+
+          const hammer = new Hammer(imageElements[i]!);
+
+          hammer.get('doubletap').set({ time: 500 });
+          hammer.on('doubletap', async () => {
+            return this.zoomImage(imageElements[i]);
+          });
+        }
+      }
+    }, 200);
+  }
+
+  private zoomImage(image: HTMLIonImgElement) {
+    image.style.setProperty('transform', this.getNewTransform());
+
+    const paddingVal = this.zoomLvl === 1.5 ? 1 : 2;
+    const height = image.getAttribute('height') ?? 0;
+    const width = image.getAttribute('width') ?? 0;
+
+    image.parentElement?.style.setProperty('padding-left', this.zoomLvl === 1 ? '0' : `${(+width / 6) * paddingVal}px`);
+    image.parentElement?.style.setProperty('padding-top', this.zoomLvl === 1 ? '0' : `${(+height / 6) * paddingVal}px`);
+  }
+
+  private getNewTransform() {
+    this.zoomLvl = this.zoomLvl >= 2 ? 1 : this.zoomLvl + 0.5;
+    return `scale(${this.zoomLvl})`;
   }
 
   backClicked(): void {
