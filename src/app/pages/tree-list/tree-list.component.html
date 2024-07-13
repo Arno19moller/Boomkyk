@@ -47,10 +47,7 @@
             <ion-card [attr.id]="tree.id['value']" [routerLink]="['/view', { id: tree.id['value'] }]" style="margin: 0">
               <img
                 class="tree-image"
-                [src]="
-                  getImage(tree)?.webviewPath ??
-                  'https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg'
-                "
+                [src]="getImage(tree)?.webviewPath ?? '../../../assets//images/image-not-found.jpg'"
               />
               <ion-card-header>
                 <ion-card-title>

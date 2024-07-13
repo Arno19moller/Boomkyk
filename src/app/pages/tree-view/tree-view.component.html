@@ -114,21 +114,14 @@
         <div style="height: 100%; width: 100%; overflow: auto">
           <ion-img
             class="tree-image"
-            [src]="
-              image.webviewPath !== ''
-                ? image.webviewPath
-                : 'https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg'
-            "
+            [src]="image.webviewPath !== '' ? image.webviewPath : '../../../assets/images/image-not-found.jpg'"
           />
         </div>
       </swiper-slide>
     }
     @if (images.length === 0) {
       <swiper-slide>
-        <img
-          class="tree-image"
-          src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
-        />
+        <img class="tree-image" src="../../../assets/images/image-not-found.jpg" />
       </swiper-slide>
     }
   </swiper-container>
