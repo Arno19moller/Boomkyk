@@ -10,8 +10,6 @@ import { DatabaseService } from './database.service';
 })
 export class ActionsService {
   public selectedTree: Tree | undefined = undefined;
-  public selectedTreeType: TreeType | undefined = undefined;
-
   private selectedTreeId: string = '';
   private deleteAlertButtons = [
     {
@@ -81,7 +79,6 @@ export class ActionsService {
 
   public async navigateToUpdate(id?: string): Promise<void> {
     this.selectedTree = await this.databaseService.getSelectedTree(id ?? this.selectedTreeId);
-    this.selectedTreeType = this.selectedTree?.type;
     this.router.navigate(['/create']);
   }
 

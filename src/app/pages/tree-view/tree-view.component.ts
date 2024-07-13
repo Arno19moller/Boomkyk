@@ -178,7 +178,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   }
 
   private getNewTransform() {
-    this.zoomLvl = this.zoomLvl >= 2 ? 1 : this.zoomLvl + 0.5;
+    this.zoomLvl = this.zoomLvl >= 3 ? 1 : this.zoomLvl + 1;
     return `scale(${this.zoomLvl})`;
   }
 

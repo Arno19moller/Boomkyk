@@ -144,7 +144,6 @@ export class TreeListComponent implements OnInit, OnDestroy {
   }
 
   createNewClicked(): void {
-    this.actionsService.selectedTreeType = this.currentTreeType;
     this.router.navigate(['/create']);
   }
 

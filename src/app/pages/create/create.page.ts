@@ -104,23 +104,17 @@ export class Tab2Page implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    this.isEdit = this.actionsService.selectedTree != undefined;
     this.newTree = this.actionsService.selectedTree ?? {
       id: Guid.create(),
       images: [],
       title: '',
-      type: this.actionsService.selectedTreeType ?? TreeType.Family,
+      type: TreeType.Species,
     };
-
-    this.isEdit = this.actionsService.selectedTree != undefined;
-
-    if (this.actionsService.selectedTreeType !== TreeType.Family) {
-      this.typeSelected(this.newTree.type);
-    }
-
-    if (this.actionsService.selectedTreeType === TreeType.Species)
-      setTimeout(() => {
-        this.infoTypeChanged('overview');
-      }, 100);
+    this.typeSelected(TreeType.Species);
+    setTimeout(() => {
+      this.infoTypeChanged('overview');
+    }, 100);
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -346,7 +340,6 @@ export class Tab2Page implements OnInit, AfterViewInit, OnDestroy {
     this.destroy$.next(null);
     this.destroy$.complete();
     this.actionsService.selectedTree = undefined;
-    this.actionsService.selectedTreeType = undefined;
 
     await this.recordingService.saveTreeRecordings(this.newTree!);
   }

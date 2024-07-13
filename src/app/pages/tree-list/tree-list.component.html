@@ -44,7 +44,7 @@
       @for (tree of treesList; track $index) {
         <ion-col size="6">
           @if (currentTreeType == TreeType.Species) {
-            <ion-card [attr.id]="tree.id['value']" [routerLink]="['/view', { id: tree.id['value'] }]">
+            <ion-card [attr.id]="tree.id['value']" [routerLink]="['/view', { id: tree.id['value'] }]" style="margin: 0">
               <img
                 class="tree-image"
                 [src]="
@@ -53,7 +53,9 @@
                 "
               />
               <ion-card-header>
-                <ion-card-title>{{ tree.title }}</ion-card-title>
+                <ion-card-title>
+                  <h5>{{ tree.title }}</h5>
+                </ion-card-title>
               </ion-card-header>
             </ion-card>
           } @else {
