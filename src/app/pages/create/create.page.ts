@@ -1,7 +1,18 @@
 import { LocationStrategy } from '@angular/common';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ActionSheetController } from '@ionic/angular';
 import {
+  GestureController,
+  IonButton,
   IonCol,
   IonContent,
   IonFab,
@@ -23,6 +34,8 @@ import {
 } from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
 import { Subject } from 'rxjs';
+import { VoiceNote } from 'src/app/models/voice-notes.interface';
+import { RecordingService } from 'src/app/services/recording.service';
 import { ImageType } from '../../models/image-type.enum';
 import { BoomkykPhoto } from '../../models/photo.interface';
 import { TreeType } from '../../models/tree-type.enum';
@@ -44,6 +57,7 @@ import { TreeFamiliesComponent } from '../tree-families/tree-families.component'
     IonContent,
     TreeFamiliesComponent,
     IonFabButton,
+    IonButton,
     IonFab,
     IonIcon,
     IonGrid,
@@ -60,8 +74,9 @@ import { TreeFamiliesComponent } from '../tree-families/tree-families.component'
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class Tab2Page implements OnInit, OnDestroy {
+export class Tab2Page implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('ionInputEl') ionInputEl!: IonInput;
+  @ViewChild('recordBtn', { read: ElementRef }) recordBtn!: ElementRef;
 
   private destroy$ = new Subject();
 
@@ -75,12 +90,17 @@ export class Tab2Page implements OnInit, OnDestroy {
   public treeGroups: Tree[] = [];
   public errorMessage: string = '';
 
+  // voice recording
+  duration: number = 0;
+
   constructor(
     public photoService: PhotoService,
     private databaseService: DatabaseService,
     public actionSheetController: ActionSheetController,
-    private locationStrategy: LocationStrategy,
     private actionsService: ActionsService,
+    public recordingService: RecordingService,
+    private locationStrategy: LocationStrategy,
+    private gestureCtrl: GestureController,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -103,8 +123,58 @@ export class Tab2Page implements OnInit, OnDestroy {
       }, 100);
   }
 
+  async ngAfterViewInit(): Promise<void> {
+    await this.recordingService.checkAndRequestPermission();
+    await this.recordingService.loadFiles(this.newTree);
+    const longpress = this.gestureCtrl.create(
+      {
+        el: this.recordBtn.nativeElement,
+        threshold: 0,
+        gestureName: 'long-press',
+        onStart: (ev) => {
+          Haptics.impact({ style: ImpactStyle.Light });
+          this.recordingService.startRecording();
+          this.calculateDuration();
+        },
+        onEnd: (ev) => {
+          Haptics.impact({ style: ImpactStyle.Light });
+          const treeName = this.newTree?.title === '' ? undefined : this.newTree?.title;
+          this.recordingService.stopRecording(this.selectedImageType);
+        },
+      },
+      true,
+    );
+    longpress.enable();
+  }
+
+  calculateDuration(): void {
+    if (!this.recordBtn) {
+      this.duration = 0;
+      return;
+    }
+
+    this.duration++;
+
+    setTimeout(() => {
+      this.calculateDuration();
+    }, 1000);
+  }
+
   backClicked(): void {
     this.locationStrategy.back();
+  }
+
+  async playNote(note: VoiceNote) {
+    if (note.isPlaying) {
+      this.recordingService.pausePlayback();
+      note.isPlaying = false;
+      return;
+    }
+    await this.recordingService.playFile(note);
+  }
+
+  async deleteNote(note: VoiceNote) {
+    await this.recordingService.deleteRecording(note);
   }
 
   async addPhotoToGallery() {
@@ -250,10 +320,12 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
+  async ngOnDestroy() {
     this.destroy$.next(null);
     this.destroy$.complete();
     this.actionsService.selectedTree = undefined;
     this.actionsService.selectedTreeType = undefined;
+
+    await this.recordingService.saveTreeRecordings(this.newTree!);
   }
 }

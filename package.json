@@ -36,6 +36,7 @@
     "@ionic/pwa-elements": "^3.3.0",
     "@ionic/storage-angular": "^4.0.0",
     "@types/hammerjs": "^2.0.45",
+    "capacitor-voice-recorder": "^5.0.0",
     "guid-typescript": "^1.0.9",
     "hammerjs": "^2.0.8",
     "ionicons": "^7.4.0",

@@ -2,6 +2,7 @@ import { CommonModule, LocationStrategy } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
+  GestureController,
   IonButton,
   IonButtons,
   IonCard,
@@ -11,10 +12,13 @@ import {
   IonCardTitle,
   IonCol,
   IonContent,
+  IonFooter,
   IonGrid,
   IonHeader,
   IonIcon,
+  IonItem,
   IonLabel,
+  IonList,
   IonRow,
   IonSegment,
   IonSegmentButton,
@@ -25,8 +29,10 @@ import { Subject, takeUntil } from 'rxjs';
 import { ImageType } from 'src/app/models/image-type.enum';
 import { BoomkykPhoto } from 'src/app/models/photo.interface';
 import { Tree } from 'src/app/models/tree.interface';
+import { VoiceNote } from 'src/app/models/voice-notes.interface';
 import { ActionsService } from 'src/app/services/actions.service';
 import { DatabaseService } from 'src/app/services/database.service';
+import { RecordingService } from 'src/app/services/recording.service';
 import { register } from 'swiper/element/bundle';
 
 register();
@@ -41,6 +47,7 @@ register();
     IonTitle,
     IonContent,
     IonIcon,
+    IonFooter,
     IonButton,
     IonButtons,
     IonGrid,
@@ -52,6 +59,8 @@ register();
     IonCardSubtitle,
     IonCardContent,
     IonLabel,
+    IonList,
+    IonItem,
     IonSegment,
     IonSegmentButton,
     RouterModule,
@@ -60,7 +69,6 @@ register();
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class TreeViewComponent implements OnInit, OnDestroy {
-  // @ViewChild('image') image: ElementRef | undefined = undefined;
   @ViewChild('image', { read: ElementRef }) images: ElementRef<HTMLImageElement>[] | undefined;
 
   private destroy$ = new Subject();
@@ -77,12 +85,15 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   public barkDescription: string = '';
   public fruitDescription: string = '';
   public flowerDescription: string = '';
+  public Type = ImageType;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     public databaseService: DatabaseService,
     private actionsService: ActionsService,
     private locationStrategy: LocationStrategy,
+    private gestureCtrl: GestureController,
+    public recordingService: RecordingService,
   ) {}
 
   ngOnInit() {
@@ -169,6 +180,23 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   private getNewTransform() {
     this.zoomLvl = this.zoomLvl >= 2 ? 1 : this.zoomLvl + 0.5;
     return `scale(${this.zoomLvl})`;
+  }
+
+  async playNote(note: VoiceNote) {
+    if (note.isPlaying) {
+      this.recordingService.pausePlayback();
+      note.isPlaying = false;
+      return;
+    }
+    await this.recordingService.playFile(note);
+  }
+
+  async deleteNote(note: VoiceNote) {
+    if (this.tree?.voiceNotes !== undefined) {
+      const index = this.tree?.voiceNotes?.findIndex((n: VoiceNote) => n.recordingName === note.recordingName);
+      this.tree?.voiceNotes?.splice(index, 1);
+      this.databaseService.updateTree(this.tree);
+    }
   }
 
   backClicked(): void {

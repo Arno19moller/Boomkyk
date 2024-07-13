@@ -23,7 +23,7 @@
 
   @if(newTree){
   <ion-card>
-    <ion-list class="form-container">
+    <ion-list class="form-container" lines="none">
       @if(!isEdit){
       <ion-item>
         <ion-select
@@ -97,18 +97,17 @@
           </ion-col>
         </ion-row>
         <ion-row>
-          @if(individualImages.length === 0){
+          @for (image of individualImages; track $index) {
           <ion-col size="3">
-            <ion-img
-              src="https://static.vecteezy.com/system/resources/thumbnails/005/337/799/large/icon-image-not-found-free-vector.jpg"
-              (click)="addPhotoToGallery()"
-            ></ion-img>
-          </ion-col>
-          } @for (image of individualImages; track $index) {
-          <ion-col size="3">
+            <ion-button fill="clear" class="delete-image-button" (click)="showDeleteImageActionSheet(image)">
+              <ion-icon name="close" slot="icon-only"></ion-icon>
+            </ion-button>
             <ion-img [src]="image.webviewPath" (click)="showDeleteImageActionSheet(image)"></ion-img>
           </ion-col>
           }
+          <ion-col size="3">
+            <ion-img src="../../../assets/images/addImage.png" (click)="addPhotoToGallery()"></ion-img>
+          </ion-col>
         </ion-row>
       </ion-grid>
 
@@ -123,6 +122,21 @@
           (ionChange)="textInputChanged('individualDescription', $event)"
         ></ion-textarea>
       </ion-item>
+      @for (note of recordingService.storedFileNames; track $index) { @if(note.type === selectedImageType){
+      <ion-item>
+        <ion-button slot="start" fill="clear" (click)="deleteNote(note)">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+        <span>{{note.recordingName}}</span>
+        <ion-button slot="end" fill="clear" (click)="playNote(note)">
+          @if(!note.isPlaying){
+          <ion-icon name="play" slot="icon-only"></ion-icon>
+          } @else{
+          <ion-icon name="pause" slot="icon-only"></ion-icon>
+          }
+        </ion-button>
+      </ion-item>
+      } }
     </ion-list>
   </ion-card>
   }
@@ -130,11 +144,26 @@
   <div class="save-button-container">
     <ion-button shape="round" (click)="onSubmit()">Save</ion-button>
   </div>
-  } @if(newTree != undefined && newTree.type === TreeType.Species){
-  <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-    <ion-fab-button (click)="addPhotoToGallery()">
-      <ion-icon name="camera"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
   }
 </ion-content>
+
+@if(newTree?.type === TreeType.Species){
+<ion-footer>
+  <ion-toolbar>
+    <ion-row class="ion-align-items-center">
+      <ion-col size="10">
+        @if(!recordingService.recording){
+        <span> Press and hold to record </span>
+        } @else{
+        <span> Recording duration: {{duration}} </span>
+        }
+      </ion-col>
+      <ion-col size="2">
+        <ion-button fill="clear" #recordBtn>
+          <ion-icon name="mic" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-toolbar>
+</ion-footer>
+}

@@ -11,6 +11,9 @@ import {
   ellipse,
   image,
   leaf,
+  mic,
+  pause,
+  play,
   square,
   trash,
   triangle,
@@ -38,6 +41,9 @@ export class AppComponent {
       create,
       checkmark,
       addCircleOutline,
+      mic,
+      play,
+      pause,
     });
   }
 }

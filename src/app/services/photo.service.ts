@@ -34,7 +34,7 @@ export class PhotoService {
       await Promise.all(
         images.photos.map(async (image) => {
           const savedImageFile = await this.savePicture(image, type);
-          photos.unshift(savedImageFile);
+          photos.push(savedImageFile);
         }),
       );
       this.databaseService.stopLoading();
@@ -54,7 +54,7 @@ export class PhotoService {
     if (capturedPhoto) {
       this.databaseService.startLoading('Saving Image');
       const savedImageFile = await this.savePicture(capturedPhoto, type);
-      photos.unshift(savedImageFile);
+      photos.push(savedImageFile);
       this.databaseService.stopLoading();
     }
   }

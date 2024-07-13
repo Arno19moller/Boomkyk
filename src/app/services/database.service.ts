@@ -78,6 +78,20 @@ export class DatabaseService {
       return nursery;
     }
 
+    // Add Nursery if not already added
+    if (!trees.some((x) => x.title === 'lostAndFound')) {
+      const nurseryId = trees.find((x) => x.title === 'Nursery')?.id;
+      const lostAndFound: Tree = {
+        id: Guid.create(),
+        groupId: nurseryId,
+        title: 'lostAndFound',
+        type: TreeType.Species,
+        voiceNotes: [],
+        images: [],
+      };
+      await this.addTree(lostAndFound);
+    }
+
     const tree = trees.find((x) => x.title === name);
 
     if (this.isWebPlatform && tree) {
@@ -132,10 +146,13 @@ export class DatabaseService {
   async updateTree(tree: Tree): Promise<void> {
     this.startLoading('Updating Tree');
     const trees = await this.getTrees();
-    let index = trees.findIndex((x) => x.id['value'] === tree.id['value']);
-    trees[index] = tree;
+    const index = trees.findIndex((x) => x.id['value'] === tree.id['value']);
 
-    await this.saveTrees(trees);
+    if (index > -1) {
+      trees[index] = tree;
+      await this.saveTrees(trees);
+    }
+
     this.stopLoading();
   }
 

@@ -71,16 +71,47 @@
         } @else if (infoSegment.value === 'flower') {
           <p [innerHTML]="flowerDescription"></p>
         }
+        <ion-list>
+          @for (note of tree?.voiceNotes; track $index) {
+            @if (infoSegment.value == 'overview' && note.type === Type.Overview) {
+              <ng-container *ngTemplateOutlet="voiceNote; context: { note: note }"> </ng-container>
+            } @else if (infoSegment.value === 'leaves' && note.type === Type.Leaves) {
+              <ng-container *ngTemplateOutlet="voiceNote; context: { note: note }"> </ng-container>
+            } @else if (infoSegment.value === 'bark' && note.type === Type.Bark) {
+              <ng-container *ngTemplateOutlet="voiceNote; context: { note: note }"> </ng-container>
+            } @else if (infoSegment.value === 'fruit' && note.type === Type.Fruit) {
+              <ng-container *ngTemplateOutlet="voiceNote; context: { note: note }"> </ng-container>
+            } @else if (infoSegment.value === 'flower' && note.type === Type.Flower) {
+              <ng-container *ngTemplateOutlet="voiceNote; context: { note: note }"> </ng-container>
+            }
+          }
+        </ion-list>
       </ion-card-content>
     </ion-card>
   </ion-content>
 </ion-content>
 
+<ng-template #voiceNote let-note="note">
+  <ion-item>
+    <ion-button slot="start" fill="clear" (click)="deleteNote(note)">
+      <ion-icon name="trash" slot="icon-only"></ion-icon>
+    </ion-button>
+    <span>{{ note.recordingName }}</span>
+    <ion-button slot="end" fill="clear" (click)="playNote(note)">
+      @if (!note.isPlaying) {
+        <ion-icon name="play" slot="icon-only"></ion-icon>
+      } @else {
+        <ion-icon name="pause" slot="icon-only"></ion-icon>
+      }
+    </ion-button>
+  </ion-item>
+</ng-template>
+
 <ng-template #imageSwiper let-images="images">
   <swiper-container #swiper [pagination]="true" [zoom]="true" [minZoom]="1">
     @for (image of images; track $index) {
       <swiper-slide>
-        <div style="height: 100%; width: 100%; overflow: auto;">
+        <div style="height: 100%; width: 100%; overflow: auto">
           <ion-img
             class="tree-image"
             [src]="
