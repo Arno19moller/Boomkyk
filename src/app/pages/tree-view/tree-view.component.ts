@@ -1,8 +1,8 @@
 import { CommonModule, LocationStrategy } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActionSheetController } from '@ionic/angular';
 import {
-  GestureController,
   IonButton,
   IonButtons,
   IonCard,
@@ -92,7 +92,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
     public databaseService: DatabaseService,
     private actionsService: ActionsService,
     private locationStrategy: LocationStrategy,
-    private gestureCtrl: GestureController,
+    public actionSheetController: ActionSheetController,
     public recordingService: RecordingService,
   ) {}
 
@@ -197,6 +197,28 @@ export class TreeViewComponent implements OnInit, OnDestroy {
       this.tree?.voiceNotes?.splice(index, 1);
       this.databaseService.updateTree(this.tree);
     }
+  }
+
+  public async showDeleteVoiceNoteActionSheet(note: VoiceNote) {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Voice Note',
+      buttons: [
+        {
+          text: 'Delete',
+          role: 'destructive',
+          icon: 'trash',
+          handler: async () => {
+            await this.deleteNote(note);
+          },
+        },
+        {
+          text: 'Cancel',
+          icon: 'close',
+          role: 'cancel',
+        },
+      ],
+    });
+    await actionSheet.present();
   }
 
   backClicked(): void {

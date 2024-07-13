@@ -67,31 +67,6 @@ export class DatabaseService {
 
   async getTreeByName(name: string): Promise<Tree | undefined> {
     const trees = await this.getTrees();
-    // Add Nursery if not already added
-    if (!trees.some((x) => x.title === 'Nursery')) {
-      const nursery: Tree = {
-        id: Guid.create(),
-        title: 'Nursery',
-        type: TreeType.Genus,
-      };
-      await this.addTree(nursery);
-      return nursery;
-    }
-
-    // Add Nursery if not already added
-    if (!trees.some((x) => x.title === 'lostAndFound')) {
-      const nurseryId = trees.find((x) => x.title === 'Nursery')?.id;
-      const lostAndFound: Tree = {
-        id: Guid.create(),
-        groupId: nurseryId,
-        title: 'lostAndFound',
-        type: TreeType.Species,
-        voiceNotes: [],
-        images: [],
-      };
-      await this.addTree(lostAndFound);
-    }
-
     const tree = trees.find((x) => x.title === name);
 
     if (this.isWebPlatform && tree) {
@@ -154,6 +129,19 @@ export class DatabaseService {
     }
 
     this.stopLoading();
+  }
+
+  async addNursery() {
+    // Add Nursery if not already added
+    const trees = await this.getTrees();
+    if (!trees.some((x) => x.title === 'Nursery')) {
+      const nursery: Tree = {
+        id: Guid.create(),
+        title: 'Nursery',
+        type: TreeType.Genus,
+      };
+      await this.addTree(nursery);
+    }
   }
 
   public startLoading(loadingText: string): void {

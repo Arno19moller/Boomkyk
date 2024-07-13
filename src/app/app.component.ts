@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { IonApp, IonLoading, IonRouterOutlet, IonToast } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -14,6 +14,7 @@ import {
   mic,
   pause,
   play,
+  save,
   square,
   trash,
   triangle,
@@ -26,8 +27,10 @@ import { DatabaseService } from './services/database.service';
   standalone: true,
   imports: [IonApp, IonRouterOutlet, IonLoading, IonToast],
 })
-export class AppComponent {
-  constructor(public databaseService: DatabaseService) {
+export class AppComponent implements OnInit {
+  public databaseService = inject(DatabaseService);
+
+  constructor() {
     addIcons({
       triangle,
       ellipse,
@@ -44,6 +47,11 @@ export class AppComponent {
       mic,
       play,
       pause,
+      save,
     });
+  }
+
+  async ngOnInit() {
+    this.databaseService.addNursery();
   }
 }

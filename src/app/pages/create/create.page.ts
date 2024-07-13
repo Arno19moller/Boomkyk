@@ -231,6 +231,28 @@ export class Tab2Page implements OnInit, AfterViewInit, OnDestroy {
     await actionSheet.present();
   }
 
+  public async showDeleteVoiceNoteActionSheet(note: VoiceNote) {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Voice Note',
+      buttons: [
+        {
+          text: 'Delete',
+          role: 'destructive',
+          icon: 'trash',
+          handler: async () => {
+            await this.deleteNote(note);
+          },
+        },
+        {
+          text: 'Cancel',
+          icon: 'close',
+          role: 'cancel',
+        },
+      ],
+    });
+    await actionSheet.present();
+  }
+
   async typeSelected(type: any) {
     this.newTree!.type = type;
     if (this.newTree!.type === this.TreeType.Species) {

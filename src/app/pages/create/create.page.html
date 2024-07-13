@@ -6,6 +6,10 @@
       </ion-button>
     </ion-buttons>
     <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
+    <ion-button slot="end" (click)="onSubmit()">
+      <ion-icon name="save" slot="start"></ion-icon>
+      {{ !isEdit ? 'Save' : 'Update' }}
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 
@@ -124,7 +128,7 @@
       </ion-item>
       @for (note of recordingService.storedFileNames; track $index) { @if(note.type === selectedImageType){
       <ion-item>
-        <ion-button slot="start" fill="clear" (click)="deleteNote(note)">
+        <ion-button slot="start" fill="clear" (click)="showDeleteVoiceNoteActionSheet(note)">
           <ion-icon name="trash" slot="icon-only"></ion-icon>
         </ion-button>
         <span>{{note.recordingName}}</span>
@@ -139,12 +143,7 @@
       } }
     </ion-list>
   </ion-card>
-  }
-
-  <div class="save-button-container">
-    <ion-button shape="round" (click)="onSubmit()">Save</ion-button>
-  </div>
-  }
+  } }
 </ion-content>
 
 @if(newTree?.type === TreeType.Species){
