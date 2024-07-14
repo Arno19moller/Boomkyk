@@ -75,6 +75,7 @@ export class PhotoService {
         filepath: savedFile.uri,
         webviewPath: Capacitor.convertFileSrc(savedFile.uri),
         type: type ?? ImageType.Overview,
+        timestamp: new Date()
       };
     } else {
       return {
@@ -82,6 +83,7 @@ export class PhotoService {
         filepath: fileName,
         webviewPath: photo.webPath,
         type: type ?? ImageType.Overview,
+        timestamp: new Date()
       };
     }
   }

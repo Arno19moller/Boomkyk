@@ -112,6 +112,11 @@
     @for (image of images; track $index) {
       <swiper-slide>
         <div style="height: 100%; width: 100%; overflow: auto">
+          @if (image.timestamp !== undefined) {
+            <div class="timestamp">
+              {{ image.timestamp | date: 'yyyy/MM/dd' }}
+            </div>
+          }
           <ion-img
             class="tree-image"
             [src]="image.webviewPath !== '' ? image.webviewPath : '../../../assets/images/image-not-found.jpg'"
