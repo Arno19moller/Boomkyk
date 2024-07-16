@@ -1,20 +1,17 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 import { ImageType } from '../models/image-type.enum';
 import { Tree } from '../models/tree.interface';
 import { VoiceNote } from '../models/voice-notes.interface';
-import { DatabaseService } from './database.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RecordingService {
-  private databaseService = inject(DatabaseService);
-
-  recording: boolean = false;
-  storedFileNames: VoiceNote[] = [];
-  audioRef: HTMLAudioElement | undefined;
+  public recording: boolean = false;
+  public storedFileNames: VoiceNote[] = [];
+  public audioRef: HTMLAudioElement | undefined;
 
   constructor() {}
 
@@ -90,8 +87,18 @@ export class RecordingService {
     this.storedFileNames.splice(index, 1);
   }
 
-  async saveTreeRecordings(tree: Tree) {
+  setTreeRecordings(recordings: VoiceNote[]) {
+    this.storedFileNames = recordings;
+  }
+
+  saveTreeRecordings(tree: Tree) {
     tree.voiceNotes = this.storedFileNames;
-    await this.databaseService.updateTree(tree);
+    this.storedFileNames = [];
+  }
+
+  async clearRecordingList() {
+    this.storedFileNames.map(async (recording) => {
+      await this.deleteRecording(recording);
+    });
   }
 }

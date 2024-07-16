@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, Gesture, GestureController, ModalController } from '@ionic/angular';
 import {
   IonActionSheet,
   IonButtons,
@@ -56,6 +56,7 @@ import { DatabaseService } from '../../services/database.service';
 export class TreeFamiliesComponent implements OnInit, OnDestroy {
   private selectedTreeId: string = '';
   private destroy$ = new Subject();
+  private gestures: Gesture[] = [];
 
   public nursery: Tree | undefined = undefined;
   public TreeType = TreeType;
@@ -77,6 +78,7 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
     private databaseService: DatabaseService,
     private actionsServie: ActionsService,
     private activeRoute: ActivatedRoute,
+    private gestureCtrl: GestureController,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -85,14 +87,16 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
     this.activeRoute.url.pipe(takeUntil(this.destroy$)).subscribe({
       next: async () => {
         this.databaseService.startLoading('Loading Tree Groups');
-        this.initialiseLongPress(await this.databaseService.getTreesByType(TreeType.Family));
+        this.groups = await this.databaseService.getTreesByType(TreeType.Family);
+        this.setLongPress();
         this.databaseService.stopLoading();
       },
     });
   }
 
-  initialiseLongPress(groups: Tree[]): void {
-    this.groups = groups;
+  setLongPress(): void {
+    this.gestures.map((gesture) => gesture.destroy());
+    this.gestures = [];
     setTimeout(() => {
       const cardElements = document.querySelectorAll('ion-card');
 
@@ -118,21 +122,21 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
 
   async cardClicked(id: string | undefined | null): Promise<void> {
     this.selectedTreeId = id ?? '';
-    await this.actionsServie.openEditOrDeleteModal(this.selectedTreeId);
-    this.initialiseLongPress(await this.databaseService.getTreesByType(TreeType.Family));
+    await this.actionsServie.openLongPressModal(this.selectedTreeId);
+    this.groups = await this.databaseService.getTreesByType(TreeType.Family);
+    this.setLongPress();
   }
 
   async filterGroups(filterString: any): Promise<void> {
     if (filterString) {
       filterString = filterString.toLowerCase();
-      this.initialiseLongPress(
-        (await this.databaseService.getTreesByType(TreeType.Family)).filter((x) =>
-          x.title.toLowerCase().includes(filterString),
-        ),
+      this.groups = (await this.databaseService.getTreesByType(TreeType.Family)).filter((x) =>
+        x.title.toLowerCase().includes(filterString),
       );
     } else {
-      this.initialiseLongPress((this.groups = await this.databaseService.getTreesByType(TreeType.Family)));
+      this.groups = await this.databaseService.getTreesByType(TreeType.Family);
     }
+    this.setLongPress();
   }
 
   ngOnDestroy(): void {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import { TreeType } from '../models/tree-type.enum';
@@ -9,6 +9,8 @@ import { DatabaseService } from './database.service';
   providedIn: 'root',
 })
 export class ActionsService {
+  private databaseService = inject(DatabaseService);
+
   public selectedTree: Tree | undefined = undefined;
   private selectedTreeId: string = '';
   private deleteAlertButtons = [
@@ -28,7 +30,7 @@ export class ActionsService {
       },
     },
   ];
-  private actionSheetButtons = [
+  private longPressButtons = [
     {
       text: 'Edit',
       icon: 'create',
@@ -47,7 +49,7 @@ export class ActionsService {
         action: 'delete',
       },
       handler: async () => {
-        await this.openDeleteConfirmation();
+        await this.openDeleteAlert();
       },
     },
     {
@@ -60,29 +62,23 @@ export class ActionsService {
   ];
 
   constructor(
-    private databaseService: DatabaseService,
     private alertController: AlertController,
     private actionSheetCtrl: ActionSheetController,
     private router: Router,
   ) {}
 
-  public async openEditOrDeleteModal(id: string): Promise<void> {
+  public async openLongPressModal(id: string): Promise<void> {
     this.selectedTreeId = id;
     const actionSheet = await this.actionSheetCtrl.create({
       header: 'Actions',
-      buttons: this.actionSheetButtons,
+      buttons: this.longPressButtons,
     });
 
     await actionSheet.present();
     await actionSheet.onDidDismiss();
   }
 
-  public async navigateToUpdate(id?: string): Promise<void> {
-    this.selectedTree = await this.databaseService.getSelectedTree(id ?? this.selectedTreeId);
-    this.router.navigate(['/create']);
-  }
-
-  public async openDeleteConfirmation(id?: string): Promise<string | undefined> {
+  public async openDeleteAlert(id?: string): Promise<string | undefined> {
     this.selectedTreeId = id ?? this.selectedTreeId;
 
     const trees = await this.databaseService.getTrees();
@@ -98,5 +94,10 @@ export class ActionsService {
     await alert.present();
     const { data, role } = await alert.onWillDismiss();
     return role;
+  }
+
+  public async navigateToUpdate(id?: string): Promise<void> {
+    this.selectedTree = await this.databaseService.getSelectedTree(id ?? this.selectedTreeId);
+    this.router.navigate(['/create']);
   }
 }

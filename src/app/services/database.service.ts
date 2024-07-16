@@ -110,7 +110,7 @@ export class DatabaseService {
     this.selectedTree = await this.getSelectedTree(id);
   }
 
-  async addTree(tree: Tree): Promise<void> {
+  async saveTree(tree: Tree): Promise<void> {
     this.startLoading('Saving Tree');
     const trees = await this.getTrees();
     trees.push(tree);
@@ -118,17 +118,21 @@ export class DatabaseService {
     this.stopLoading();
   }
 
-  async updateTree(tree: Tree): Promise<void> {
+  async updateTree(tree: Tree): Promise<boolean> {
     this.startLoading('Updating Tree');
+    let success = true;
     const trees = await this.getTrees();
     const index = trees.findIndex((x) => x.id['value'] === tree.id['value']);
 
     if (index > -1) {
       trees[index] = tree;
       await this.saveTrees(trees);
+    } else {
+      success = false;
     }
 
     this.stopLoading();
+    return success;
   }
 
   async addNursery() {
@@ -140,7 +144,7 @@ export class DatabaseService {
         title: 'Nursery',
         type: TreeType.Genus,
       };
-      await this.addTree(nursery);
+      await this.saveTree(nursery);
     }
   }
 

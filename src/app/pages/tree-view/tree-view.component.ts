@@ -112,7 +112,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   }
 
   async deleteClicked(): Promise<void> {
-    const val = await this.actionsService.openDeleteConfirmation(this.tree?.id['value']);
+    const val = await this.actionsService.openDeleteAlert(this.tree?.id['value']);
     if (val === 'confirm') {
       this.locationStrategy.back();
     }

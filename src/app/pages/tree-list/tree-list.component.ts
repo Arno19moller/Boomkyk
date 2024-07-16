@@ -139,7 +139,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
   }
 
   async cardClicked(id: string | undefined | null): Promise<void> {
-    await this.actionsService.openEditOrDeleteModal(id ?? '');
+    await this.actionsService.openLongPressModal(id ?? '');
     this.treesList = await this.databaseService.getTreesList(TreeType.Genus, this.treeGroupId);
   }
 

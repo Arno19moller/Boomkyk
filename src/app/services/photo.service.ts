@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Camera, CameraResultType, CameraSource, GalleryPhoto, Photo } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { Directory, Filesystem } from '@capacitor/filesystem';
@@ -6,22 +6,23 @@ import { Platform } from '@ionic/angular';
 import { Guid } from 'guid-typescript';
 import { ImageType } from '../models/image-type.enum';
 import { BoomkykPhoto } from '../models/photo.interface';
+import { Tree } from '../models/tree.interface';
 import { DatabaseService } from './database.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PhotoService {
-  private platform: Platform;
+  private databaseService = inject(DatabaseService);
+  private devicePlatform: Platform;
 
-  constructor(
-    platform: Platform,
-    private databaseService: DatabaseService,
-  ) {
-    this.platform = platform;
+  public storedPhotos: BoomkykPhoto[] = [];
+
+  constructor(platform: Platform) {
+    this.devicePlatform = platform;
   }
 
-  public async addMultipleImages(photos: BoomkykPhoto[], type?: ImageType): Promise<void> {
+  public async addMultipleImages(type: ImageType): Promise<void> {
     const images = await Camera.pickImages({
       quality: 60,
       limit: 10,
@@ -34,14 +35,14 @@ export class PhotoService {
       await Promise.all(
         images.photos.map(async (image) => {
           const savedImageFile = await this.savePicture(image, type);
-          photos.push(savedImageFile);
+          this.storedPhotos.push(savedImageFile);
         }),
       );
       this.databaseService.stopLoading();
     }
   }
 
-  public async addSingleImage(photos: BoomkykPhoto[], type?: ImageType): Promise<void> {
+  public async addSingleImage(type: ImageType): Promise<void> {
     // Take a photo
     const capturedPhoto = await Camera.getPhoto({
       resultType: CameraResultType.Uri,
@@ -54,7 +55,7 @@ export class PhotoService {
     if (capturedPhoto) {
       this.databaseService.startLoading('Saving Image');
       const savedImageFile = await this.savePicture(capturedPhoto, type);
-      photos.push(savedImageFile);
+      this.storedPhotos.push(savedImageFile);
       this.databaseService.stopLoading();
     }
   }
@@ -69,13 +70,13 @@ export class PhotoService {
       directory: Directory.Data,
     });
 
-    if (this.platform.is('hybrid')) {
+    if (this.devicePlatform.is('hybrid')) {
       return {
         id: Guid.create(),
         filepath: savedFile.uri,
         webviewPath: Capacitor.convertFileSrc(savedFile.uri),
         type: type ?? ImageType.Overview,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } else {
       return {
@@ -83,14 +84,14 @@ export class PhotoService {
         filepath: fileName,
         webviewPath: photo.webPath,
         type: type ?? ImageType.Overview,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     }
   }
 
   private async readAsBase64(photo: Photo | GalleryPhoto) {
     // Mobile
-    if (this.platform.is('hybrid')) {
+    if (this.devicePlatform.is('hybrid')) {
       const file = await Filesystem.readFile({
         path: photo.path!,
       });
@@ -117,11 +118,11 @@ export class PhotoService {
     });
   }
 
-  public async deletePicture(photos: BoomkykPhoto[], photo: BoomkykPhoto) {
+  public async deletePicture(photo: BoomkykPhoto) {
     this.databaseService.startLoading('Deleting Image');
 
-    const position = photos.findIndex((x) => x.id === photo.id);
-    photos.splice(position, 1);
+    const position = this.storedPhotos.findIndex((x) => x.id === photo.id);
+    this.storedPhotos.splice(position, 1);
 
     // delete photo file from filesystem
     const filename = photo.filepath.substring(photo.filepath.lastIndexOf('/') + 1);
@@ -132,5 +133,20 @@ export class PhotoService {
     });
 
     this.databaseService.stopLoading();
+  }
+
+  setTreeImages(images: BoomkykPhoto[]) {
+    this.storedPhotos = images;
+  }
+
+  saveTreeImages(tree: Tree) {
+    tree.images = this.storedPhotos;
+    this.storedPhotos = [];
+  }
+
+  async clearImageList() {
+    this.storedPhotos.map(async (image) => {
+      await this.deletePicture(image);
+    });
   }
 }
