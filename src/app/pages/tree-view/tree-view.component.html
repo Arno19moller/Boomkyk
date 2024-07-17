@@ -1,9 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="clear" (click)="backClicked()">
-        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-      </ion-button>
+      <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title> {{ tree?.title }} </ion-title>
     <ion-buttons slot="end">
@@ -20,9 +18,7 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-buttons slot="start">
-      <ion-button fill="clear" (click)="backClicked()">
-        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-      </ion-button>
+      <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-toolbar>
       <ion-icon name="arrow-back"></ion-icon>

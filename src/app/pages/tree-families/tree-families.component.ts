@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ActionSheetController, AlertController, Gesture, GestureController, ModalController } from '@ionic/angular';
+import { ActionSheetController, AlertController, Gesture, ModalController } from '@ionic/angular';
 import {
   IonActionSheet,
+  IonButton,
   IonButtons,
   IonCard,
   IonCardContent,
@@ -32,6 +33,7 @@ import { DatabaseService } from '../../services/database.service';
   styleUrls: ['./tree-families.component.scss'],
   standalone: true,
   imports: [
+    IonButton,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -78,7 +80,6 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
     private databaseService: DatabaseService,
     private actionsServie: ActionsService,
     private activeRoute: ActivatedRoute,
-    private gestureCtrl: GestureController,
   ) {}
 
   async ngOnInit(): Promise<void> {

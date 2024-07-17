@@ -1,10 +1,11 @@
-import { CommonModule, LocationStrategy } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, NavController } from '@ionic/angular';
 import {
   GestureController,
+  IonBackButton,
   IonButton,
   IonCol,
   IonContent,
@@ -64,6 +65,7 @@ import { TreeFamiliesComponent } from '../tree-families/tree-families.component'
     IonInput,
     IonTextarea,
     IonToast,
+    IonBackButton,
     FormsModule,
     CommonModule,
   ],
@@ -76,7 +78,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   private destroy$ = new Subject();
   private recordingTimeInterval: any;
 
-  public newTree: Tree | undefined = undefined;
+  public newTree: Tree;
   public isEdit: boolean = false;
   public TreeType = TreeType;
   public ImageType = ImageType;
@@ -96,22 +98,31 @@ export class Tab2Page implements OnInit, OnDestroy {
     public actionSheetController: ActionSheetController,
     private actionsService: ActionsService,
     public recordingService: RecordingService,
-    private locationStrategy: LocationStrategy,
     private gestureCtrl: GestureController,
-  ) {}
-
-  async ngOnInit(): Promise<void> {
-    this.isEdit = this.actionsService.selectedTree != undefined;
+    private navCtrl: NavController,
+  ) {
     this.newTree = this.actionsService.selectedTree ?? {
       id: Guid.create(),
       images: [],
       title: '',
       type: TreeType.Species,
+      treeInfo: {
+        overview: '',
+        leaves: '',
+        bark: '',
+        flower: '',
+        fruit: '',
+      },
+      voiceNotes: [],
     };
-    this.typeSelected(TreeType.Species);
+  }
+
+  async ngOnInit(): Promise<void> {
+    this.isEdit = this.actionsService.selectedTree != undefined;
     this.photoService.setTreeImages(this.newTree.images ?? []);
     this.recordingService.setTreeRecordings(this.newTree.voiceNotes ?? []);
     this.infoTypeChanged('overview');
+    this.typeSelected();
   }
 
   async configureRecordBtn(): Promise<void> {
@@ -146,7 +157,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   backClicked(): void {
-    this.locationStrategy.back();
+    this.navCtrl.back();
   }
 
   async playNote(note: VoiceNote) {
@@ -238,9 +249,7 @@ export class Tab2Page implements OnInit, OnDestroy {
     await actionSheet.present();
   }
 
-  async typeSelected(treeType?: TreeType) {
-    this.newTree!.type = treeType ?? this.newTree!.type;
-
+  async typeSelected() {
     if (this.newTree!.type === TreeType.Species) {
       this.newTree!.treeInfo = this.newTree!.treeInfo ?? {
         overview: '',
@@ -256,7 +265,7 @@ export class Tab2Page implements OnInit, OnDestroy {
       this.TreeInfoImages = this.photoService.storedPhotos.filter((x) => x.type === ImageType.Overview);
 
       this.treeGroups = await this.databaseService.getTreesByType(
-        treeType === TreeType.Genus ? TreeType.Family : TreeType.Genus,
+        this.newTree!.type === TreeType.Genus ? TreeType.Family : TreeType.Genus,
       );
     } else {
       this.newTree!.treeInfo = undefined;

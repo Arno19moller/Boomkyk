@@ -1,8 +1,9 @@
-import { CommonModule, LocationStrategy } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, NavController } from '@ionic/angular';
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonCard,
@@ -63,6 +64,7 @@ register();
     IonItem,
     IonSegment,
     IonSegmentButton,
+    IonBackButton,
     RouterModule,
     CommonModule,
   ],
@@ -91,7 +93,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     public databaseService: DatabaseService,
     private actionsService: ActionsService,
-    private locationStrategy: LocationStrategy,
+    private navCtrl: NavController,
     public actionSheetController: ActionSheetController,
     public recordingService: RecordingService,
   ) {}
@@ -114,7 +116,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   async deleteClicked(): Promise<void> {
     const val = await this.actionsService.openDeleteAlert(this.tree?.id['value']);
     if (val === 'confirm') {
-      this.locationStrategy.back();
+      this.navCtrl.back();
     }
   }
 
@@ -219,10 +221,6 @@ export class TreeViewComponent implements OnInit, OnDestroy {
       ],
     });
     await actionSheet.present();
-  }
-
-  backClicked(): void {
-    this.locationStrategy.back();
   }
 
   ngOnDestroy(): void {

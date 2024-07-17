@@ -1,13 +1,11 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="clear" (click)="backClicked()">
-        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-      </ion-button>
+      <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title> {{ title }} </ion-title>
     <ion-buttons slot="end">
-      <ion-button shape="round" (click)="createNewClicked()" color="primary">
+      <ion-button shape="round" [routerLink]="['/create']" color="primary">
         <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -26,13 +24,11 @@
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-button fill="clear" (click)="backClicked()">
-          <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-        </ion-button>
+        <ion-back-button></ion-back-button>
       </ion-buttons>
       <ion-title> {{ title }} </ion-title>
       <ion-buttons slot="end">
-        <ion-button shape="round" (click)="createNewClicked()" color="primary">
+        <ion-button shape="round" [routerLink]="['/create']" color="primary">
           <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
@@ -50,8 +46,8 @@
                 [src]="getImage(tree)?.webviewPath ?? '../../../assets//images/image-not-found.jpg'"
               />
               <ion-card-header>
-                <ion-card-title>
-                  <h5>{{ tree.title }}</h5>
+                <ion-card-title style="font-size: large;">
+                  {{ tree.title }}
                 </ion-card-title>
               </ion-card-header>
             </ion-card>
@@ -62,7 +58,7 @@
               [routerLink]="['/list', { id: tree.id['value'], type: TreeType.Species }]"
             >
               <ion-card-header>
-                <ion-card-title>
+                <ion-card-title  style="font-size: large;">
                   {{ tree.title }}
                 </ion-card-title>
               </ion-card-header>

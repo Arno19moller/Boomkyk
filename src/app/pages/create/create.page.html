@@ -1,9 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="clear" (click)="backClicked()">
-        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-      </ion-button>
+      <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
     <ion-button slot="end" (click)="onSubmit()">
@@ -17,15 +15,13 @@
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-button fill="clear" (click)="backClicked()">
-          <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-        </ion-button>
+        <ion-back-button></ion-back-button>
       </ion-buttons>
       <ion-title size="large"> Create </ion-title>
     </ion-toolbar>
   </ion-header>
 
-  @if(newTree){
+  @if(newTree !== undefined){
   <ion-card>
     <ion-list class="form-container" lines="none">
       @if(!isEdit){

@@ -49,7 +49,11 @@ export class ActionsService {
         action: 'delete',
       },
       handler: async () => {
-        await this.openDeleteAlert();
+        const res = await this.openDeleteAlert();
+
+        if (res === 'confirm') {
+          await this.databaseService.deleteTree(this.selectedTreeId);
+        }
       },
     },
     {
