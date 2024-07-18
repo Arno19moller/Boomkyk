@@ -22,4 +22,8 @@ export const routes: Routes = [
     redirectTo: '/home',
     pathMatch: 'full',
   },
+  {
+    path: 'maps',
+    loadComponent: () => import('./pages/maps/maps.page').then((m) => m.MapsPage),
+  },
 ];

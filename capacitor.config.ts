@@ -14,6 +14,9 @@ const config: CapacitorConfig = {
       autoUpdateMethod: 'background',
       maxVersions: 2,
     },
+    CapacitorGoogleMaps: {
+      apiKey: 'AIzaSyA6ju_iOEfLWsgZu2mf6cz-It1fDzTeVc8',
+    },
   },
 };
 

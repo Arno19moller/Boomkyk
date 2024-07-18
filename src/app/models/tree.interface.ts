@@ -1,3 +1,4 @@
+import { Position } from '@capacitor/geolocation';
 import { Guid } from 'guid-typescript';
 import { BoomkykPhoto } from './photo.interface';
 import { TreeType } from './tree-type.enum';
@@ -17,4 +18,5 @@ export interface Tree {
     fruit: string;
     flower: string;
   };
+  locations?: Position[];
 }

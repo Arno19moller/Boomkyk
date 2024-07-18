@@ -1,6 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  signal,
+  ViewChild,
+  WritableSignal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Geolocation, Position } from '@capacitor/geolocation';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ActionSheetController, NavController } from '@ionic/angular';
 import {
@@ -24,6 +34,7 @@ import {
   IonTextarea,
   IonTitle,
   IonToast,
+  IonToggle,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
@@ -37,6 +48,7 @@ import { Tree } from '../../models/tree.interface';
 import { ActionsService } from '../../services/actions.service';
 import { DatabaseService } from '../../services/database.service';
 import { PhotoService } from '../../services/photo.service';
+import { MapsPage } from '../maps/maps.page';
 import { TreeFamiliesComponent } from '../tree-families/tree-families.component';
 
 @Component({
@@ -66,8 +78,10 @@ import { TreeFamiliesComponent } from '../tree-families/tree-families.component'
     IonTextarea,
     IonToast,
     IonBackButton,
+    IonToggle,
     FormsModule,
     CommonModule,
+    MapsPage,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -80,6 +94,7 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   public newTree: Tree;
   public isEdit: boolean = false;
+  public saveLocation: boolean = false;
   public TreeType = TreeType;
   public ImageType = ImageType;
   public parentGroup: Tree | undefined = undefined;
@@ -88,6 +103,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   public selectedImageType: ImageType = ImageType.Overview;
   public treeGroups: Tree[] = [];
   public errorMessage: string = '';
+  public newLocation: WritableSignal<Position | undefined> = signal(undefined);
 
   // voice recording
   duration: number = 0;
@@ -260,6 +276,7 @@ export class Tab2Page implements OnInit, OnDestroy {
       };
     }
 
+    this.saveLocation = false;
     if (this.newTree!.type !== TreeType.Family) {
       this.newTree!.groupId = this.parentGroup?.id ?? this.newTree!.groupId;
       this.TreeInfoImages = this.photoService.storedPhotos.filter((x) => x.type === ImageType.Overview);
@@ -306,6 +323,11 @@ export class Tab2Page implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.saveLocation && this.newLocation() !== undefined) {
+      this.newTree.locations = this.newTree.locations ?? [];
+      this.newTree.locations.push(this.newLocation()!);
+    }
+
     if (this.isEdit) {
       this.photoService.saveTreeImages(this.newTree!);
       this.recordingService.saveTreeRecordings(this.newTree!);
@@ -319,6 +341,14 @@ export class Tab2Page implements OnInit, OnDestroy {
     this.databaseService.toastMessage = 'Tree Saved Successfully';
     this.databaseService.openToast = true;
     this.backClicked();
+  }
+
+  async locationToggleChanged() {
+    if (this.saveLocation) {
+      this.newLocation.set(await Geolocation.getCurrentPosition());
+    } else {
+      this.newLocation.set(undefined);
+    }
   }
 
   async ngOnDestroy() {
