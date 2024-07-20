@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetController, AlertController } from '@ionic/angular';
+import { AlertController } from '@ionic/angular';
 import { TreeType } from '../models/tree-type.enum';
 import { Tree } from '../models/tree.interface';
 import { DatabaseService } from './database.service';
@@ -30,57 +30,11 @@ export class ActionsService {
       },
     },
   ];
-  private longPressButtons = [
-    {
-      text: 'Edit',
-      icon: 'create',
-      data: {
-        action: 'edit',
-      },
-      handler: async () => {
-        await this.navigateToUpdate();
-      },
-    },
-    {
-      text: 'Delete',
-      role: 'destructive',
-      icon: 'trash',
-      data: {
-        action: 'delete',
-      },
-      handler: async () => {
-        const res = await this.openDeleteAlert();
-
-        if (res === 'confirm') {
-          await this.databaseService.deleteTree(this.selectedTreeId);
-        }
-      },
-    },
-    {
-      text: 'Cancel',
-      role: 'cancel',
-      data: {
-        action: 'cancel',
-      },
-    },
-  ];
 
   constructor(
     private alertController: AlertController,
-    private actionSheetCtrl: ActionSheetController,
     private router: Router,
   ) {}
-
-  public async openLongPressModal(id: string): Promise<void> {
-    this.selectedTreeId = id;
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Actions',
-      buttons: this.longPressButtons,
-    });
-
-    await actionSheet.present();
-    await actionSheet.onDidDismiss();
-  }
 
   public async openDeleteAlert(id?: string): Promise<string | undefined> {
     this.selectedTreeId = id ?? this.selectedTreeId;

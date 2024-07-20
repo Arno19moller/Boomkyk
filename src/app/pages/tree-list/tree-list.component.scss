@@ -8,3 +8,17 @@
 ion-card {
   min-height: 100%;
 }
+
+.family-tile {
+  height: 100px;
+  width: calc(100% + 16px);
+  border-radius: 3px;
+  margin: 0 -16px 0 0;
+  display: flex;
+  align-items: flex-end;
+  direction: rtl;
+}
+
+ion-item::part(native){
+  padding: 0;
+}

@@ -35,37 +35,52 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-grid>
-    <ion-row>
-      @for (tree of treesList; track $index) {
-        <ion-col size="6">
-          @if (currentTreeType == TreeType.Species) {
-            <ion-card [attr.id]="tree.id['value']" [routerLink]="['/view', { id: tree.id['value'] }]" style="margin: 0">
-              <img
-                class="tree-image"
-                [src]="getImage(tree)?.webviewPath ?? '../../../assets//images/image-not-found.jpg'"
-              />
-              <ion-card-header>
-                <ion-card-title style="font-size: large;">
-                  {{ tree.title }}
-                </ion-card-title>
-              </ion-card-header>
-            </ion-card>
-          } @else {
-            <ion-card
-              [style.border-left]="'5px solid ' + pastelColors[$index]"
-              [attr.id]="tree.id['value']"
-              [routerLink]="['/list', { id: tree.id['value'], type: TreeType.Species }]"
-            >
-              <ion-card-header>
-                <ion-card-title  style="font-size: large;">
-                  {{ tree.title }}
-                </ion-card-title>
-              </ion-card-header>
-            </ion-card>
-          }
-        </ion-col>
-      }
-    </ion-row>
-  </ion-grid>
+  <ion-list lines="none">
+    <ion-grid>
+      <ion-row>
+        @for (tree of treesList; track $index) {
+          <ion-col size="6">
+            <ion-item-sliding>
+              <ion-item-options side="end">
+                <ion-item-option color="primary" (click)="editClicked(tree)">Edit</ion-item-option>
+              </ion-item-options>
+
+              <ion-item style="overflow: visible">
+                @if (currentTreeType == TreeType.Species) {
+                  <ion-card
+                    class="family-tile"
+                    [attr.id]="tree.id['value']"
+                    [routerLink]="['/view', { id: tree.id['value'] }]"
+                  >
+                    <img
+                      class="tree-image"
+                      [src]="getImage(tree)?.webviewPath ?? '../../../assets//images/image-not-found.jpg'"
+                    />
+                    <ion-card-header>
+                      <ion-card-title style="font-size: large">
+                        {{ tree.title }}
+                      </ion-card-title>
+                    </ion-card-header>
+                  </ion-card>
+                } @else {
+                  <ion-card
+                    class="family-tile"
+                    [style.border]="'3px solid ' + pastelColors[$index]"
+                    [attr.id]="tree.id['value']"
+                    [routerLink]="['/list', { id: tree.id['value'], type: TreeType.Species }]"
+                  >
+                    <ion-card-header>
+                      <ion-card-title style="font-size: large">
+                        {{ tree.title }}
+                      </ion-card-title>
+                    </ion-card-header>
+                  </ion-card>
+                }
+              </ion-item>
+            </ion-item-sliding>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+  </ion-list>
 </ion-content>

@@ -1,5 +1,5 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
   IonActionSheet,
   IonBackButton,
@@ -15,13 +15,17 @@ import {
   IonGrid,
   IonHeader,
   IonIcon,
+  IonItem,
+  IonItemOption,
+  IonItemOptions,
+  IonItemSliding,
+  IonList,
   IonModal,
   IonRow,
   IonSearchbar,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import * as Hammer from 'hammerjs';
 import { Subject, takeUntil } from 'rxjs';
 import { ImageType } from 'src/app/models/image-type.enum';
 import { BoomkykPhoto } from 'src/app/models/photo.interface';
@@ -54,6 +58,11 @@ import { DatabaseService } from 'src/app/services/database.service';
     IonSearchbar,
     IonActionSheet,
     IonModal,
+    IonList,
+    IonItem,
+    IonItemSliding,
+    IonItemOption,
+    IonItemOptions,
     IonBackButton,
     RouterModule,
   ],
@@ -86,6 +95,7 @@ export class TreeListComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     public databaseService: DatabaseService,
     private actionsService: ActionsService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -98,8 +108,6 @@ export class TreeListComponent implements OnInit, OnDestroy {
         await this.databaseService.setSelectedTreeGroup(param['id']);
         this.treesList = await this.databaseService.getTreesList(this.currentTreeType, param['id']);
         this.title = (await this.databaseService.getSelectedTree(param['id']))?.title ?? 'Not Found';
-
-        this.setLongPress();
         this.databaseService.stopLoading();
       },
     });
@@ -114,32 +122,6 @@ export class TreeListComponent implements OnInit, OnDestroy {
     } else {
       this.treesList = await this.databaseService.getTreesList(this.currentTreeType, this.treeGroupId);
     }
-    this.setLongPress();
-  }
-
-  setLongPress(): void {
-    const cardElements = document.querySelectorAll('ion-card');
-    for (let i = 0; i < cardElements.length; i++) {
-      const hasLongPress = cardElements[i]!.getAttribute('longPress');
-      const isIdNull = cardElements[i]!.getAttribute('id') == null;
-
-      // Only assign long press when new
-      if (hasLongPress == null && !isIdNull) {
-        cardElements[i]!.setAttribute('longPress', 'true');
-        const hammer = new Hammer(cardElements[i]!);
-
-        hammer.get('press').set({ time: 500 });
-        hammer.on('press', async () => {
-          const id = cardElements[i]?.getAttribute('id');
-          return await this.cardClicked(id);
-        });
-      }
-    }
-  }
-
-  async cardClicked(id: string | undefined | null): Promise<void> {
-    await this.actionsService.openLongPressModal(id ?? '');
-    this.treesList = await this.databaseService.getTreesList(this.currentTreeType, this.treeGroupId);
   }
 
   getImage(tree: Tree): BoomkykPhoto | undefined {
@@ -152,6 +134,11 @@ export class TreeListComponent implements OnInit, OnDestroy {
 
   ionViewWillLeave(): void {
     this.treesList = [];
+  }
+
+  editClicked(group: Tree) {
+    this.actionsService.selectedTree = group;
+    this.router.navigate(['/create']);
   }
 
   ngOnDestroy(): void {

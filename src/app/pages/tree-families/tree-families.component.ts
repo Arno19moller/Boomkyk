@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { ActionSheetController, AlertController, Gesture, ModalController } from '@ionic/angular';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
 import {
   IonActionSheet,
   IonButton,
@@ -16,6 +16,12 @@ import {
   IonHeader,
   IonIcon,
   IonImg,
+  IonItem,
+  IonItemOption,
+  IonItemOptions,
+  IonItemSliding,
+  IonLabel,
+  IonList,
   IonRow,
   IonSearchbar,
   IonTitle,
@@ -33,6 +39,7 @@ import { DatabaseService } from '../../services/database.service';
   styleUrls: ['./tree-families.component.scss'],
   standalone: true,
   imports: [
+    IonLabel,
     IonButton,
     IonHeader,
     IonToolbar,
@@ -52,13 +59,16 @@ import { DatabaseService } from '../../services/database.service';
     IonGrid,
     IonRow,
     IonCol,
+    IonList,
+    IonItem,
+    IonItemSliding,
+    IonItemOption,
+    IonItemOptions,
   ],
   providers: [ModalController, AlertController, ActionSheetController],
 })
 export class TreeFamiliesComponent implements OnInit, OnDestroy {
-  private selectedTreeId: string = '';
   private destroy$ = new Subject();
-  private gestures: Gesture[] = [];
 
   public nursery: Tree | undefined = undefined;
   public TreeType = TreeType;
@@ -78,8 +88,9 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
 
   constructor(
     private databaseService: DatabaseService,
-    private actionsServie: ActionsService,
+    private actionsService: ActionsService,
     private activeRoute: ActivatedRoute,
+    private router: Router,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -89,43 +100,9 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
       next: async () => {
         this.databaseService.startLoading('Loading Tree Groups');
         this.groups = await this.databaseService.getTreesByType(TreeType.Family);
-        this.setLongPress();
         this.databaseService.stopLoading();
       },
     });
-  }
-
-  setLongPress(): void {
-    this.gestures.map((gesture) => gesture.destroy());
-    this.gestures = [];
-    setTimeout(() => {
-      const cardElements = document.querySelectorAll('ion-card');
-
-      for (let i = 0; i < cardElements.length; i++) {
-        const hasLongPress = cardElements[i]!.getAttribute('longPress');
-        const isIdNull = cardElements[i]!.getAttribute('id') == null;
-
-        // Only assign long press when new
-        if (hasLongPress == null && !isIdNull) {
-          cardElements[i]!.setAttribute('longPress', 'true');
-
-          const hammer = new Hammer(cardElements[i]!);
-
-          hammer.get('press').set({ time: 500 });
-          hammer.on('press', async () => {
-            const id = cardElements[i]!.getAttribute('id');
-            return await this.cardClicked(id);
-          });
-        }
-      }
-    }, 200);
-  }
-
-  async cardClicked(id: string | undefined | null): Promise<void> {
-    this.selectedTreeId = id ?? '';
-    await this.actionsServie.openLongPressModal(this.selectedTreeId);
-    this.groups = await this.databaseService.getTreesByType(TreeType.Family);
-    this.setLongPress();
   }
 
   async filterGroups(filterString: any): Promise<void> {
@@ -137,7 +114,11 @@ export class TreeFamiliesComponent implements OnInit, OnDestroy {
     } else {
       this.groups = await this.databaseService.getTreesByType(TreeType.Family);
     }
-    this.setLongPress();
+  }
+
+  editClicked(group: Tree) {
+    this.actionsService.selectedTree = group;
+    this.router.navigate(['/create']);
   }
 
   ngOnDestroy(): void {
