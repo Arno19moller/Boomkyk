@@ -1479,6 +1479,11 @@
   resolved "https://registry.npmjs.org/@capacitor/status-bar/-/status-bar-6.0.0.tgz"
   integrity sha512-Wo0ILugYlmENegKDgTzVCPjbvP8h1ObgHslLdgeVG643ViMS/diausHIq8e104WIKCXtKIELmQeYVp9mX7932g==
 
+"@capawesome-team/capacitor-file-opener@^6.1.0":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@capawesome-team/capacitor-file-opener/-/capacitor-file-opener-6.1.0.tgz#b3d85e491babfd2f464f98ac3d3c1ed289afb7e8"
+  integrity sha512-KKu1a3WPkH3eEHq7Pv+HMzgaD2kYiLxUB8ed1asrQP5PaIAwThVh78qXnEHUxP4Zb7qP6sa71wbq7EmP0cgr4Q==
+
 "@colors/colors@1.5.0":
   version "1.5.0"
   resolved "https://registry.npmjs.org/@colors/colors/-/colors-1.5.0.tgz"

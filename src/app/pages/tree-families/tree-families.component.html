@@ -33,11 +33,13 @@
         <ion-row>
           @for (group of groups; track $index) {
             <ion-col size="6">
-              <ion-item-sliding>
-                <ion-item-options side="end">
-                  <ion-item-option color="primary" (click)="editClicked(group)">Edit</ion-item-option>
+              <ion-item-sliding style="padding: 5px">
+                <ion-item-options side="end" style="padding: 6px">
+                  <ion-item-option color="primary" (click)="editClicked(group)">
+                    <ion-icon slot="icon-only" name="create" color="dark"></ion-icon>
+                  </ion-item-option>
                 </ion-item-options>
-                <ion-item style="overflow: visible;">
+                <ion-item style="overflow: visible">
                   <ion-card
                     class="family-tile"
                     [attr.id]="group.id['value']"
@@ -56,7 +58,7 @@
       } @else {
         <ion-row>
           <ion-col size="12">
-            <ion-card class="nursery-tile" [style.background-color]="pastelColors[0]">
+            <ion-card class="nursery-tile" style="margin: 0 5px 0 5px" [style.background-color]="pastelColors[0]">
               <ion-card-header>
                 <ion-card-title>No Families Found</ion-card-title>
               </ion-card-header>
@@ -69,7 +71,7 @@
           <ion-col size="12">
             <ion-card
               class="nursery-tile"
-              style="border: 2px solid white"
+              style="border: 2px solid white; margin: 0 5px 0 5px"
               [routerLink]="['/list', { id: nursery.id['value'], type: TreeType.Species }]"
             >
               <ion-card-header>

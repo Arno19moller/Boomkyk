@@ -1,3 +1,6 @@
+// @import 'swiper/css/bundle';
+
+
 .radio-container {
   overflow: auto;
   display: flex;
@@ -25,19 +28,27 @@
 }
 
 .swiper-zoom-container {
-  width: 100%; /* Adjust width as needed */
-  height: 100%; /* Adjust height as needed */
-  overflow: auto;
+  // width: 100%; /* Adjust width as needed */
+  // height: 100%; /* Adjust height as needed */
+  // overflow: auto;
 }
 
 .timestamp {
   position: absolute;
   top: 5px;
-  right: 5px;
+  left: 5px;
   width: max-content;
   height: max-content;
   background-color: black;
   color: white;
   padding: 5px;
+  border-radius: 3px;
+}
+
+.expand-icon {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  margin: 0;
   border-radius: 3px;
 }

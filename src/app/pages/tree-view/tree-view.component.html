@@ -5,9 +5,6 @@
     </ion-buttons>
     <ion-title> {{ tree?.title }} </ion-title>
     <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="deleteClicked()">
-        <ion-icon slot="icon-only" name="trash"></ion-icon>
-      </ion-button>
       <ion-button fill="clear" (click)="editClicked()">
         <ion-icon slot="icon-only" name="create"></ion-icon>
       </ion-button>
@@ -32,7 +29,7 @@
   </ion-header>
 
   <ion-content>
-    <ion-segment [scrollable]="true" value="overview" #infoSegment (ionChange)="indexChanged()">
+    <ion-segment [scrollable]="true" value="overview" #infoSegment>
       <ion-segment-button value="overview">Overview</ion-segment-button>
       <ion-segment-button value="leaves">Leaves</ion-segment-button>
       <ion-segment-button value="bark">Bark</ion-segment-button>
@@ -82,15 +79,15 @@
             }
           }
           <ion-item>
-            <ion-toggle [(ngModel)]="showLocation" [enableOnOffLabels]="true">Show Location</ion-toggle>
+            <ion-toggle [(ngModel)]="showLocation" [enableOnOffLabels]="true">Show Map</ion-toggle>
           </ion-item>
         </ion-list>
       </ion-card-content>
     </ion-card>
 
     @if (showLocation) {
-    <app-maps [markerCoordinate]="locations"></app-maps>
-  }
+      <app-maps [markerCoordinate]="locations"></app-maps>
+    }
   </ion-content>
 </ion-content>
 
@@ -111,16 +108,16 @@
 </ng-template>
 
 <ng-template #imageSwiper let-images="images">
-  <swiper-container #swiper [pagination]="true" [zoom]="true" [minZoom]="1">
+  <swiper-container [pagination]="true" zoom="true" [maxRatio]="8">
     @for (image of images; track $index) {
       <swiper-slide>
-        <div style="height: 100%; width: 100%; overflow: auto">
+        <div class="swiper-zoom-container">
           @if (image.timestamp !== undefined) {
             <div class="timestamp">
               {{ image.timestamp | date: 'yyyy/MM/dd' }}
             </div>
           }
-          <ion-img
+          <img
             class="tree-image"
             [src]="image.webviewPath !== '' ? image.webviewPath : '../../../assets/images/image-not-found.jpg'"
           />

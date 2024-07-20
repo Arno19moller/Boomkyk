@@ -10,6 +10,7 @@ import {
   closeCircleOutline,
   create,
   ellipse,
+  expand,
   image,
   leaf,
   mic,
@@ -50,6 +51,7 @@ export class AppComponent implements OnInit {
       play,
       pause,
       save,
+      expand,
     });
   }
 

@@ -10,15 +10,20 @@ ion-card {
 }
 
 .family-tile {
-  height: 100px;
-  width: calc(100% + 16px);
-  border-radius: 3px;
-  margin: 0 -16px 0 0;
+  @extend .family-image-tile;
+  height: 100px !important; 
   display: flex;
   align-items: flex-end;
   direction: rtl;
 }
 
-ion-item::part(native){
+.family-image-tile {
+  height: 100%;
+  width: calc(100% + 16px);
+  border-radius: 3px;
+  margin: 0 -16px 0 0;
+}
+
+ion-item::part(native) {
   padding: 0;
 }

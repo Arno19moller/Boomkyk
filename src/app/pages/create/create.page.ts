@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { ActionSheetController, NavController } from '@ionic/angular';
@@ -101,10 +102,11 @@ export class Tab2Page implements OnInit, OnDestroy {
     public photoService: PhotoService,
     private databaseService: DatabaseService,
     public actionSheetController: ActionSheetController,
-    private actionsService: ActionsService,
+    public actionsService: ActionsService,
     public recordingService: RecordingService,
     private gestureCtrl: GestureController,
     private navCtrl: NavController,
+    private router: Router,
   ) {
     this.newTree = this.actionsService.selectedTree ?? {
       id: Guid.create(),
@@ -341,6 +343,13 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
 
+  async deleteClicked(): Promise<void> {
+    const val = await this.actionsService.openDeleteAlert(this.newTree?.id['value']);
+    if (val === 'confirm') {
+      this.router.navigate(['/home']);
+    }
+  }
+
   async ngOnDestroy() {
     this.destroy$.next(null);
     this.destroy$.complete();
@@ -348,7 +357,4 @@ export class Tab2Page implements OnInit, OnDestroy {
 
     await this.recordingService.clearRecordingList();
   }
-}
-function signal(arg0: never[]): Position[] {
-  throw new Error('Function not implemented.');
 }

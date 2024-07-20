@@ -40,15 +40,17 @@
       <ion-row>
         @for (tree of treesList; track $index) {
           <ion-col size="6">
-            <ion-item-sliding>
-              <ion-item-options side="end">
-                <ion-item-option color="primary" (click)="editClicked(tree)">Edit</ion-item-option>
+            <ion-item-sliding style="padding: 5px;">
+              <ion-item-options side="end" style="padding: 6px;">
+                <ion-item-option color="primary" (click)="editClicked(tree)">
+                  <ion-icon slot="icon-only" name="create" color="dark"></ion-icon>
+                </ion-item-option>
               </ion-item-options>
 
               <ion-item style="overflow: visible">
                 @if (currentTreeType == TreeType.Species) {
                   <ion-card
-                    class="family-tile"
+                    class="family-image-tile"
                     [attr.id]="tree.id['value']"
                     [routerLink]="['/view', { id: tree.id['value'] }]"
                   >
@@ -57,7 +59,7 @@
                       [src]="getImage(tree)?.webviewPath ?? '../../../assets//images/image-not-found.jpg'"
                     />
                     <ion-card-header>
-                      <ion-card-title style="font-size: large">
+                      <ion-card-title style="font-size: large;">
                         {{ tree.title }}
                       </ion-card-title>
                     </ion-card-header>

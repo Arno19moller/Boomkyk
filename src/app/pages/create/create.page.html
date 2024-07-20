@@ -68,7 +68,11 @@
         </ion-select>
       </ion-item>
       <ion-item style="padding-left: 8px; padding-right: 2px">
-        <ion-toggle [enableOnOffLabels]="true" [(ngModel)]="saveLocation" (ngModelChange)="locationToggleChanged()">Save Location</ion-toggle>
+        @if(newTree.type === TreeType.Species){
+        <ion-toggle [enableOnOffLabels]="true" [(ngModel)]="saveLocation" (ngModelChange)="locationToggleChanged()">
+          Save Location
+        </ion-toggle>
+        }
       </ion-item>
       }
     </ion-list>
@@ -182,7 +186,12 @@
       } }
     </ion-list>
   </ion-card>
-  } }
+  } } @if(this.actionsService.selectedTree !== undefined){
+  <ion-button fill="outline" expand="block" color="danger" style="padding: 0 10px" (click)="deleteClicked()">
+    DELETE
+    <ion-icon slot="start" name="trash"></ion-icon>
+  </ion-button>
+  }
 </ion-content>
 
 @if(newTree.type === TreeType.Species){
