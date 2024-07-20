@@ -1,75 +1,85 @@
-import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, effect, input, OnDestroy } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, effect, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Position } from '@capacitor/geolocation';
-import { GoogleMap } from '@capacitor/google-maps';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonCard, IonContent, IonHeader, IonSkeletonText, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import * as L from 'leaflet';
+import { Marker } from 'leaflet';
 
 @Component({
   selector: 'app-maps',
   templateUrl: './maps.page.html',
   styleUrls: ['./maps.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonSkeletonText, CommonModule, FormsModule],
+  providers: [DatePipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class MapsPage implements AfterViewInit, OnDestroy {
-  map: GoogleMap | undefined;
-  addedMarkers: string[] = [];
-  markerCoordinate = input<Position | undefined>();
+export class MapsPage implements AfterViewInit {
+  isMapLoaded: boolean = false;
+  leafletMap: any;
+  addedMarkers: Marker<any>[] = [];
+  markerCoordinate = input<Position[] | undefined>();
 
-  constructor() {
+  constructor(private datePipe: DatePipe) {
     effect(async () => {
+      this.addedMarkers.map((marker) => {
+        this.removePin(marker);
+      });
+
       if (this.markerCoordinate() !== undefined) {
-        this.addedMarkers.push(
-          await this.map!.addMarker({
-            coordinate: {
-              lat: this.markerCoordinate()!.coords.latitude,
-              lng: this.markerCoordinate()!.coords.longitude,
-            },
-          }),
-        );
-      } else {
-        await this.map?.removeMarkers(this.addedMarkers);
-        this.addedMarkers = [];
+        const interval = setInterval(() => {
+          if (this.isMapLoaded) {
+            this.markerCoordinate()!.map((location) => {
+              this.addPin(location);
+            });
+
+            clearInterval(interval);
+          }
+        }, 500);
       }
     });
   }
 
   async ngAfterViewInit() {
-    try {
-      const apiKey = 'AIzaSyA6ju_iOEfLWsgZu2mf6cz-It1fDzTeVc8';
-      const mapRef = document.getElementById('map');
-
-      if (mapRef) {
-        this.map = await GoogleMap.create({
-          id: 'my-map', // Unique identifier for this map instance
-          element: mapRef, // reference to the capacitor-google-map element
-          apiKey: apiKey, // Your Google Maps API Key
-          config: {
-            center: {
-              // The initial position to be rendered by the map
-              lng: 28.1914,
-              lat: -25.7566,
-            },
-            zoom: 8, // The initial zoom level to be rendered by the map
-            androidLiteMode: true,
-            disableDefaultUI: true,
-          },
-        });
-        const markerId = await this.map.addMarker({
-          coordinate: {
-            lat: 33.6,
-            lng: -117.9,
-          },
-        });
-      }
-    } catch (error) {
-      alert(error);
-    }
+    setTimeout(() => {
+      this.loadLeafletMap();
+      this.isMapLoaded = true;
+    }, 1000);
   }
 
-  async ngOnDestroy() {
-    await this.map?.destroy();
+  loadLeafletMap() {
+    this.leafletMap = new L.Map('leafletMap');
+    this.leafletMap.setView([-25.7566, 28.1914], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href=”https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(this.leafletMap);
+  }
+
+  addPin(location: Position) {
+    let icon = L.icon({
+      iconUrl: 'assets/images/pin.png',
+      iconSize: [27, 40],
+    });
+
+    const date = new Date(location.timestamp);
+    const dateStr = this.datePipe.transform(date, 'yyyy-MM-dd');
+
+    const marker = L.marker([location.coords.latitude, location.coords.longitude], { icon: icon }).addTo(
+      this.leafletMap,
+    );
+    const popup = L.popup().setContent(`<p>${dateStr}</p>`);
+
+    this.addedMarkers.push(marker);
+    marker.bindPopup(popup);
+  }
+
+  removePin(marker: Marker<any>) {
+    if (marker) {
+      this.leafletMap.removeLayer(marker);
+      this.addedMarkers.splice(this.addedMarkers.indexOf(marker), 1);
+    } else {
+      console.warn('Marker not found at specified location');
+    }
   }
 }

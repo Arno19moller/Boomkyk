@@ -81,9 +81,16 @@
               <ng-container *ngTemplateOutlet="voiceNote; context: { note: note }"> </ng-container>
             }
           }
+          <ion-item>
+            <ion-toggle [(ngModel)]="showLocation" [enableOnOffLabels]="true">Show Location</ion-toggle>
+          </ion-item>
         </ion-list>
       </ion-card-content>
     </ion-card>
+
+    @if (showLocation) {
+    <app-maps [markerCoordinate]="locations"></app-maps>
+  }
   </ion-content>
 </ion-content>
 

@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { Position } from '@capacitor/geolocation';
 import { ActionSheetController, NavController } from '@ionic/angular';
 import {
   IonBackButton,
@@ -24,6 +26,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonTitle,
+  IonToggle,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { Subject, takeUntil } from 'rxjs';
@@ -35,6 +38,7 @@ import { ActionsService } from 'src/app/services/actions.service';
 import { DatabaseService } from 'src/app/services/database.service';
 import { RecordingService } from 'src/app/services/recording.service';
 import { register } from 'swiper/element/bundle';
+import { MapsPage } from '../maps/maps.page';
 
 register();
 @Component({
@@ -65,7 +69,10 @@ register();
     IonSegment,
     IonSegmentButton,
     IonBackButton,
+    IonToggle,
+    MapsPage,
     RouterModule,
+    FormsModule,
     CommonModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -88,6 +95,8 @@ export class TreeViewComponent implements OnInit, OnDestroy {
   public fruitDescription: string = '';
   public flowerDescription: string = '';
   public Type = ImageType;
+  public locations: Position[] = [];
+  showLocation: boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -137,6 +146,7 @@ export class TreeViewComponent implements OnInit, OnDestroy {
       this.flowerDescription = this.tree.treeInfo.flower.replace(/\n/g, '<br>');
     }
 
+    this.locations = this.tree?.locations ?? [];
     this.initialiseDoubleClick();
   }
 

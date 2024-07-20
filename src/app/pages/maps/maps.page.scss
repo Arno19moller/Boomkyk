@@ -1,7 +1,9 @@
-capacitor-google-map {
-  display: inline-block;
-  width: calc(100% - 32px);
-  margin: 0 16px 0 16px;
-  height: 400px;
-  border-radius: 7px;
+@import "~leaflet/dist/leaflet.css";
+
+.map-card {
+  height: 500px;
+
+  .map {
+    height: 100%;
+  }
 }

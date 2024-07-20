@@ -1,14 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  signal,
-  ViewChild,
-  WritableSignal,
-} from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -48,7 +39,6 @@ import { Tree } from '../../models/tree.interface';
 import { ActionsService } from '../../services/actions.service';
 import { DatabaseService } from '../../services/database.service';
 import { PhotoService } from '../../services/photo.service';
-import { MapsPage } from '../maps/maps.page';
 import { TreeFamiliesComponent } from '../tree-families/tree-families.component';
 
 @Component({
@@ -81,7 +71,6 @@ import { TreeFamiliesComponent } from '../tree-families/tree-families.component'
     IonToggle,
     FormsModule,
     CommonModule,
-    MapsPage,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
@@ -103,7 +92,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   public selectedImageType: ImageType = ImageType.Overview;
   public treeGroups: Tree[] = [];
   public errorMessage: string = '';
-  public newLocation: WritableSignal<Position | undefined> = signal(undefined);
+  public newLocations: Position[] = [];
 
   // voice recording
   duration: number = 0;
@@ -134,6 +123,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
+    this.newLocations = [...(this.newTree.locations ?? [])];
     this.isEdit = this.actionsService.selectedTree != undefined;
     this.photoService.setTreeImages(this.newTree.images ?? []);
     this.recordingService.setTreeRecordings(this.newTree.voiceNotes ?? []);
@@ -323,9 +313,9 @@ export class Tab2Page implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.saveLocation && this.newLocation() !== undefined) {
+    if (this.saveLocation && this.newLocations.length > 0) {
       this.newTree.locations = this.newTree.locations ?? [];
-      this.newTree.locations.push(this.newLocation()!);
+      this.newTree.locations = [...this.newTree.locations, ...this.newLocations];
     }
 
     if (this.isEdit) {
@@ -345,9 +335,9 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   async locationToggleChanged() {
     if (this.saveLocation) {
-      this.newLocation.set(await Geolocation.getCurrentPosition());
+      this.newLocations = [...this.newLocations, await Geolocation.getCurrentPosition()];
     } else {
-      this.newLocation.set(undefined);
+      this.newLocations = this.newTree.locations ?? [];
     }
   }
 
@@ -358,4 +348,7 @@ export class Tab2Page implements OnInit, OnDestroy {
 
     await this.recordingService.clearRecordingList();
   }
+}
+function signal(arg0: never[]): Position[] {
+  throw new Error('Function not implemented.');
 }
