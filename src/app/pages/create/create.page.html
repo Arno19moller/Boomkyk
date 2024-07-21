@@ -79,7 +79,7 @@
   </ion-card>
   @if(newTree.type === TreeType.Species){
   <ion-card>
-    <ion-list>
+    <ion-list lines="none">
       <ion-item>
         <ion-segment
           value="overview"
@@ -110,7 +110,7 @@
             <ion-img [src]="image.webviewPath" (click)="showDeleteImageActionSheet(image)"></ion-img>
           </ion-col>
           }
-          <ion-col size="12">
+          <ion-col size="12" style="padding-left: 0; padding-right: 0;">
             <ion-button (click)="addPhotoToGallery()" fill="outline" size="large" expand="block">
               <ion-icon name="camera" slot="icon-only"></ion-icon>
             </ion-button>
@@ -187,7 +187,7 @@
     </ion-list>
   </ion-card>
   } } @if(this.actionsService.selectedTree !== undefined){
-  <ion-button fill="outline" expand="block" color="danger" style="padding: 0 10px" (click)="deleteClicked()">
+  <ion-button fill="outline" expand="block" color="danger" style="padding: 0 8px" (click)="deleteClicked()">
     DELETE
     <ion-icon slot="start" name="trash"></ion-icon>
   </ion-button>

@@ -3,7 +3,7 @@ import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, OnDestroy, OnInit, ViewC
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Position } from '@capacitor/geolocation';
-import { ActionSheetController, NavController } from '@ionic/angular';
+import { ActionSheetController } from '@ionic/angular';
 import {
   IonBackButton,
   IonButton,
@@ -106,7 +106,6 @@ export class TreeViewComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     public databaseService: DatabaseService,
     private actionsService: ActionsService,
-    private navCtrl: NavController,
     public actionSheetController: ActionSheetController,
     public recordingService: RecordingService,
   ) {}

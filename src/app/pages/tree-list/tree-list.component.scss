@@ -9,16 +9,16 @@ ion-card {
   min-height: 100%;
 }
 
-.family-tile {
-  @extend .family-image-tile;
-  height: 100px !important; 
+.tree-tile {
+  @extend .tree-image-tile;
+  height: 110px !important; 
   display: flex;
   align-items: flex-end;
   direction: rtl;
 }
 
-.family-image-tile {
-  height: 100%;
+.tree-image-tile {
+  height: 200px;
   width: calc(100% + 16px);
   border-radius: 3px;
   margin: 0 -16px 0 0;

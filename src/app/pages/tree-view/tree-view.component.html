@@ -64,7 +64,7 @@
         } @else if (infoSegment.value === 'flower') {
           <p [innerHTML]="flowerDescription"></p>
         }
-        <ion-list>
+        <ion-list lines="none">
           @for (note of tree?.voiceNotes; track $index) {
             @if (infoSegment.value == 'overview' && note.type === Type.Overview) {
               <ng-container *ngTemplateOutlet="voiceNote; context: { note: note }"> </ng-container>

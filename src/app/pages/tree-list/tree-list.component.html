@@ -35,7 +35,7 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-list lines="none">
+  <ion-list lines="none" style="height: 100%;">
     <ion-grid>
       <ion-row>
         @for (tree of treesList; track $index) {
@@ -50,7 +50,7 @@
               <ion-item style="overflow: visible">
                 @if (currentTreeType == TreeType.Species) {
                   <ion-card
-                    class="family-image-tile"
+                    class="tree-image-tile"
                     [attr.id]="tree.id['value']"
                     [routerLink]="['/view', { id: tree.id['value'] }]"
                   >
@@ -66,7 +66,7 @@
                   </ion-card>
                 } @else {
                   <ion-card
-                    class="family-tile"
+                    class="tree-tile"
                     [style.border]="'3px solid ' + pastelColors[$index]"
                     [attr.id]="tree.id['value']"
                     [routerLink]="['/list', { id: tree.id['value'], type: TreeType.Species }]"
