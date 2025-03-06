@@ -2,7 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { AfterViewInit, Component, CUSTOM_ELEMENTS_SCHEMA, effect, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Position } from '@capacitor/geolocation';
-import { IonCard, IonContent, IonHeader, IonSkeletonText, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonCard, IonSkeletonText } from '@ionic/angular/standalone';
 import * as L from 'leaflet';
 import { Marker } from 'leaflet';
 
@@ -11,7 +11,7 @@ import { Marker } from 'leaflet';
   templateUrl: './maps.page.html',
   styleUrls: ['./maps.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonSkeletonText, CommonModule, FormsModule],
+  imports: [IonCard, IonSkeletonText, CommonModule, FormsModule],
   providers: [DatePipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

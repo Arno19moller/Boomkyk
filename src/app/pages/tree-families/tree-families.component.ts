@@ -2,11 +2,9 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ActionSheetController, AlertController, ModalController } from '@ionic/angular';
 import {
-  IonActionSheet,
   IonButton,
   IonButtons,
   IonCard,
-  IonCardContent,
   IonCardHeader,
   IonCardSubtitle,
   IonCardTitle,
@@ -20,7 +18,6 @@ import {
   IonItemOption,
   IonItemOptions,
   IonItemSliding,
-  IonLabel,
   IonList,
   IonRow,
   IonSearchbar,
@@ -39,7 +36,6 @@ import { DatabaseService } from '../../services/database.service';
   styleUrls: ['./tree-families.component.scss'],
   standalone: true,
   imports: [
-    IonLabel,
     IonButton,
     IonHeader,
     IonToolbar,
@@ -47,12 +43,10 @@ import { DatabaseService } from '../../services/database.service';
     IonContent,
     IonCard,
     IonCardHeader,
-    IonCardContent,
     IonCardTitle,
     IonCardSubtitle,
     RouterModule,
     IonSearchbar,
-    IonActionSheet,
     IonButtons,
     IonIcon,
     IonImg,

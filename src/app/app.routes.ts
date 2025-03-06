@@ -3,6 +3,10 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: 'home',
+    loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
+  },
+  {
+    path: 'family',
     loadComponent: () => import('./pages/tree-families/tree-families.component').then((m) => m.TreeFamiliesComponent),
   },
   {
@@ -25,5 +29,9 @@ export const routes: Routes = [
   {
     path: 'maps',
     loadComponent: () => import('./pages/maps/maps.page').then((m) => m.MapsPage),
+  },
+  {
+    path: 'home',
+    loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
   },
 ];

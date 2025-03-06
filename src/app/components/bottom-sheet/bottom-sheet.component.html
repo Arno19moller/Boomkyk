@@ -1,0 +1,9 @@
+<div class="container">
+  <ion-action-sheet
+    [isOpen]="isOpen()"
+    header="Example header"
+    subHeader="Example subheader"
+    [buttons]="actionSheetButtons"
+    (didDismiss)="logResult($event)"
+  ></ion-action-sheet>
+</div>

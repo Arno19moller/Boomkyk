@@ -2,15 +2,18 @@ import { Component, inject, OnInit } from '@angular/core';
 import { IonApp, IonLoading, IonRouterOutlet, IonToast } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
+  add,
   addCircleOutline,
   arrowBack,
   camera,
+  cameraOutline,
   checkmark,
   close,
   closeCircleOutline,
   create,
   ellipse,
   expand,
+  filterCircleOutline,
   image,
   leaf,
   mic,
@@ -46,12 +49,15 @@ export class AppComponent implements OnInit {
       create,
       checkmark,
       addCircleOutline,
+      add,
       closeCircleOutline,
       mic,
       play,
       pause,
       save,
       expand,
+      cameraOutline,
+      filterCircleOutline,
     });
   }
 
