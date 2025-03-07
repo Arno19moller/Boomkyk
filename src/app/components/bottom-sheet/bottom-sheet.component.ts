@@ -1,4 +1,5 @@
-import { Component, model, OnInit } from '@angular/core';
+import { Component, computed, model, OnInit, Signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import {
   IonButton,
   IonContent,
@@ -8,35 +9,38 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/angular/standalone';
-import { ItemStructure, ItemStructureItem } from 'src/app/models/item-structure.interface';
+import {
+  ItemStructure as CategoryStructure,
+  ItemStructureItem as CategoryStructureItem,
+} from 'src/app/models/category-structure.interface';
 
 @Component({
   standalone: true,
   selector: 'app-bottom-sheet',
   templateUrl: './bottom-sheet.component.html',
   styleUrls: ['./bottom-sheet.component.scss'],
-  imports: [IonButton, IonItem, IonList, IonContent, IonModal, IonSelect, IonSelectOption],
+  imports: [IonButton, IonItem, IonList, IonContent, IonModal, IonSelect, IonSelectOption, FormsModule],
 })
 export class BottomSheetComponent implements OnInit {
-  fam1: ItemStructureItem = { name: 'Fam 1' };
-  fam2: ItemStructureItem = { name: 'Fam 2' };
-  gen1: ItemStructureItem = { name: 'Genus 1', parent: this.fam1 };
-  gen2: ItemStructureItem = { name: 'Genus 2', parent: this.fam2 };
-  spec1: ItemStructureItem = { name: 'Species 1', parent: this.gen1 };
-  spec2: ItemStructureItem = { name: 'Species 2', parent: this.gen2 };
+  fam1: CategoryStructureItem = { name: 'Fam 1' };
+  fam2: CategoryStructureItem = { name: 'Fam 2' };
+  gen1: CategoryStructureItem = { name: 'Genus 1', parent: this.fam1 };
+  gen2: CategoryStructureItem = { name: 'Genus 2', parent: this.fam2 };
+  spec1: CategoryStructureItem = { name: 'Species 1', parent: this.gen1 };
+  spec2: CategoryStructureItem = { name: 'Species 2', parent: this.gen2 };
 
-  family: ItemStructure = {
+  family: CategoryStructure = {
     name: 'Family',
     level: 2,
     values: [this.fam1, this.fam2],
   };
-  genus: ItemStructure = {
+  genus: CategoryStructure = {
     name: 'Genus',
     values: [this.gen1, this.gen2],
     level: 1,
     parent: this.family,
   };
-  species: ItemStructure = {
+  species: CategoryStructure = {
     name: 'Species',
     level: 0,
     values: [this.spec1, this.spec2],
@@ -44,34 +48,56 @@ export class BottomSheetComponent implements OnInit {
   };
 
   isOpen = model<boolean>(false);
-  structure = model<ItemStructure[]>([this.family, this.genus, this.species]);
-  filteredStructure: ItemStructure[] = [];
-  constructor() {}
-
-  ngOnInit() {
-    this.filteredStructure = this.structure();
-  }
-
-  valueSelected(structure: ItemStructure, selectedValue: string): void {
-    if (structure.level > 0) {
-      this.filteredStructure = this.structure().map((items) => {
-        if (items.level == structure.level - 1) {
+  structures = model<CategoryStructure[]>([this.family, this.genus, this.species]);
+  filteredStructures: Signal<CategoryStructure[]> = computed(() => {
+    const structures = this.structures();
+    if (structures?.length > 0) {
+      return structures.map((structure) => {
+        if (structure.parent?.selectedItem != undefined) {
+          const values = structure.values.filter((x) => {
+            return x.parent?.name === structure.parent?.selectedItem;
+          });
+          if (!values.some((val) => val.name === structure.selectedItem)) {
+            structure.selectedItem = undefined;
+          }
           return {
-            name: items.name,
-            level: items.level,
-            parent: items.parent,
-            values: items.values.filter((val) => val.parent?.name === selectedValue),
+            ...structure,
+            values: values,
           };
         } else {
-          return items;
+          return { ...structure };
         }
       });
-
-      console.log(this.filteredStructure);
     }
+    return structures;
+  });
+
+  constructor() {}
+
+  ngOnInit() {}
+
+  valueSelected(structure: CategoryStructure, selectedItem: string): void {
+    this.structures.update((structures) => [
+      ...structures.map((x) => {
+        if (x.name === structure.name) {
+          x.selectedItem = structure.values.find((x) => x.name === selectedItem)?.name;
+        }
+        return x;
+      }),
+    ]);
   }
 
-  dismissed() {
+  clearClicked(): void {
+    this.structures.update((structures) => [
+      ...structures.map((x) => {
+        x.selectedItem = undefined;
+        return x;
+      }),
+    ]);
+  }
+
+  dismissed(): void {
+    this.clearClicked();
     this.isOpen.set(false);
   }
 }

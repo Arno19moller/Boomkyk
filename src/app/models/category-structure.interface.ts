@@ -3,6 +3,7 @@ export interface ItemStructure {
   level: number;
   values: ItemStructureItem[];
   parent?: ItemStructure;
+  selectedItem?: string; // used in filter
 }
 
 export interface ItemStructureItem {

@@ -9,28 +9,33 @@
     <ion-content>
       <h2 style="width: 100%; text-align: center">Filter</h2>
       <ion-list>
-        @for (item of filteredStructure; track $index) {
-          @if (item.level > 0) {
-            <ion-item>
-              <ion-select
-                label-placement="fixed"
-                interface="popover"
-                placeholder="Select {{ item.name }}"
-                (ionChange)="valueSelected(item, $event.target.value)"
-              >
-                <div slot="label">{{ item.name }}</div>
-                @for (val of item.values; track $index) {
-                  <ion-select-option [value]="val.name">{{ val.name }}</ion-select-option>
-                }
-              </ion-select>
-            </ion-item>
+        @if (filteredStructures()) {
+          @for (item of filteredStructures(); track $index) {
+            @if (item.level > 0) {
+              <ion-item>
+                <ion-select
+                  label-placement="fixed"
+                  interface="popover"
+                  placeholder="Select {{ item.name }}"
+                  [(ngModel)]="item.selectedItem"
+                  (ionChange)="valueSelected(item, $event.target.value)"
+                >
+                  <div slot="label">{{ item.name }}</div>
+                  @for (val of item.values; track $index) {
+                    <ion-select-option [value]="val.name">{{ val.name }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            }
           }
         }
       </ion-list>
       <ion-list lines="none" inset="false">
         <ion-item>
           <ion-button slot="end" size="default" (click)="isOpen.set(false)">Filter</ion-button>
-          <ion-button fill="outline" color="danger" slot="end" size="default">Clear</ion-button>
+          <ion-button fill="outline" color="danger" slot="end" size="default" (click)="clearClicked()">
+            Clear
+          </ion-button>
         </ion-item>
       </ion-list>
     </ion-content>
