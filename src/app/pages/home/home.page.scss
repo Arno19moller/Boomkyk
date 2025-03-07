@@ -13,3 +13,13 @@
         display: block;
     }
 }
+.item-card {
+    height: 250px;
+    margin: 0;
+
+    .item-image::part(image) {
+        max-height: 150px !important;
+        width: 100%;
+        object-fit: cover;
+    }
+}
