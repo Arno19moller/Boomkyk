@@ -1,14 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
   IonButton,
   IonButtons,
   IonCard,
-  IonCardContent,
   IonCardHeader,
-  IonCardSubtitle,
   IonCardTitle,
   IonCol,
   IonContent,
@@ -24,9 +22,12 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
+import { CategoryFilter } from 'src/app/models/category-filter.interface';
+import { CategoryStructure } from 'src/app/models/category-structure.interface';
 import { Tree } from 'src/app/models/tree.interface';
+import { CategoryService } from 'src/app/services-new/category.service';
 import { DatabaseService } from 'src/app/services/database.service';
-import { BottomSheetComponent } from '../../components/bottom-sheet/bottom-sheet.component';
+import { BottomSheetComponent } from '../../../components/filter-bottom-sheet/bottom-sheet.component';
 
 @Component({
   selector: 'app-home',
@@ -34,8 +35,6 @@ import { BottomSheetComponent } from '../../components/bottom-sheet/bottom-sheet
   styleUrls: ['./home.page.scss'],
   standalone: true,
   imports: [
-    IonCardSubtitle,
-    IonCardContent,
     IonCardTitle,
     IonCardHeader,
     IonCard,
@@ -61,9 +60,20 @@ import { BottomSheetComponent } from '../../components/bottom-sheet/bottom-sheet
   ],
 })
 export class HomePage implements OnInit {
+  private categoryService = inject(CategoryService);
+
   protected databaseService = inject(DatabaseService);
   protected isOpen = signal<boolean>(false);
   protected items = signal<Tree[][]>([]);
+  protected categories = signal<CategoryStructure[]>([]);
+  protected filters = signal<CategoryFilter[]>([]);
+
+  protected filteredStructures: Signal<any> = computed(() => {
+    const filters = this.filters();
+    if (filters?.length > 0) {
+      // alert(filters[0].level);
+    }
+  });
 
   constructor() {}
 
@@ -78,6 +88,10 @@ export class HomePage implements OnInit {
         }
       }
       this.items.set(treeList);
+    });
+
+    this.categoryService.getCategories().then((categories) => {
+      this.categories.update(() => categories ?? []);
     });
   }
 

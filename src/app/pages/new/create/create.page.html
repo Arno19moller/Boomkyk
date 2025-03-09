@@ -1,0 +1,189 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
+    <ion-button slot="end" (click)="onSubmit()">
+      <ion-icon name="save" slot="start"></ion-icon>
+      {{ !isEdit ? 'Save' : 'Update' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button></ion-back-button>
+      </ion-buttons>
+      <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
+      <ion-button slot="end" (click)="onSubmit()">
+        <ion-icon name="save" slot="start"></ion-icon>
+        {{ !isEdit ? 'Save' : 'Update' }}
+      </ion-button>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-card>
+    <ion-list class="form-container" lines="none">
+      <ion-item>
+        <ion-select
+          fill="outline"
+          label="Type*"
+          interface="popover"
+          placeholder="Select Type"
+          label-placement="stacked"
+          required="true"
+          style="margin-top: 10px"
+          [(ngModel)]="selectedCategory"
+        >
+          @for (category of categories; track $index) {
+          <ion-select-option [value]="category">{{category.name}}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <!-- Update existing Item -->
+        @if(isEdit){
+        <ion-select
+          fill="outline"
+          [label]="selectedCategory()?.name + '*'"
+          interface="popover"
+          placeholder="Select {{selectedCategory()?.name}}"
+          label-placement="stacked"
+          required="true"
+          style="margin-top: 10px"
+          [(ngModel)]="selectedCategoryItem"
+        >
+          @for (item of selectedCategory()?.values; track $index) {
+          <ion-select-option [value]="item">{{item.name}}</ion-select-option>
+          }
+        </ion-select>
+        <!-- Add new Item -->
+        } @else {
+        <ion-input
+          fill="outline"
+          label="New {{selectedCategory()?.name}}"
+          labelPlacement="stacked"
+          placeholder="Enter new {{selectedCategory()?.name}}"
+          style="margin-top: 10px"
+          [value]="selectedCategoryItem()?.name"
+          (ionInput)="updateName($event)"
+        ></ion-input>
+        }
+      </ion-item>
+      <ion-item>
+        <!-- Select Parent -->
+        @if(selectedCategory()?.parent && selectedCategoryItem()){
+        <ion-select
+          fill="outline"
+          [label]="selectedCategory()!.parent!.name + '*'"
+          interface="popover"
+          placeholder="Select {{selectedCategory()!.parent!.name}}"
+          label-placement="stacked"
+          required="true"
+          style="margin-top: 10px"
+          [(ngModel)]="selectedCategoryItem()!.parent"
+        >
+          @for (item of selectedCategory()?.parent?.values; track $index) {
+          <ion-select-option [value]="item">{{item.name}}</ion-select-option>
+          }
+        </ion-select>
+        }
+      </ion-item>
+    </ion-list>
+  </ion-card>
+
+  @if(selectedCategoryItem()?.name && selectedCategoryItem()!.name!.length > 0){
+  <ion-card>
+    <ion-list class="form-container" lines="none">
+      <ion-item>
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="tertiary"
+          size="large"
+          style="width: 100%"
+          (click)="actionSheetType = 'upload'; isActionSheetOpen.set(true)"
+        >
+          <ion-icon slot="icon-only" name="camera-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+      @if(images.length > 0){
+      <ion-item>
+        <div class="image-scroll-container" (scroll)="endLongPress()">
+          @for (image of images; track $index) {
+          <ion-img
+            [src]="image.webPath"
+            class="item-image"
+            [class.highlight]="image.isHighlight"
+            (touchstart)="startLongPress(image)"
+            (touchend)="endLongPress()"
+            (touchcancel)="endLongPress()"
+            (dblclick)="doubleClick(image)"
+          >
+          </ion-img>
+          }
+        </div>
+      </ion-item>
+      }
+      <ion-item>
+        <ion-textarea
+          fill="outline"
+          label="Notes"
+          labelPlacement="stacked"
+          placeholder="Enter notes here"
+          style="margin-top: 10px"
+          autoGrow="true"
+        >
+        </ion-textarea>
+      </ion-item>
+    </ion-list>
+  </ion-card>
+  <ion-card>
+    <ion-list class="form-container" lines="none">
+      @for (note of selectedCategoryItem()?.voiceNotes; track $index) {
+      <ion-item>
+        <ion-button slot="start" fill="clear" (click)="deleteVoiceNoteClicked()">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+        <span>{{note.recordingName}}</span>
+        <ion-button slot="end" fill="clear" (click)="playNote(note)">
+          @if(!note.isPlaying){
+          <ion-icon name="play" slot="icon-only"></ion-icon>
+          } @else{
+          <ion-icon name="pause" slot="icon-only"></ion-icon>
+          }
+        </ion-button>
+      </ion-item>
+      }
+    </ion-list>
+  </ion-card>
+
+  <ion-footer class="recorder-footer" transparent>
+    <ion-toolbar>
+      <ion-row>
+        <ion-col size="12" class="align-items-center">
+          <ion-button fill="outline" #recordBtn shape="round">
+            <ion-icon name="mic" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-col>
+        <ion-col size="12" class="align-items-center">
+          @if(!recordingService.recording){
+          <span> Press and hold to record </span>
+          } @else{
+          <span> Recording duration: {{voiceDuration | number : '1.2-2'}}s </span>
+          }
+        </ion-col>
+      </ion-row>
+    </ion-toolbar>
+  </ion-footer>
+  }
+</ion-content>
+
+<app-action-sheet
+  [type]="actionSheetType"
+  [(isOpen)]="isActionSheetOpen"
+  (closed)="actionSheetClosed($event)"
+></app-action-sheet>

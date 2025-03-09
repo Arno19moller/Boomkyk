@@ -2,7 +2,7 @@
   #modal
   [isOpen]="isOpen()"
   [initialBreakpoint]="0.5"
-  [breakpoints]="[0, 0.25, 0.5, 0.75]"
+  [breakpoints]="[0, 0.5, 0.75]"
   (didDismiss)="dismissed()"
 >
   <ng-template>
@@ -32,7 +32,7 @@
       </ion-list>
       <ion-list lines="none" inset="false">
         <ion-item>
-          <ion-button slot="end" size="default" (click)="isOpen.set(false)">Filter</ion-button>
+          <ion-button slot="end" size="default" (click)="filterClicked()">Filter</ion-button>
           <ion-button fill="outline" color="danger" slot="end" size="default" (click)="clearClicked()">
             Clear
           </ion-button>

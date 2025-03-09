@@ -1,12 +1,27 @@
-export interface ItemStructure {
+import { Position } from '@capacitor/geolocation';
+import { BoomkykPhoto } from './photo.interface';
+import { VoiceNote } from './voice-notes.interface';
+
+export interface CategoryStructure {
   name: string;
   level: number;
-  values: ItemStructureItem[];
-  parent?: ItemStructure;
+  values: CategoryStructureItem[];
+  parent?: CategoryStructure;
   selectedItem?: string; // used in filter
+
+  // Create / update properties
+  allowImages: boolean;
+  allowNotes: boolean;
+  allowLocations: boolean;
 }
 
-export interface ItemStructureItem {
+export interface CategoryStructureItem {
   name: string;
-  parent?: ItemStructureItem;
+  parent?: CategoryStructureItem;
+
+  // Create / update properties
+  images?: BoomkykPhoto[];
+  notes?: string;
+  locations?: Position[];
+  voiceNotes?: VoiceNote[];
 }

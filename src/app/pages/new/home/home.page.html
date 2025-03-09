@@ -50,7 +50,11 @@
     }
   </ion-grid>
 
-  <app-bottom-sheet [(isOpen)]="isOpen"></app-bottom-sheet>
+  @if(filteredStructures()){
+<h5>hellooo</h5>
+  }
+
+  <app-bottom-sheet [(isOpen)]="isOpen" [structures]="categories()" [(filters)]="filters"></app-bottom-sheet>
 
   <ion-fab slot="fixed" horizontal="center" vertical="bottom">
     <ion-fab-button>
