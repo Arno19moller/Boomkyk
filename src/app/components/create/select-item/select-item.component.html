@@ -1,0 +1,69 @@
+<ion-card>
+  <ion-list class="form-container" lines="none">
+    <ion-item>
+      <ion-select
+        fill="outline"
+        label="Type*"
+        interface="popover"
+        placeholder="Select Type"
+        label-placement="stacked"
+        required="true"
+        style="margin-top: 10px"
+        [(ngModel)]="selectedCategory"
+      >
+        @for (category of categories(); track $index) {
+          <ion-select-option [value]="category">{{ category.name }}</ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <!-- Update existing Item -->
+      @if (isEdit()) {
+        <ion-select
+          fill="outline"
+          [label]="selectedCategory()?.name + '*'"
+          interface="popover"
+          placeholder="Select {{ selectedCategory()?.name }}"
+          label-placement="stacked"
+          required="true"
+          style="margin-top: 10px"
+          [(ngModel)]="selectedCategoryItem"
+        >
+          @for (item of selectedCategory()?.values; track $index) {
+            <ion-select-option [value]="item">{{ item.name }}</ion-select-option>
+          }
+        </ion-select>
+        <!-- Add new Item -->
+      } @else {
+        <ion-input
+          fill="outline"
+          label="New {{ selectedCategory()?.name }}"
+          labelPlacement="stacked"
+          placeholder="Enter new {{ selectedCategory()?.name }}"
+          style="margin-top: 10px"
+          [value]="selectedCategoryItem()?.name"
+          (ionInput)="updateName($event)"
+        ></ion-input>
+      }
+    </ion-item>
+    <!-- Select Parent -->
+    @if (selectedCategory()?.parent && selectedCategoryItem()) {
+      <ion-item>
+        <ion-select
+          fill="outline"
+          [label]="selectedCategory()!.parent!.name + '*'"
+          interface="popover"
+          placeholder="Select {{ selectedCategory()!.parent!.name }}"
+          label-placement="stacked"
+          required="true"
+          style="margin-top: 10px"
+          [(ngModel)]="selectedCategoryItem()!.parent"
+        >
+          @for (item of selectedCategory()?.parent?.values; track $index) {
+            <ion-select-option [value]="item">{{ item.name }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    }
+  </ion-list>
+</ion-card>

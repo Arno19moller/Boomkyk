@@ -28,6 +28,9 @@ import { VoiceNote } from 'src/app/models/voice-notes.interface';
 import { CategoryService } from 'src/app/services-new/category.service';
 import { RecordingService } from 'src/app/services/recording.service';
 import { PhotoActionSheetComponent } from '../../../components/action-sheet/action-sheet.component';
+import { ItemImageComponent } from '../../../components/create/item-image/item-image.component';
+import { SelectItemComponent } from '../../../components/create/select-item/select-item.component';
+import { VoiceComponent } from '../../../components/create/voice/voice.component';
 
 @Component({
   selector: 'app-create',
@@ -57,6 +60,9 @@ import { PhotoActionSheetComponent } from '../../../components/action-sheet/acti
     CommonModule,
     FormsModule,
     PhotoActionSheetComponent,
+    SelectItemComponent,
+    ItemImageComponent,
+    VoiceComponent,
   ],
 })
 export class CreatePage implements OnInit {
@@ -66,15 +72,13 @@ export class CreatePage implements OnInit {
   isEdit: boolean = false;
   voiceDuration: number = 0;
   categories: CategoryStructure[] = [];
-  images: { format: string; webPath: string; isHighlight: boolean }[] = [];
-  selectedImage: { format: string; webPath: string; isHighlight: boolean } | undefined = undefined;
-  longPressTimeout: any;
-  isLongPressing: boolean = false;
   actionSheetType: 'upload' | 'delete' = 'upload';
 
   isActionSheetOpen = signal<boolean>(false);
   selectedCategory = signal<CategoryStructure | undefined>(undefined);
   selectedCategoryItem = signal<CategoryStructureItem | undefined>(undefined);
+  images = signal<{ format: string; webPath: string; isHighlight: boolean }[]>([]);
+  selectedImage = signal<{ format: string; webPath: string; isHighlight: boolean } | undefined>(undefined);
 
   constructor() {}
 
@@ -90,19 +94,17 @@ export class CreatePage implements OnInit {
     });
   }
 
-  updateName(event: any): void {
-    const newName = event.detail.value;
-    this.selectedCategoryItem.update((current) => ({ ...current, name: newName }));
-  }
-
   actionSheetClosed(event: any): void {
     if (event === 'gallery') {
       this.addPhotosFromGallery();
     } else if (event === 'camera') {
       this.addPhotosFromCamera();
     } else if (event === 'delete' && this.selectedImage) {
-      const index = this.images.indexOf(this.selectedImage);
-      this.images.splice(index, 1);
+      const index = this.images().indexOf(this.selectedImage()!);
+      this.images.update((images) => {
+        images.splice(index, 1);
+        return images;
+      });
     }
   }
 
@@ -115,13 +117,15 @@ export class CreatePage implements OnInit {
     });
 
     if (images && images?.photos?.length > 0) {
-      this.images = images.photos.map((photo) => {
-        return {
-          format: photo.format,
-          webPath: photo.webPath!,
-          isHighlight: false,
-        };
-      });
+      this.images.set(
+        images.photos.map((photo) => {
+          return {
+            format: photo.format,
+            webPath: photo.webPath!,
+            isHighlight: false,
+          };
+        }),
+      );
     }
   }
 
@@ -135,33 +139,15 @@ export class CreatePage implements OnInit {
     });
 
     if (image) {
-      this.images.push({
-        format: image.format,
-        webPath: image.webPath!,
-        isHighlight: false,
+      this.images.update((images) => {
+        images.push({
+          format: image.format,
+          webPath: image.webPath!,
+          isHighlight: false,
+        });
+        return images;
       });
     }
-  }
-
-  startLongPress(image: { format: string; webPath: string; isHighlight: boolean }) {
-    this.isLongPressing = true;
-    this.longPressTimeout = setTimeout(() => {
-      if (this.isLongPressing) {
-        this.actionSheetType = 'delete';
-        this.selectedImage = image;
-        this.isActionSheetOpen.set(true);
-      }
-    }, 400);
-  }
-
-  endLongPress() {
-    this.isLongPressing = false;
-    clearTimeout(this.longPressTimeout);
-  }
-
-  doubleClick(image: { format: string; webPath: string; isHighlight: boolean }): void {
-    this.images.map((image) => (image.isHighlight = false));
-    image.isHighlight = true;
   }
 
   async playNote(note: VoiceNote) {

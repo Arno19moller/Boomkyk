@@ -25,122 +25,23 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-card>
-    <ion-list class="form-container" lines="none">
-      <ion-item>
-        <ion-select
-          fill="outline"
-          label="Type*"
-          interface="popover"
-          placeholder="Select Type"
-          label-placement="stacked"
-          required="true"
-          style="margin-top: 10px"
-          [(ngModel)]="selectedCategory"
-        >
-          @for (category of categories; track $index) {
-          <ion-select-option [value]="category">{{category.name}}</ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <!-- Update existing Item -->
-        @if(isEdit){
-        <ion-select
-          fill="outline"
-          [label]="selectedCategory()?.name + '*'"
-          interface="popover"
-          placeholder="Select {{selectedCategory()?.name}}"
-          label-placement="stacked"
-          required="true"
-          style="margin-top: 10px"
-          [(ngModel)]="selectedCategoryItem"
-        >
-          @for (item of selectedCategory()?.values; track $index) {
-          <ion-select-option [value]="item">{{item.name}}</ion-select-option>
-          }
-        </ion-select>
-        <!-- Add new Item -->
-        } @else {
-        <ion-input
-          fill="outline"
-          label="New {{selectedCategory()?.name}}"
-          labelPlacement="stacked"
-          placeholder="Enter new {{selectedCategory()?.name}}"
-          style="margin-top: 10px"
-          [value]="selectedCategoryItem()?.name"
-          (ionInput)="updateName($event)"
-        ></ion-input>
-        }
-      </ion-item>
-      <ion-item>
-        <!-- Select Parent -->
-        @if(selectedCategory()?.parent && selectedCategoryItem()){
-        <ion-select
-          fill="outline"
-          [label]="selectedCategory()!.parent!.name + '*'"
-          interface="popover"
-          placeholder="Select {{selectedCategory()!.parent!.name}}"
-          label-placement="stacked"
-          required="true"
-          style="margin-top: 10px"
-          [(ngModel)]="selectedCategoryItem()!.parent"
-        >
-          @for (item of selectedCategory()?.parent?.values; track $index) {
-          <ion-select-option [value]="item">{{item.name}}</ion-select-option>
-          }
-        </ion-select>
-        }
-      </ion-item>
-    </ion-list>
-  </ion-card>
+  <app-select-item
+    [categories]="categories"
+    [isEdit]="isEdit"
+    [(selectedCategory)]="selectedCategory"
+    [(selectedCategoryItem)]="selectedCategoryItem"
+  ></app-select-item>
 
   @if(selectedCategoryItem()?.name && selectedCategoryItem()!.name!.length > 0){
-  <ion-card>
-    <ion-list class="form-container" lines="none">
-      <ion-item>
-        <ion-button
-          expand="block"
-          fill="outline"
-          color="tertiary"
-          size="large"
-          style="width: 100%"
-          (click)="actionSheetType = 'upload'; isActionSheetOpen.set(true)"
-        >
-          <ion-icon slot="icon-only" name="camera-outline"></ion-icon>
-        </ion-button>
-      </ion-item>
-      @if(images.length > 0){
-      <ion-item>
-        <div class="image-scroll-container" (scroll)="endLongPress()">
-          @for (image of images; track $index) {
-          <ion-img
-            [src]="image.webPath"
-            class="item-image"
-            [class.highlight]="image.isHighlight"
-            (touchstart)="startLongPress(image)"
-            (touchend)="endLongPress()"
-            (touchcancel)="endLongPress()"
-            (dblclick)="doubleClick(image)"
-          >
-          </ion-img>
-          }
-        </div>
-      </ion-item>
-      }
-      <ion-item>
-        <ion-textarea
-          fill="outline"
-          label="Notes"
-          labelPlacement="stacked"
-          placeholder="Enter notes here"
-          style="margin-top: 10px"
-          autoGrow="true"
-        >
-        </ion-textarea>
-      </ion-item>
-    </ion-list>
-  </ion-card>
+  <app-item-image
+    [selectedCategoryItem]="selectedCategoryItem()"
+    [(actionSheetType)]="actionSheetType"
+    [(isActionSheetOpen)]="isActionSheetOpen"
+    [(images)]="images"
+    [(selectedImage)]="selectedImage"
+  ></app-item-image>
+
+  <app-voice></app-voice>
   <ion-card>
     <ion-list class="form-container" lines="none">
       @for (note of selectedCategoryItem()?.voiceNotes; track $index) {
@@ -161,7 +62,7 @@
     </ion-list>
   </ion-card>
 
-  <ion-footer class="recorder-footer" transparent>
+  <!-- <ion-footer class="recorder-footer" transparent>
     <ion-toolbar>
       <ion-row>
         <ion-col size="12" class="align-items-center">
@@ -178,7 +79,7 @@
         </ion-col>
       </ion-row>
     </ion-toolbar>
-  </ion-footer>
+  </ion-footer> -->
   }
 </ion-content>
 
