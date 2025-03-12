@@ -1,6 +1,6 @@
 import { Position } from '@capacitor/geolocation';
+import { AudioRecording } from './audio-recording.interface';
 import { BoomkykPhoto } from './photo.interface';
-import { VoiceNote } from './voice-notes.interface';
 
 export interface CategoryStructure {
   name: string;
@@ -23,5 +23,5 @@ export interface CategoryStructureItem {
   images?: BoomkykPhoto[];
   notes?: string;
   locations?: Position[];
-  voiceNotes?: VoiceNote[];
+  audioFiles?: AudioRecording[];
 }

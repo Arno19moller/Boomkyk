@@ -6,23 +6,13 @@ import {
   IonBackButton,
   IonButton,
   IonButtons,
-  IonCard,
-  IonCol,
   IonContent,
-  IonFooter,
   IonHeader,
   IonIcon,
-  IonImg,
-  IonInput,
-  IonItem,
-  IonList,
-  IonRow,
-  IonSelect,
-  IonSelectOption,
-  IonTextarea,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
+import { MapComponent } from 'src/app/components/create/map/map.component';
 import { CategoryStructure, CategoryStructureItem } from 'src/app/models/category-structure.interface';
 import { VoiceNote } from 'src/app/models/voice-notes.interface';
 import { CategoryService } from 'src/app/services-new/category.service';
@@ -38,15 +28,6 @@ import { VoiceComponent } from '../../../components/create/voice/voice.component
   styleUrls: ['./create.page.scss'],
   standalone: true,
   imports: [
-    IonCol,
-    IonRow,
-    IonFooter,
-    IonImg,
-    IonTextarea,
-    IonInput,
-    IonItem,
-    IonCard,
-    IonList,
     IonIcon,
     IonButton,
     IonBackButton,
@@ -55,14 +36,13 @@ import { VoiceComponent } from '../../../components/create/voice/voice.component
     IonHeader,
     IonTitle,
     IonToolbar,
-    IonSelect,
-    IonSelectOption,
     CommonModule,
     FormsModule,
     PhotoActionSheetComponent,
     SelectItemComponent,
     ItemImageComponent,
     VoiceComponent,
+    MapComponent,
   ],
 })
 export class CreatePage implements OnInit {

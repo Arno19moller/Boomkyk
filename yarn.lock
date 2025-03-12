@@ -1361,12 +1361,12 @@
   resolved "https://registry.npmjs.org/@capacitor/filesystem/-/filesystem-6.0.3.tgz"
   integrity sha512-PdIP/yOGAbG1lq1wbFbSPhXQ9/5lpTpeiok2NneawJOk6UXvy9W7QZXRo7wXAP7J6FdzU7bKfOORRXpOJpgXyw==
 
-"@capacitor/geolocation@^6.0.0":
+"@capacitor/geolocation@^6.1.0":
   version "6.1.0"
   resolved "https://registry.npmjs.org/@capacitor/geolocation/-/geolocation-6.1.0.tgz"
   integrity sha512-jEY5DcZirxX1gOBuOvf/FL7FlPMOKcsnF8PlfYxu7OFwRDD7HRwehEPWtJXR6wSYLgsCujm7yRqKrjtyN+f14g==
 
-"@capacitor/haptics@6.0.0":
+"@capacitor/haptics@^6.0.0":
   version "6.0.0"
   resolved "https://registry.npmjs.org/@capacitor/haptics/-/haptics-6.0.0.tgz"
   integrity sha512-z2TmB+pTbd98Il2I1xpZGClCFwORxxP2m9f1a0rh70c2ubj2atVyZctgxrx1fuoExZTNGSxHaylWfrmjmtelVg==
