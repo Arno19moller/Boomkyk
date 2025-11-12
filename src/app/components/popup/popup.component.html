@@ -1,0 +1,8 @@
+<ion-alert
+  [isOpen]="isAlertOpen()"
+  [header]="heading()"
+  [subHeader]="subHeading()"
+  [message]="body()"
+  [buttons]="alertButtons"
+  (didDismiss)="setOpen($event)"
+></ion-alert>

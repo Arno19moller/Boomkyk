@@ -1,4 +1,4 @@
-import { Component, model, OnInit } from '@angular/core';
+import { Component, model, OnInit, signal } from '@angular/core';
 import { Directory } from '@capacitor/filesystem';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
@@ -14,13 +14,25 @@ import {
 } from '@ionic/angular/standalone';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 import { AudioRecording } from 'src/app/models/audio-recording.interface';
+import { PopupComponent } from '../../popup/popup.component';
 
 @Component({
   standalone: true,
   selector: 'app-voice',
   templateUrl: './voice.component.html',
   styleUrls: ['./voice.component.scss'],
-  imports: [IonItemOption, IonItemOptions, IonItemSliding, IonLabel, IonItem, IonList, IonButton, IonIcon, IonCard],
+  imports: [
+    IonItemOption,
+    IonItemOptions,
+    IonItemSliding,
+    IonLabel,
+    IonItem,
+    IonList,
+    IonButton,
+    IonIcon,
+    IonCard,
+    PopupComponent,
+  ],
 })
 export class VoiceComponent implements OnInit {
   audioFiles = model.required<AudioRecording[] | undefined>();
@@ -29,6 +41,9 @@ export class VoiceComponent implements OnInit {
   protected loadingText: string = 'Recording';
   protected isRecording: boolean = false;
   protected audioRef: HTMLAudioElement | undefined;
+  protected openConfirmDelete = signal<boolean>(false);
+  protected confirmDeleteBody: string = '';
+  private selectedRecordingIndex: number | undefined = undefined;
 
   constructor() {}
 
@@ -64,11 +79,13 @@ export class VoiceComponent implements OnInit {
       const fileName = `${new Date().getTime()}.wav`;
       this.audioFiles.update((files) => {
         files = files == undefined ? [] : files;
+        const index = files.slice(-1)[0]?.index ?? 0;
         files.push({
           path: fileName,
           directory: Directory.Data,
           data: recordData,
           name: fileName,
+          index: index + 1,
           isPlaying: false,
         });
         return files;
@@ -91,8 +108,21 @@ export class VoiceComponent implements OnInit {
     this.audioRef.load();
   }
 
-  deleteRecording(audioFile: AudioRecording): void {
+  deleteButtonClicked(audioFile: AudioRecording): void {
     const index = this.audioFiles()!.indexOf(audioFile);
+    this.selectedRecordingIndex = index;
+
+    this.confirmDeleteBody = `Are you sure you want to delete Voice Note ${audioFile.index}`;
+    this.openConfirmDelete.set(true);
+  }
+
+  deletePopupClosed(role: string) {
+    if (role === 'confirm') {
+      this.deleteRecording(this.selectedRecordingIndex!);
+    }
+  }
+
+  deleteRecording(index: number): void {
     this.audioFiles.update((files) => {
       files = files == undefined ? [] : files;
       files.splice(index, 1);

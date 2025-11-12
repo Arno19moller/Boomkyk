@@ -5,5 +5,6 @@ export interface AudioRecording {
   directory: Directory;
   data: string | Blob;
   name: string;
+  index: number;
   isPlaying: boolean;
 }
