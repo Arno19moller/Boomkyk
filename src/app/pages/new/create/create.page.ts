@@ -9,10 +9,11 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
+  IonModal,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { MapComponent } from 'src/app/components/create/map/map.component';
+import { MapComponent } from 'src/app/components/map/map.component';
 import { CategoryStructure, CategoryStructureItem } from 'src/app/models/category-structure.interface';
 import { VoiceNote } from 'src/app/models/voice-notes.interface';
 import { CategoryService } from 'src/app/services-new/category.service';
@@ -36,6 +37,7 @@ import { VoiceComponent } from '../../../components/create/voice/voice.component
     IonHeader,
     IonTitle,
     IonToolbar,
+    IonModal,
     CommonModule,
     FormsModule,
     PhotoActionSheetComponent,
@@ -50,6 +52,7 @@ export class CreatePage implements OnInit {
   protected recordingService = inject(RecordingService);
 
   isEdit: boolean = false;
+  showMapModal: boolean = false;
   voiceDuration: number = 0;
   categories: CategoryStructure[] = [];
   actionSheetType: 'upload' | 'delete' = 'upload';
@@ -97,15 +100,17 @@ export class CreatePage implements OnInit {
     });
 
     if (images && images?.photos?.length > 0) {
-      this.images.set(
-        images.photos.map((photo) => {
+      this.images.update((imags) => {
+        const formattedImgs = images.photos.map((photo) => {
           return {
             format: photo.format,
             webPath: photo.webPath!,
             isHighlight: false,
           };
-        }),
-      );
+        });
+        imags = [...formattedImgs, ...imags];
+        return imags;
+      });
     }
   }
 
@@ -144,5 +149,8 @@ export class CreatePage implements OnInit {
     this.isActionSheetOpen.set(true);
   }
 
+  mapModalClosed(save: boolean) {
+    this.showMapModal = false;
+  }
   onSubmit(): void {}
 }

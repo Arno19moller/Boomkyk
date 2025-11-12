@@ -4,7 +4,7 @@
       @for (audioFile of audioFiles(); track $index) {
         <ion-item-sliding>
           <ion-item lines="none" [class.playing-item]="audioFile.isPlaying">
-            <ion-label>{{ audioFile.name }}</ion-label>
+            <ion-label>Voice Note {{ audioFile.index }}</ion-label>
             <ion-button slot="end" fill="clear" (click)="playFile(audioFile)">
               @if (!audioFile.isPlaying) {
                 <ion-icon name="play" slot="icon-only"></ion-icon>
@@ -14,7 +14,7 @@
             </ion-button>
           </ion-item>
           <ion-item-options slot="end">
-            <ion-item-option color="danger" expandable="true" (click)="deleteRecording(audioFile)">
+            <ion-item-option color="danger" expandable="true" (click)="deleteButtonClicked(audioFile)">
               <ion-icon slot="icon-only" name="trash"></ion-icon>
             </ion-item-option>
           </ion-item-options>
@@ -36,3 +36,11 @@
 >
   <ion-icon name="mic" slot="icon-only"></ion-icon>
 </ion-button>
+
+<app-popup
+  [(isAlertOpen)]="openConfirmDelete"
+  [heading]="'Delete'"
+  [body]="confirmDeleteBody"
+  [buttonType]="'confirm'"
+  (popupClosed)="deletePopupClosed($event)"
+></app-popup>

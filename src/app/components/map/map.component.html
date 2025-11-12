@@ -1,0 +1,74 @@
+@if (editable()) {
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="modalClosed.emit(false)">
+          Cancel
+          <ion-icon name="close" slot="start"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
+        <ion-button (click)="modalClosed.emit(true)">
+          Save
+          <ion-icon name="save" slot="start"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content style="height: 100dvh">
+    <ion-card>
+      <ion-list>
+        <ion-item lines="none">
+          <ion-input
+            fill="outline"
+            label="Notes"
+            labelPlacement="stacked"
+            placeholder="Enter notes here"
+            style="margin-top: 10px"
+          ></ion-input>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-datetime-button datetime="datetime"></ion-datetime-button>
+          <sub style="margin-left: 15px">Double tap to add location</sub>
+        </ion-item>
+      </ion-list>
+      <ng-container *ngTemplateOutlet="map"></ng-container>
+      <ion-list>
+        @if (isMapLoaded) {
+          <ion-item lines="none">
+            <ion-toggle
+              #locationToggle
+              justify="space-between"
+              color="success"
+              [disabled]="loading"
+              [enableOnOffLabels]="true"
+              [checked]="saveCurrentLocation"
+              (ionChange)="locationToggleChanged(locationToggle.checked)"
+            >
+              Save Current Location
+            </ion-toggle>
+          </ion-item>
+        }
+      </ion-list>
+    </ion-card>
+
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime id="datetime"></ion-datetime>
+      </ng-template>
+    </ion-modal>
+  </ion-content>
+} @else {
+  <ng-container *ngTemplateOutlet="map"></ng-container>
+}
+
+<ng-template #map>
+  @if (showMap) {
+    <div class="map-card">
+      @if (!isMapLoaded) {
+        <ion-skeleton-text [animated]="true" class="map"></ion-skeleton-text>
+      }
+      <div id="leafletMap" class="map"></div>
+    </div>
+  }
+</ng-template>

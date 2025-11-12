@@ -19,7 +19,7 @@ export const routes: Routes = [
   },
   {
     path: 'view',
-    loadComponent: () => import('./pages/tree-view/tree-view.component').then((m) => m.TreeViewComponent),
+    loadComponent: () => import('./pages/new/view/view.page').then((m) => m.ViewPage),
   },
   // {
   //   path: 'create',
@@ -41,5 +41,9 @@ export const routes: Routes = [
   {
     path: 'create',
     loadComponent: () => import('./pages/new/create/create.page').then((m) => m.CreatePage),
+  },
+  {
+    path: 'view',
+    loadComponent: () => import('./pages/new/view/view.page').then((m) => m.ViewPage),
   },
 ];

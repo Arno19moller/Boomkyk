@@ -1,7 +1,16 @@
-import { DatePipe } from '@angular/common';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, effect, input } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, effect, EventEmitter, input, OnInit, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Geolocation, Position } from '@capacitor/geolocation';
-import { IonCard, IonSkeletonText } from '@ionic/angular/standalone';
+import {
+  IonCard,
+  IonDatetime,
+  IonDatetimeButton,
+  IonIcon,
+  IonInput,
+  IonModal,
+  IonSkeletonText,
+} from '@ionic/angular/standalone';
 import * as L from 'leaflet';
 import { Marker } from 'leaflet';
 
@@ -10,18 +19,32 @@ import { Marker } from 'leaflet';
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
-  imports: [IonSkeletonText, IonCard],
+  imports: [
+    IonSkeletonText,
+    IonCard,
+    IonDatetime,
+    IonDatetimeButton,
+    IonModal,
+    IonInput,
+    IonIcon,
+    FormsModule,
+    CommonModule,
+  ],
   providers: [DatePipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class MapComponent {
+export class MapComponent implements OnInit {
+  @Output() modalClosed: EventEmitter<boolean> = new EventEmitter<boolean>();
+
   loading: boolean = false;
   showMap: boolean = false;
   isMapLoaded: boolean = false;
+  saveCurrentLocation: boolean = false;
   leafletMap: any;
   addedMarkers: Marker<any>[] = [];
   currentMarker: L.Marker<any> | undefined = undefined;
   markerCoordinate = input<Position[] | undefined>();
+  editable = input.required<boolean>();
 
   constructor(private datePipe: DatePipe) {
     effect(async () => {
@@ -43,8 +66,8 @@ export class MapComponent {
     });
   }
 
-  async loadMap(showMap: boolean) {
-    this.showMap = showMap;
+  async ngOnInit() {
+    this.showMap = true;
     setTimeout(() => {
       this.leafletMap = new L.Map('leafletMap');
       this.leafletMap.setView([-25.7566, 28.1914], 10);
@@ -53,6 +76,26 @@ export class MapComponent {
       }).addTo(this.leafletMap);
 
       this.isMapLoaded = true;
+      this.leafletMap.doubleClickZoom.disable();
+
+      this.leafletMap.on('dblclick', (e: any) => {
+        var location: Position = {
+          coords: {
+            latitude: e.latlng.lat,
+            longitude: e.latlng.lng,
+            accuracy: 0,
+            altitude: 0,
+            altitudeAccuracy: 0,
+            heading: 0,
+            speed: 0,
+          },
+          timestamp: Date.now(),
+        };
+
+        this.saveCurrentLocation = false;
+        this.removePin(this.currentMarker);
+        this.currentMarker = this.addPin(location);
+      });
     }, 1000);
   }
 
@@ -75,7 +118,7 @@ export class MapComponent {
     return marker;
   }
 
-  removePin(marker: Marker<any>) {
+  removePin(marker: Marker<any> | undefined) {
     if (marker) {
       this.leafletMap.removeLayer(marker);
       this.addedMarkers.splice(this.addedMarkers.indexOf(marker), 1);
@@ -86,6 +129,7 @@ export class MapComponent {
 
   async locationToggleChanged(saveLocation: boolean): Promise<void> {
     this.loading = true;
+    this.saveCurrentLocation = saveLocation;
     if (!saveLocation) {
       this.removePin(this.currentMarker!);
     } else {
@@ -96,6 +140,7 @@ export class MapComponent {
           alert(ex);
         }
       }
+      this.removePin(this.currentMarker);
       this.currentMarker = this.addPin(await Geolocation.getCurrentPosition());
     }
     this.loading = false;

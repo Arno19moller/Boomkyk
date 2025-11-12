@@ -43,8 +43,24 @@
 
   <app-voice [(audioFiles)]="selectedCategoryItem()!.audioFiles"></app-voice>
 
-  <app-map [markerCoordinate]="[]"></app-map>
+  <ion-button
+    expand="block"
+    fill="outline"
+    color="warning"
+    size="large"
+    style="width: calc(100% - 24px); margin: 0 12px 120px 12px; font-size: medium"
+    (click)="showMapModal = true"
+  >
+    Map
+    <ion-icon slot="end" name="map-outline"></ion-icon>
+  </ion-button>
   }
+
+  <ion-modal [isOpen]="showMapModal">
+    <ng-template>
+      <app-map [markerCoordinate]="[]" [editable]="true" (modalClosed)="mapModalClosed($event)"></app-map>
+    </ng-template>
+  </ion-modal>  
 </ion-content>
 
 <app-action-sheet

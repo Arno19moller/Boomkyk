@@ -33,7 +33,6 @@ import { RecordingService } from 'src/app/services/recording.service';
 import { register } from 'swiper/element/bundle';
 import { MapsPage } from '../maps/maps.page';
 
-// SwiperCore.use(Zoom);
 register();
 @Component({
   selector: 'app-tree-view',

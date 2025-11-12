@@ -5,6 +5,7 @@ import {
   add,
   addCircleOutline,
   arrowBack,
+  arrowBackOutline,
   camera,
   cameraOutline,
   checkmark,
@@ -16,6 +17,7 @@ import {
   filterCircleOutline,
   image,
   leaf,
+  mapOutline,
   mic,
   pause,
   play,
@@ -58,6 +60,8 @@ export class AppComponent implements OnInit {
       expand,
       cameraOutline,
       filterCircleOutline,
+      arrowBackOutline,
+      mapOutline,
     });
   }
 
