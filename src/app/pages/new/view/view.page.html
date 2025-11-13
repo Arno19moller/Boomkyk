@@ -16,24 +16,36 @@
   </ion-header>
 
   <swiper-container
-    [pagination]="true"
+    style="
+      --swiper-navigation-color: #fff;
+      --swiper-pagination-color: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      object-fit: cover;
+      height: calc(100% - 65% + 22px);
+    "
     zoom="true"
-    [maxRatio]="8"
+    navigation="true"
+    pagination="true"
+    pagination-clickable="true"
     [ngStyle]="{'height': imgHeight + '%'}"
-    style="position: fixed; top: 0; left: 0; width: 100%; object-fit: cover"
   >
-    <!-- @for (image of images; track $index) { -->
-    <swiper-slide>
+    <swiper-slide lazy="true">
       <div class="swiper-zoom-container">
         <img
           class="tree-image"
+          loading="lazy"
           src="https://images.unsplash.com/photo-1740465458182-d0f760438548?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         />
-      </div> </swiper-slide
-    ><swiper-slide>
+      </div>
+    </swiper-slide>
+    <swiper-slide lazy="true">
       <div class="swiper-zoom-container">
         <img
           class="tree-image"
+          loading="lazy"
           src="https://images.unsplash.com/photo-1739775849503-273cf122d6dd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
         />
       </div>
@@ -42,7 +54,7 @@
 
   <ion-modal
     [isOpen]="isModalOpen"
-    [initialBreakpoint]="0.6"
+    [initialBreakpoint]="0.65"
     [breakpoints]="[0.37, 0.65, 0.8]"
     [backdropDismiss]="false"
     [backdropBreakpoint]="1"

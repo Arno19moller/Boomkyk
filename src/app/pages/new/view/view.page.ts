@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, contentChild, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { StatusBar } from '@capacitor/status-bar';
 import { NavController } from '@ionic/angular';
@@ -20,7 +20,6 @@ register();
 export class ViewPage implements OnInit {
   private navController = inject(NavController);
 
-  modalComponent = contentChild(IonModal);
   imgHeight: number = 45;
   notes: string = 'asdasds';
   isModalOpen: boolean = true;
