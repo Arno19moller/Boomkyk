@@ -26,7 +26,7 @@ export const routes: Routes = [
   //   loadComponent: () => import('./pages/create/create.page').then((m) => m.Tab2Page),
   // },
   {
-    path: '',
+    path: '**',
     redirectTo: '/home',
     pathMatch: 'full',
   },

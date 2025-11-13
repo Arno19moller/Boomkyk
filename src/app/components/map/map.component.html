@@ -15,46 +15,59 @@
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content style="height: 100dvh">
+  <ion-content style="height: 100dvh; overflow: auto;">
     <ion-card>
+      <ion-card-header>
+        Annotate
+      </ion-card-header>
       <ion-list>
+        <!-- Notes -->
         <ion-item lines="none">
-          <ion-input
+          <ion-textarea
             fill="outline"
             label="Notes"
             labelPlacement="stacked"
             placeholder="Enter notes here"
             style="margin-top: 10px"
-          ></ion-input>
+            [(ngModel)]="notes"
+            (ionChange)="notesChanged()"
+          ></ion-textarea>
         </ion-item>
+
+        <!-- Date Time -->
         <ion-item lines="none">
           <ion-datetime-button datetime="datetime"></ion-datetime-button>
-          <sub style="margin-left: 15px">Double tap to add location</sub>
+          <ion-button slot="end" fill="outline" size="default"> Done </ion-button>
         </ion-item>
       </ion-list>
+    </ion-card>
+    <ion-card>
       <ng-container *ngTemplateOutlet="map"></ng-container>
+    </ion-card>
+    <ion-card style="margin-bottom: 100px;">
       <ion-list>
         @if (isMapLoaded) {
           <ion-item lines="none">
-            <ion-toggle
-              #locationToggle
-              justify="space-between"
-              color="success"
-              [disabled]="loading"
-              [enableOnOffLabels]="true"
-              [checked]="saveCurrentLocation"
-              (ionChange)="locationToggleChanged(locationToggle.checked)"
-            >
-              Save Current Location
-            </ion-toggle>
+              <ion-toggle
+                #locationToggle
+                justify="space-between"
+                color="success"
+                [disabled]="loading"
+                [enableOnOffLabels]="true"
+                [checked]="saveCurrentLocation"
+                (ionChange)="locationToggleChanged(locationToggle.checked)"
+              >
+                Save Current Location
+              </ion-toggle>
           </ion-item>
+          <sub style="margin-left: 15px; margin-top: -15px">Or tap and hold to add location</sub>
         }
       </ion-list>
     </ion-card>
 
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
-        <ion-datetime id="datetime"></ion-datetime>
+        <ion-datetime id="datetime" presentation="date" (ionChange)="dateTimeChanged($event)"></ion-datetime>
       </ng-template>
     </ion-modal>
   </ion-content>

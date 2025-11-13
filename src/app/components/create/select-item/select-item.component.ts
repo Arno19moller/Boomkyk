@@ -18,7 +18,9 @@ export class SelectItemComponent implements OnInit {
 
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.updateName({ detail: { value: 'asd' } }); //TODO: remove
+  }
 
   updateName(event: any): void {
     const newName = event.detail.value;
