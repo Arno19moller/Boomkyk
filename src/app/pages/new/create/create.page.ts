@@ -15,6 +15,7 @@ import {
 } from '@ionic/angular/standalone';
 import { MapComponent } from 'src/app/components/map/map.component';
 import { CategoryStructure, CategoryStructureItem } from 'src/app/models/category-structure.interface';
+import { Pin } from 'src/app/models/pin.interface';
 import { VoiceNote } from 'src/app/models/voice-notes.interface';
 import { CategoryService } from 'src/app/services-new/category.service';
 import { RecordingService } from 'src/app/services/recording.service';
@@ -62,6 +63,7 @@ export class CreatePage implements OnInit {
   selectedCategoryItem = signal<CategoryStructureItem | undefined>(undefined);
   images = signal<{ format: string; webPath: string; isHighlight: boolean }[]>([]);
   selectedImage = signal<{ format: string; webPath: string; isHighlight: boolean } | undefined>(undefined);
+  mapPins = signal<Pin[]>([]);
 
   constructor() {}
 
@@ -149,8 +151,15 @@ export class CreatePage implements OnInit {
     this.isActionSheetOpen.set(true);
   }
 
-  mapModalClosed(save: boolean) {
+  mapModalClosed(newPin: Pin) {
     this.showMapModal = false;
+    if (!newPin) return;
+
+    this.mapPins.update((pins) => {
+      pins.push(newPin);
+      return pins;
+    });
   }
+
   onSubmit(): void {}
 }

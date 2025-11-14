@@ -58,7 +58,7 @@
 
   <ion-modal [isOpen]="showMapModal">
     <ng-template>
-      <app-map [markerCoordinate]="[]" [editable]="true" (modalClosed)="mapModalClosed($event)"></app-map>
+      <app-map [pins]="mapPins()" [editable]="true" (modalClosed)="mapModalClosed($event)"></app-map>
     </ng-template>
   </ion-modal>  
 </ion-content>

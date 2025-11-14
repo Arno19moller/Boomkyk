@@ -2,24 +2,22 @@
   <ion-header>
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-button (click)="modalClosed.emit(false)">
+        <ion-button (click)="modalClosed.emit(undefined)">
           Cancel
           <ion-icon name="close" slot="start"></ion-icon>
         </ion-button>
       </ion-buttons>
       <ion-buttons slot="end">
-        <ion-button (click)="modalClosed.emit(true)">
+        <ion-button (click)="modalClosed.emit(newPin)">
           Save
           <ion-icon name="save" slot="start"></ion-icon>
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content style="height: 100dvh; overflow: auto;">
+  <ion-content style="height: 100dvh; overflow: auto">
     <ion-card>
-      <ion-card-header>
-        Annotate
-      </ion-card-header>
+      <ion-card-header style="padding-bottom: 0"> Annotate </ion-card-header>
       <ion-list>
         <!-- Notes -->
         <ion-item lines="none">
@@ -28,6 +26,7 @@
             label="Notes"
             labelPlacement="stacked"
             placeholder="Enter notes here"
+            autocapitalize="sentences"
             style="margin-top: 10px"
             [(ngModel)]="notes"
             (ionChange)="notesChanged()"
@@ -37,28 +36,28 @@
         <!-- Date Time -->
         <ion-item lines="none">
           <ion-datetime-button datetime="datetime"></ion-datetime-button>
-          <ion-button slot="end" fill="outline" size="default"> Done </ion-button>
+          <ion-button slot="end" fill="outline" size="default" (click)="doneClicked()"> Done </ion-button>
         </ion-item>
       </ion-list>
     </ion-card>
     <ion-card>
       <ng-container *ngTemplateOutlet="map"></ng-container>
     </ion-card>
-    <ion-card style="margin-bottom: 100px;">
+    <ion-card style="margin-bottom: 100px">
       <ion-list>
         @if (isMapLoaded) {
           <ion-item lines="none">
-              <ion-toggle
-                #locationToggle
-                justify="space-between"
-                color="success"
-                [disabled]="loading"
-                [enableOnOffLabels]="true"
-                [checked]="saveCurrentLocation"
-                (ionChange)="locationToggleChanged(locationToggle.checked)"
-              >
-                Save Current Location
-              </ion-toggle>
+            <ion-toggle
+              #locationToggle
+              justify="space-between"
+              color="success"
+              [disabled]="loading"
+              [enableOnOffLabels]="true"
+              [checked]="saveCurrentLocation"
+              (ionChange)="locationToggleChanged(locationToggle.checked)"
+            >
+              Save Current Location
+            </ion-toggle>
           </ion-item>
           <sub style="margin-left: 15px; margin-top: -15px">Or tap and hold to add location</sub>
         }
