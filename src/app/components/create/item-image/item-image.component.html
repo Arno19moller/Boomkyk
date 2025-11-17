@@ -15,17 +15,16 @@
       </ion-item>
       @if (images().length > 0) {
         <ion-item>
-          <div class="image-scroll-container" (scroll)="endLongPress()">
+          <div class="image-scroll-container">
             @for (image of images(); track $index) {
               <ion-img
-                [src]="image.webPath"
+                appLongPress
                 class="item-image"
+                [src]="image.webPath"
                 [class.highlight]="image.isHighlight"
-                (touchstart)="startLongPress(image)"
-                (touchend)="endLongPress()"
-                (touchcancel)="endLongPress()"
+                (longPress)="startLongPress(image)"
                 (dblclick)="doubleClick(image)"
-              >
+                >
               </ion-img>
             }
           </div>
