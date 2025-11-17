@@ -1,16 +1,26 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, effect, EventEmitter, input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  EventEmitter,
+  input,
+  OnDestroy,
+  OnInit,
+  Output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Geolocation, Position } from '@capacitor/geolocation';
 import {
   DatetimeChangeEventDetail,
+  IonButton,
   IonCard,
-  IonCardContent,
   IonCardHeader,
   IonDatetime,
   IonDatetimeButton,
   IonIcon,
   IonModal,
+  IonPopover,
   IonSkeletonText,
   IonTextarea,
   IonToggle,
@@ -20,6 +30,7 @@ import { Guid } from 'guid-typescript';
 import * as L from 'leaflet';
 import { Marker } from 'leaflet';
 import { Pin } from 'src/app/models/pin.interface';
+import { PopupComponent } from '../popup/popup.component';
 
 @Component({
   standalone: true,
@@ -38,17 +49,20 @@ import { Pin } from 'src/app/models/pin.interface';
     FormsModule,
     CommonModule,
     IonCardHeader,
-    IonCardContent,
+    IonPopover,
+    IonButton,
+    PopupComponent,
   ],
   providers: [DatePipe],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class MapComponent implements OnInit {
-  @Output() modalClosed: EventEmitter<Pin> = new EventEmitter<Pin>();
+export class MapComponent implements OnInit, OnDestroy {
+  @Output() modalClosed: EventEmitter<Pin[]> = new EventEmitter<Pin[]>();
 
   editable = input.required<boolean>();
   pins = input.required<Pin[]>();
 
+  mapPins: Pin[] = [];
   leafletMap: any;
   loading: boolean = false;
   showMap: boolean = false;
@@ -66,35 +80,22 @@ export class MapComponent implements OnInit {
     date: new Date(),
     notes: '',
   };
-  mapMarkers: Marker<any>[] = [];
+  mapMarkers: L.Marker<any>[] = [];
   currentMarker: L.Marker<any> | undefined = undefined;
+  newMarker: L.Marker<any> | undefined = undefined;
 
-  constructor(private datePipe: DatePipe) {
-    effect(async () => {
-      this.mapMarkers.map((marker) => {
-        this.removePin(marker);
-      });
+  protected openConfirmDelete = signal<boolean>(false);
+  protected confirmDeleteBody: string = '';
 
-      if (this.pins() !== undefined) {
-        const interval = setInterval(() => {
-          if (this.isMapLoaded && this.pins()?.some((p) => p.position)) {
-            this.pins()!
-              .filter((p) => p.position)
-              .map((pin) => {
-                this.addPin(pin.position!, pin);
-              });
-
-            clearInterval(interval);
-          }
-        }, 1500);
-      }
-    });
-  }
+  constructor(private datePipe: DatePipe) {}
 
   async ngOnInit() {
     this.currentPin = this.newPin;
     this.showMap = true;
     await this.checkAndRequestLocation();
+    this.mapMarkers.map((marker) => {
+      this.removePin(marker);
+    });
   }
 
   async checkAndRequestLocation() {
@@ -126,10 +127,21 @@ export class MapComponent implements OnInit {
       attribution: '&copy; <a href=”https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(this.leafletMap);
     this.isMapLoaded = true;
+
+    this.loadPins();
+  }
+
+  loadPins() {
+    this.mapPins = [...this.pins()];
+    this.pins()!
+      .filter((p) => p.position)
+      .map((pin) => {
+        this.addPin(pin.position!, pin);
+      });
   }
 
   loadMapEvents(): void {
-    this.leafletMap.on('contextmenu', (e: any) => {
+    this.leafletMap.on('contextmenu', (e: L.LeafletMouseEvent) => {
       var location: Position = {
         coords: {
           latitude: e.latlng.lat,
@@ -144,17 +156,18 @@ export class MapComponent implements OnInit {
       };
 
       this.saveCurrentLocation = false;
-      this.removePin(this.currentMarker);
+      this.removePin(this.newMarker);
       this.addPin(location);
+      this.newMarker = this.mapMarkers[this.mapMarkers.length - 1];
+    });
+
+    this.leafletMap.on('click', (e: L.LeafletMouseEvent) => {
+      this.unselectmarker();
     });
   }
 
   addPin(location: Position, existingPin: Pin | undefined = undefined) {
-    let icon = L.icon({
-      iconUrl: existingPin ? 'assets/images/pin.png' : 'assets/images/pinNew.png',
-      iconSize: [27, 40],
-    });
-
+    const icon = this.getIcon(existingPin ? 'default' : 'selected');
     const marker = L.marker([location.coords.latitude, location.coords.longitude], { icon: icon }).addTo(
       this.leafletMap,
     );
@@ -166,6 +179,7 @@ export class MapComponent implements OnInit {
     this.mapMarkers.push(marker);
     marker.bindPopup(popup);
 
+    // New pin
     if (existingPin === undefined) {
       this.currentMarker = marker;
 
@@ -175,7 +189,10 @@ export class MapComponent implements OnInit {
       this.currentPin.position = location;
       this.currentPin.notes = this.currentPin.notes;
       this.configurePinContent(this.currentMarker!, this.currentPin);
-    } else {
+      this.mapPins.push(this.newPin);
+    }
+    // Saved pins when map loads
+    else {
       this.configurePinContent(marker, existingPin);
     }
   }
@@ -186,38 +203,26 @@ export class MapComponent implements OnInit {
     this.currentMarker = this.mapMarkers[index];
 
     this.mapMarkers.map((m) => {
-      const mark = m.getLatLng();
-      const newMark = this.newPin.position?.coords;
-      const isNewMark = mark.lat === newMark?.latitude && mark.lng === newMark?.longitude;
-      const icon = L.icon({
-        iconUrl: isNewMark ? 'assets/images/pinNew.png' : 'assets/images/pin.png',
-        iconSize: [27, 40],
-      });
+      const isNewMark = this.isCurrentMarkNew(m);
+      const icon = this.getIcon(isNewMark ? 'new' : 'default');
       m.setIcon(icon);
     });
 
-    const icon = L.icon({
-      iconUrl: 'assets/images/pinSelected.png',
-      iconSize: [27, 40],
-    });
+    const icon = this.getIcon('selected');
     this.currentMarker.setIcon(icon);
 
-    const currLatLang = this.currentMarker?.getLatLng();
-    const pin = this.pins().find((p) => {
-      const pinLatLang = p.position?.coords;
-      return currLatLang?.lat === pinLatLang?.latitude && currLatLang?.lng === pinLatLang?.longitude;
-    });
-
-    if (pin) {
-      this.currentPin = pin;
-    } else {
-      this.currentPin = this.newPin;
-    }
+    const pin = this.getCurrentPin();
+    this.currentPin = pin ? pin : this.newPin;
     this.notes = this.currentPin.notes;
   }
 
   removePin(marker: Marker<any> | undefined) {
     if (marker) {
+      const pin = this.getCurrentPin();
+      // if (pin == undefined) return;
+      const index = this.mapPins.indexOf(pin!);
+      this.mapPins = this.mapPins.filter((_, i) => i !== index);
+
       this.leafletMap.removeLayer(marker);
       this.mapMarkers.splice(this.mapMarkers.indexOf(marker), 1);
     } else {
@@ -226,20 +231,17 @@ export class MapComponent implements OnInit {
   }
 
   async locationToggleChanged(saveLocation: boolean): Promise<void> {
+    if (this.saveCurrentLocation == saveLocation) return;
+
     this.loading = true;
     this.saveCurrentLocation = saveLocation;
     if (!saveLocation) {
-      this.removePin(this.currentMarker!);
+      this.removePin(this.newMarker!);
+      this.currentMarker = undefined;
     } else {
-      if ((await Geolocation.checkPermissions()).location !== 'granted') {
-        try {
-          await Geolocation.requestPermissions();
-        } catch (ex) {
-          alert(ex);
-        }
-      }
-      this.removePin(this.currentMarker);
+      this.removePin(this.newMarker);
       this.addPin(await Geolocation.getCurrentPosition());
+      this.newMarker = this.mapMarkers[this.mapMarkers.length - 1];
     }
     this.loading = false;
   }
@@ -250,7 +252,6 @@ export class MapComponent implements OnInit {
   }
 
   dateTimeChanged($event: IonDatetimeCustomEvent<DatetimeChangeEventDetail>) {
-    alert(this.currentPin.date);
     const value = $event.target.value;
     if (typeof value === 'string') {
       const newDate = new Date(value!);
@@ -259,18 +260,59 @@ export class MapComponent implements OnInit {
     }
   }
 
-  doneClicked(): void {
-    let icon = L.icon({
-      iconUrl: this.newPin.position === this.currentPin.position ? 'assets/images/pinNew.png' : 'assets/images/pin.png',
-      iconSize: [27, 40],
-    });
+  unselectmarker(): void {
+    const icon = this.getIcon(this.newPin.position === this.currentPin.position ? 'new' : 'default');
     this.currentMarker?.setIcon(icon);
     this.currentMarker = undefined;
     this.notes = '';
+  }
+
+  deleteClicked() {
+    this.confirmDeleteBody = `Are you sure you want to delete the pin?`;
+    this.openConfirmDelete.set(true);
+  }
+
+  deletePopupClosed(role: string) {
+    if (role === 'confirm') {
+      if (this.isCurrentMarkNew(this.currentMarker)) {
+        this.saveCurrentLocation = false;
+      }
+      this.removePin(this.currentMarker);
+      this.unselectmarker();
+    }
   }
 
   private configurePinContent(marker: L.Marker<any>, pin: Pin): void {
     const dateStr = this.datePipe.transform(pin.date, 'dd MMM yyyy');
     marker.setPopupContent(`<h6>${dateStr}</h6><sub>${pin.notes}</sub>`);
   }
+
+  // Determine if the new mark is a new mark or a saved mark
+  private isCurrentMarkNew(marker: L.Marker<any> | undefined): boolean {
+    if (!marker) return false;
+
+    const position = marker.getLatLng();
+    const newPosition = this.newPin.position?.coords;
+    return position.lat === newPosition?.latitude && position.lng === newPosition?.longitude;
+  }
+
+  private getIcon(type: 'new' | 'selected' | 'default'): L.Icon<L.IconOptions> {
+    let url = 'assets/images/';
+    url += type === 'new' ? 'pinNew.png' : type === 'selected' ? 'pinSelected.png' : 'pin.png';
+
+    return L.icon({
+      iconUrl: url,
+      iconSize: [27, 40],
+    });
+  }
+
+  private getCurrentPin(): Pin | undefined {
+    const currLatLang = this.currentMarker?.getLatLng();
+    return this.pins().find((p) => {
+      const pinLatLang = p.position?.coords;
+      return currLatLang?.lat === pinLatLang?.latitude && currLatLang?.lng === pinLatLang?.longitude;
+    });
+  }
+
+  ngOnDestroy(): void {}
 }

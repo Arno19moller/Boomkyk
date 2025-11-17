@@ -24,7 +24,7 @@ export class MapsPage implements AfterViewInit {
   constructor(private datePipe: DatePipe) {
     effect(async () => {
       this.addedMarkers.map((marker) => {
-        this.removePin(marker);
+        //this.removePin(marker);
       });
 
       if (this.markerCoordinate() !== undefined) {
@@ -75,11 +75,11 @@ export class MapsPage implements AfterViewInit {
   }
 
   removePin(marker: Marker<any>) {
-    if (marker) {
-      this.leafletMap.removeLayer(marker);
-      this.addedMarkers.splice(this.addedMarkers.indexOf(marker), 1);
-    } else {
-      console.warn('Marker not found at specified location');
-    }
+    // if (marker) {
+    //   this.leafletMap.removeLayer(marker);
+    //   this.addedMarkers.splice(this.addedMarkers.indexOf(marker), 1);
+    // } else {
+    //   console.warn('Marker not found at specified location');
+    // }
   }
 }

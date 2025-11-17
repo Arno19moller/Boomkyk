@@ -151,12 +151,11 @@ export class CreatePage implements OnInit {
     this.isActionSheetOpen.set(true);
   }
 
-  mapModalClosed(newPin: Pin) {
+  mapModalClosed(pins: Pin[]) {
     this.showMapModal = false;
-    if (!newPin) return;
+    if (pins == undefined) return;
 
-    this.mapPins.update((pins) => {
-      pins.push(newPin);
+    this.mapPins.update(() => {
       return pins;
     });
   }
