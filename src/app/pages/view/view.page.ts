@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  inject,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { StatusBar } from '@capacitor/status-bar';
 import { NavController, ViewWillLeave } from '@ionic/angular';
@@ -17,14 +25,16 @@ register();
   imports: [IonModal, IonContent, IonHeader, IonIcon, IonButton, IonButtons, MapComponent, CommonModule, FormsModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ViewPage implements OnInit, ViewWillLeave {
+export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
   private navController = inject(NavController);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild(IonModal) modal!: IonModal;
 
   imgHeight: number = 37;
   notes: string = 'asdasds';
   isModalOpen: boolean = true;
+  private animationFrameId: number | undefined;
 
   constructor() {}
 
@@ -32,8 +42,29 @@ export class ViewPage implements OnInit, ViewWillLeave {
     await StatusBar.setOverlaysWebView({ overlay: true });
   }
 
-  modalChange(event: any): void {
-    this.imgHeight = 101.5 - +event.detail.breakpoint * 100;
+  ngAfterViewInit() {
+    const modalElement = this.modal['el'];
+
+    setTimeout(() => {
+      const wrapper = modalElement.shadowRoot?.querySelector('.modal-wrapper');
+
+      if (wrapper) {
+        const update = () => {
+          const rect = wrapper.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          const topPercentage = (rect.top / windowHeight) * 100;
+
+          if (Math.abs(this.imgHeight - topPercentage) > 0.1) {
+            this.imgHeight = topPercentage + 1;
+            this.cdr.detectChanges();
+          }
+
+          this.animationFrameId = requestAnimationFrame(update);
+        };
+
+        update();
+      }
+    }, 500);
   }
 
   async goBack() {
@@ -43,6 +74,9 @@ export class ViewPage implements OnInit, ViewWillLeave {
 
   ionViewWillLeave() {
     this.modal.dismiss();
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
     StatusBar.setOverlaysWebView({ overlay: false });
   }
 }

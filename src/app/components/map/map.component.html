@@ -103,7 +103,7 @@
 <!-- Leaflet map -->
 <ng-template #map>
   @if (showMap) {
-    <div class="map-card">
+    <div class="map-card" [class.full-height]="!editable()">
       @if (!isMapLoaded) {
         <ion-skeleton-text [animated]="true" class="map"></ion-skeleton-text>
       }

@@ -1,5 +1,6 @@
 @import "~leaflet/dist/leaflet.css";
 
+
 .map-card {
     height: 500px;
     border-radius: 7px;
@@ -8,4 +9,7 @@
     .map {
         height: 100%;
     }
+&.full-height {
+    height: 100%;
+}
 }

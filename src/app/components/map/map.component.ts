@@ -148,25 +148,27 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   loadMapEvents(): void {
-    this.leafletMap.on('contextmenu', (e: L.LeafletMouseEvent) => {
-      var location: Position = {
-        coords: {
-          latitude: e.latlng.lat,
-          longitude: e.latlng.lng,
-          accuracy: 0,
-          altitude: 0,
-          altitudeAccuracy: 0,
-          heading: 0,
-          speed: 0,
-        },
-        timestamp: Date.now(),
-      };
+    if (this.editable()) {
+      this.leafletMap.on('contextmenu', (e: L.LeafletMouseEvent) => {
+        var location: Position = {
+          coords: {
+            latitude: e.latlng.lat,
+            longitude: e.latlng.lng,
+            accuracy: 0,
+            altitude: 0,
+            altitudeAccuracy: 0,
+            heading: 0,
+            speed: 0,
+          },
+          timestamp: Date.now(),
+        };
 
-      this.saveCurrentLocation = false;
-      this.removePin(this.newMarker);
-      this.addPin(location);
-      this.newMarker = this.mapMarkers[this.mapMarkers.length - 1];
-    });
+        this.saveCurrentLocation = false;
+        this.removePin(this.newMarker);
+        this.addPin(location);
+        this.newMarker = this.mapMarkers[this.mapMarkers.length - 1];
+      });
+    }
 
     // click anywhere but on pin
     this.leafletMap.on('click', (e: L.LeafletMouseEvent) => {

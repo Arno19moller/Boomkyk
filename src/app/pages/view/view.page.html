@@ -53,11 +53,10 @@
 
   <ion-modal
     [isOpen]="isModalOpen"
-    [initialBreakpoint]="0.65"
-    [breakpoints]="[0.37, 0.65, 0.8]"
+    [initialBreakpoint]="0.6"
+    [breakpoints]="[0.1, 0.3, 0.6, 0.9]"
     [backdropDismiss]="false"
     [backdropBreakpoint]="1"
-    (ionBreakpointDidChange)="modalChange($event)"
     (didDismiss)="goBack()"
     cssClass="item-content"
   >
@@ -67,10 +66,9 @@
         <sub style="margin-bottom: 15px">Animal > Mammal</sub>
       </ion-header>
       <ion-content>
-        <ion-list class="form-container" lines="none">
+        <ion-list class="form-container" lines="none" style="margin-top: 10px; border-radius: 7px;">
           <ion-item>
             <ion-textarea
-              fill="outline"
               labelPlacement="stacked"
               placeholder="Enter notes here"
               style="margin-top: 10px"
@@ -82,7 +80,7 @@
             </ion-textarea>
           </ion-item>
         </ion-list>
-        <div style="margin: 10px 12px">
+        <div style="margin: 10px 12px; height: 200px; overflow: hidden;">
           <app-map [pins]="[]" [markerCoordinate]="[]" [editable]="false"></app-map>
         </div>
       </ion-content>

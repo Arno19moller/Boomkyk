@@ -78,6 +78,20 @@ export class CreatePage implements OnInit {
   }
 
   onSubmit(): void {
-    console.log(this.itemFormGroup.valid);
+    if (this.itemFormGroup.valid) {
+      console.log(this.categories);
+
+      const type = this.categories.find((c) => c.level === this.itemFormGroup.value.type?.level);
+      //   const item: Item = {
+      //     id: Guid.create(),
+      //     title: this.itemFormGroup.value.typeValue!,
+      //     type: this.itemFormGroup.value.type!,
+      //     groupId: this.itemFormGroup.value.parent!,
+      //     images: this.images(),
+      //     voiceNotes: this.recordingService.recordings(),
+      //     locations: this.mapPins(),
+      //   };
+      //   this.databaseService.saveTree(item);
+    }
   }
 }
