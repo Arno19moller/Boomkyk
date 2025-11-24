@@ -3,31 +3,31 @@ import { Component, computed, inject, OnInit, Signal, signal } from '@angular/co
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
-  IonButton,
-  IonButtons,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCol,
-  IonContent,
-  IonFab,
-  IonFabButton,
-  IonFabList,
-  IonGrid,
-  IonHeader,
-  IonIcon,
-  IonImg,
-  IonRow,
-  IonSearchbar,
-  IonTitle,
-  IonToolbar,
+    IonButton,
+    IonButtons,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCol,
+    IonContent,
+    IonFab,
+    IonFabButton,
+    IonFabList,
+    IonGrid,
+    IonHeader,
+    IonIcon,
+    IonImg,
+    IonRow,
+    IonSearchbar,
+    IonTitle,
+    IonToolbar,
 } from '@ionic/angular/standalone';
 import { CategoryFilter } from 'src/app/models/category-filter.interface';
 import { CategoryStructure } from 'src/app/models/category-structure.interface';
 import { Tree } from 'src/app/models/tree.interface';
 import { CategoryService } from 'src/app/services-new/category.service';
 import { DatabaseService } from 'src/app/services/database.service';
-import { BottomSheetComponent } from '../../../components/filter-bottom-sheet/bottom-sheet.component';
+import { BottomSheetComponent } from '../../components/filter-bottom-sheet/bottom-sheet.component';
 
 @Component({
   selector: 'app-home',

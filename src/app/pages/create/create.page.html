@@ -17,200 +17,30 @@
       <ion-buttons slot="start">
         <ion-back-button></ion-back-button>
       </ion-buttons>
-      <ion-title size="large"> Create </ion-title>
+      <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
+      <ion-button slot="end" (click)="onSubmit()">
+        <ion-icon name="save" slot="start"></ion-icon>
+        {{ !isEdit ? 'Save' : 'Update' }}
+      </ion-button>
     </ion-toolbar>
   </ion-header>
 
-  @if(newTree !== undefined){
-  <ion-card>
-    <ion-list class="form-container" lines="none">
-      @if(!isEdit){
-      <ion-item>
-        <ion-select
-          fill="outline"
-          label="Type*"
-          interface="popover"
-          placeholder="Select Type"
-          label-placement="stacked"
-          [required]="true"
-          [(ngModel)]="newTree.type"
-          (ionChange)="typeSelected()"
-        >
-          <ion-select-option [value]="TreeType.Family"> Family </ion-select-option>
-          <ion-select-option [value]="TreeType.Genus"> Genus </ion-select-option>
-          <ion-select-option [value]="TreeType.Species"> Species </ion-select-option>
-        </ion-select>
-      </ion-item>
-      }
-      <ion-item>
-        <ion-input
-          fill="outline"
-          label="Name*"
-          labelPlacement="stacked"
-          placeholder="Enter Name"
-          [required]="true"
-          [(ngModel)]="newTree.title"
-        ></ion-input>
-      </ion-item>
-      @if(newTree.type !== TreeType.Family){
-      <ion-item>
-        <ion-select
-          fill="outline"
-          label-placement="stacked"
-          interface="popover"
-          [label]="newTree.type === TreeType.Genus ? 'Select Family*' : 'Select Genus*'"
-          [placeholder]="newTree.type === TreeType.Genus ? 'Select Family*' : 'Select Genus*'"
-          [(ngModel)]="newTree.groupId"
-        >
-          @for (group of treeGroups; track $index) {
-          <ion-select-option [value]="group.id"> {{group.title}} </ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
-      <ion-item style="padding-left: 8px; padding-right: 2px">
-        @if(newTree.type === TreeType.Species){
-        <ion-toggle [enableOnOffLabels]="true" [(ngModel)]="saveLocation" (ngModelChange)="locationToggleChanged()">
-          Save Location
-        </ion-toggle>
-        }
-      </ion-item>
-      }
-    </ion-list>
-  </ion-card>
-  @if(newTree.type === TreeType.Species){
-  <ion-card>
-    <ion-list lines="none">
-      <ion-item>
-        <ion-segment
-          value="overview"
-          [scrollable]="true"
-          (ionChange)="infoTypeChanged($event.target.value?.toString() ?? '')"
-        >
-          <ion-segment-button value="overview">Overview</ion-segment-button>
-          <ion-segment-button value="leaves">Leaves</ion-segment-button>
-          <ion-segment-button value="bark">Bark</ion-segment-button>
-          <ion-segment-button value="fruit">Fruit</ion-segment-button>
-          <ion-segment-button value="flower">Flower</ion-segment-button>
-        </ion-segment>
-      </ion-item>
+  <app-select-item
+    [isEdit]="isEdit"
+    [itemFormGroup]="itemFormGroup"
+    [(selectedCategory)]="selectedCategory"
+    [(selectedCategoryItem)]="selectedCategoryItem"
+  ></app-select-item>
 
-      <!-- TreeInfo images -->
-      <ion-grid style="padding: 0 16px">
-        <ion-row>
-          <ion-col>
-            <ion-label>Images</ion-label>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          @for (image of TreeInfoImages; track $index) {
-          <ion-col size="3">
-            <ion-button fill="clear" class="delete-image-button" (click)="showDeleteImageActionSheet(image)">
-              <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-            <ion-img [src]="image.webviewPath" (click)="showDeleteImageActionSheet(image)"></ion-img>
-          </ion-col>
-          }
-          <ion-col size="12" style="padding-left: 0; padding-right: 0;">
-            <ion-button (click)="addPhotoToGallery()" fill="outline" size="large" expand="block">
-              <ion-icon name="camera" slot="icon-only"></ion-icon>
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+  @if(itemFormGroup.valid){
+  <app-item-image
+    [selectedCategoryItem]="selectedCategoryItem()"
+    [(images)]="images"
+  ></app-item-image>
 
-      <!-- TreeInfo notes -->
-      <ion-item>
-        @if(selectedImageType === ImageType.Overview){
-        <ion-textarea
-          fill="outline"
-          label="Description"
-          placeholder="Enter Description Here"
-          labelPlacement="stacked"
-          [autoGrow]="true"
-          [(ngModel)]="newTree.treeInfo!.overview"
-        ></ion-textarea>
-        } @else if(selectedImageType === ImageType.Leaves){
-        <ion-textarea
-          fill="outline"
-          label="Description"
-          placeholder="Enter Description Here"
-          labelPlacement="stacked"
-          [autoGrow]="true"
-          [(ngModel)]="newTree.treeInfo!.leaves"
-        ></ion-textarea>
-        } @else if(selectedImageType === ImageType.Bark){
-        <ion-textarea
-          fill="outline"
-          label="Description"
-          placeholder="Enter Description Here"
-          labelPlacement="stacked"
-          [autoGrow]="true"
-          [(ngModel)]="newTree.treeInfo!.bark"
-        ></ion-textarea>
-        } @else if(selectedImageType === ImageType.Fruit){
-        <ion-textarea
-          fill="outline"
-          label="Description"
-          placeholder="Enter Description Here"
-          labelPlacement="stacked"
-          [autoGrow]="true"
-          [(ngModel)]="newTree.treeInfo!.fruit"
-        ></ion-textarea>
-        } @else if(selectedImageType === ImageType.Flower){
-        <ion-textarea
-          fill="outline"
-          label="Description"
-          placeholder="Enter Description Here"
-          labelPlacement="stacked"
-          [autoGrow]="true"
-          [(ngModel)]="newTree.treeInfo!.flower"
-        ></ion-textarea>
-        }
-      </ion-item>
+  <!-- Voice Notes -->
+  <app-voice [(audioFiles)]="selectedCategoryItem()!.audioFiles"></app-voice>
 
-      <!-- Voice recorings -->
-      @for (note of recordingService.storedFileNames; track $index) { @if(note.type === selectedImageType){
-      <ion-item>
-        <ion-button slot="start" fill="clear" (click)="showDeleteVoiceNoteActionSheet(note)">
-          <ion-icon name="trash" slot="icon-only"></ion-icon>
-        </ion-button>
-        <span>{{note.recordingName}}</span>
-        <ion-button slot="end" fill="clear" (click)="playNote(note)">
-          @if(!note.isPlaying){
-          <ion-icon name="play" slot="icon-only"></ion-icon>
-          } @else{
-          <ion-icon name="pause" slot="icon-only"></ion-icon>
-          }
-        </ion-button>
-      </ion-item>
-      } }
-    </ion-list>
-  </ion-card>
-  } } @if(this.actionsService.selectedTree !== undefined){
-  <ion-button fill="outline" expand="block" color="danger" style="padding: 0 8px" (click)="deleteClicked()">
-    DELETE
-    <ion-icon slot="start" name="trash"></ion-icon>
-  </ion-button>
+  <!-- Map -->
+  <app-item-map [(mapPins)]="mapPins"></app-item-map>
   }
-</ion-content>
-
-@if(newTree.type === TreeType.Species){
-<ion-footer class="recorder-footer" transparent>
-  <ion-toolbar>
-    <ion-row>
-      <ion-col size="12" class="align-items-center">
-        <ion-button fill="outline" #recordBtn shape="round">
-          <ion-icon name="mic" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-col>
-      <ion-col size="12" class="align-items-center">
-        @if(!recordingService.recording){
-        <span> Press and hold to record </span>
-        } @else{
-        <span> Recording duration: {{duration | number : '1.2-2'}}s </span>
-        }
-      </ion-col>
-    </ion-row>
-  </ion-toolbar>
-</ion-footer>
-}
