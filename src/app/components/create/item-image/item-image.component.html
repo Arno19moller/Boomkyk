@@ -8,7 +8,7 @@
           color="tertiary"
           size="large"
           style="width: 100%"
-          (click)="actionSheetType.set('upload'); isActionSheetOpen.set(true)"
+          (click)="actionSheetType = 'upload'; isActionSheetOpen.set(true)"
         >
           <ion-icon slot="icon-only" name="camera-outline"></ion-icon>
         </ion-button>
@@ -43,4 +43,20 @@
       </ion-item>
     </ion-list>
   </ion-card>
+
+  <!-- Action Sheet -->
+  <app-action-sheet
+    [type]="actionSheetType"
+    [(isOpen)]="isActionSheetOpen"
+    (closed)="actionSheetClosed($event)"
+  ></app-action-sheet>
+
+  <!-- Confirmation Popup -->
+  <app-popup
+    [(isAlertOpen)]="openConfirmDelete"
+    [heading]="'Delete'"
+    [body]="confirmDeleteBody"
+    [buttonType]="'confirm'"
+    (popupClosed)="deletePopupClosed($event)"
+  ></app-popup>
 }

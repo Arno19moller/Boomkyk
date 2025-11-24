@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import {
   IonBackButton,
   IonButton,
@@ -81,7 +80,6 @@ export class CreatePage implements OnInit {
   selectedCategory = signal<CategoryStructure | undefined>(undefined);
   selectedCategoryItem = signal<CategoryStructureItem | undefined>(undefined);
   images = signal<{ format: string; webPath: string; isHighlight: boolean }[]>([]);
-  selectedImage = signal<{ format: string; webPath: string; isHighlight: boolean } | undefined>(undefined);
   mapPins = signal<Pin[]>([]);
   selectedPin: Pin | undefined = undefined;
 
@@ -107,64 +105,10 @@ export class CreatePage implements OnInit {
   }
 
   actionSheetClosed(event: any): void {
-    if (event === 'gallery') {
-      this.addPhotosFromGallery();
-    } else if (event === 'camera') {
-      this.addPhotosFromCamera();
-    } else if (event === 'delete' && this.selectedImage()) {
-      const index = this.images().indexOf(this.selectedImage()!);
-      this.images.update((images) => {
-        images.splice(index, 1);
-        return images;
-      });
-    } else if (event === 'delete' && this.selectedPin != undefined) {
+    if (event === 'delete' && this.selectedPin != undefined) {
       this.removePinClicked(this.selectedPin);
     } else if (event === 'edit' && this.selectedPin != undefined) {
       this.pinDoubleClick(this.selectedPin);
-    }
-  }
-
-  private async addPhotosFromGallery(): Promise<void> {
-    const images = await Camera.pickImages({
-      quality: 60,
-      limit: 10,
-    }).catch(() => {
-      return;
-    });
-
-    if (images && images?.photos?.length > 0) {
-      this.images.update((imags) => {
-        const formattedImgs = images.photos.map((photo) => {
-          return {
-            format: photo.format,
-            webPath: photo.webPath!,
-            isHighlight: false,
-          };
-        });
-        imags = [...formattedImgs, ...imags];
-        return imags;
-      });
-    }
-  }
-
-  private async addPhotosFromCamera(): Promise<void> {
-    const image = await Camera.getPhoto({
-      resultType: CameraResultType.Uri,
-      source: CameraSource.Camera,
-      quality: 60,
-    }).catch(() => {
-      return;
-    });
-
-    if (image) {
-      this.images.update((images) => {
-        images.push({
-          format: image.format,
-          webPath: image.webPath!,
-          isHighlight: false,
-        });
-        return images;
-      });
     }
   }
 
@@ -204,7 +148,6 @@ export class CreatePage implements OnInit {
   pinLongPress(pin: Pin) {
     this.selectedPin = pin;
     this.actionSheetType = 'action';
-    this.selectedImage.set(undefined);
     this.isActionSheetOpen.set(true);
   }
 
