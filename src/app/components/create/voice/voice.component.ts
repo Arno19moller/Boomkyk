@@ -13,6 +13,7 @@ import {
   IonList,
 } from '@ionic/angular/standalone';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
+import { LongPressDirective } from 'src/app/directives/long-press.directive';
 import { AudioRecording } from 'src/app/models/audio-recording.interface';
 import { PopupComponent } from '../../popup/popup.component';
 
@@ -32,6 +33,7 @@ import { PopupComponent } from '../../popup/popup.component';
     IonIcon,
     IonCard,
     PopupComponent,
+    LongPressDirective,
   ],
 })
 export class VoiceComponent implements OnInit {

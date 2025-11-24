@@ -3,7 +3,12 @@
     <ion-list>
       @for (audioFile of audioFiles(); track $index) {
         <ion-item-sliding>
-          <ion-item lines="none" [class.playing-item]="audioFile.isPlaying">
+          <ion-item
+            lines="none"
+            [class.playing-item]="audioFile.isPlaying"
+            appLongPress
+            (longPress)="deleteButtonClicked(audioFile)"
+          >
             <ion-label>Voice Note {{ audioFile.index }}</ion-label>
             <ion-button slot="end" fill="clear" (click)="playFile(audioFile)">
               @if (!audioFile.isPlaying) {
