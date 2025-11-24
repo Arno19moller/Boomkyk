@@ -1,0 +1,63 @@
+  <!-- Map Button -->
+  <ion-button
+    expand="block"
+    fill="outline"
+    color="success"
+    size="large"
+    style="width: calc(100% - 24px); margin: 0 12px 0px 12px; font-size: medium"
+    (click)="showMapModal = true"
+  >
+    Map
+    <ion-icon slot="end" name="map-outline"></ion-icon>
+  </ion-button>
+
+  <!-- Map Pins -->
+  <ion-grid>
+    <ion-row>
+      @for (pin of mapPins(); track $index) {
+
+      <ion-col size="4">
+        <ion-card appLongPress (longPress)="pinLongPress(pin)" (doubleClick)="pinDoubleClick(pin)">
+          <ion-button
+            fill="clear"
+            style="position: absolute; top: -10px; right: -10px; z-index: 1"
+            color="danger"
+            (click)="removePinClicked(pin)"
+          >
+            <ion-icon name="close-circle-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-card-header style="display: flex; justify-content: center; align-items: center">
+            <ion-icon name="location-outline" size="large"></ion-icon>
+          </ion-card-header>
+          <ion-card-content class="truncate-text">
+            <p>{{pin.notes}}</p>
+            <sub>{{pin.date | date: 'yyyy/MM/dd'}}</sub>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+    </ion-row>
+  </ion-grid>
+
+  <!-- Map Modal -->
+  <ion-modal [isOpen]="showMapModal">
+    <ng-template>
+      <app-map [pins]="mapPins()" [selectedPin]="selectedPin" [editable]="true" (modalClosed)="mapModalClosed($event)"></app-map>
+    </ng-template>
+  </ion-modal>
+
+<!-- Action Sheet -->
+<app-action-sheet
+  [type]="actionSheetType"
+  [(isOpen)]="isActionSheetOpen"
+  (closed)="actionSheetClosed($event)"
+></app-action-sheet>
+
+<!-- Confirmation Popup -->
+<app-popup
+  [(isAlertOpen)]="openConfirmDelete"
+  [heading]="'Delete'"
+  [body]="confirmDeleteBody"
+  [buttonType]="'confirm'"
+  (popupClosed)="deletePopupClosed($event)"
+></app-popup>
