@@ -1,8 +1,8 @@
 import { Component, effect, inject, Input, input, model, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonCard, IonInput, IonItem, IonList, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
-import { CategoryStructure, CategoryStructureItem } from 'src/app/models/category-structure.interface';
-import { Level } from 'src/app/models/level.interface';
+import { CategoryStructure, CategoryStructureItem } from 'src/app/models/legacy/category-structure.interface';
+import { Level } from 'src/app/models/legacy/level.interface';
 import { CategoryService } from 'src/app/services-new/category.service';
 
 @Component({

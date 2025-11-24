@@ -29,7 +29,7 @@ import { IonDatetimeCustomEvent } from '@ionic/core';
 import { Guid } from 'guid-typescript';
 import * as L from 'leaflet';
 import { Marker } from 'leaflet';
-import { Pin } from 'src/app/models/pin.interface';
+import { Pin } from 'src/app/models/legacy/pin.interface';
 import { PopupComponent } from '../popup/popup.component';
 
 @Component({

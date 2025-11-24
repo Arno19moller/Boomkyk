@@ -9,8 +9,8 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/angular/standalone';
-import { CategoryFilter } from 'src/app/models/category-filter.interface';
-import { CategoryStructure } from 'src/app/models/category-structure.interface';
+import { CategoryFilter } from 'src/app/models/legacy/category-filter.interface';
+import { CategoryStructure } from 'src/app/models/legacy/category-structure.interface';
 
 @Component({
   standalone: true,

@@ -14,7 +14,7 @@ import {
 } from '@ionic/angular/standalone';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
-import { AudioRecording } from 'src/app/models/audio-recording.interface';
+import { AudioRecording } from 'src/app/models/legacy/audio-recording.interface';
 import { PopupComponent } from '../../popup/popup.component';
 
 @Component({

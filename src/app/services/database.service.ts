@@ -3,9 +3,9 @@ import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Platform } from '@ionic/angular';
 import { Storage } from '@ionic/storage-angular';
 import { Guid } from 'guid-typescript';
-import { BoomkykPhoto } from '../models/photo.interface';
-import { TreeType } from '../models/tree-type.enum';
-import { Tree } from '../models/tree.interface';
+import { BoomkykPhoto } from '../models/legacy/photo.interface';
+import { TreeType } from '../models/legacy/tree-type.enum';
+import { Tree } from '../models/legacy/tree.interface';
 
 @Injectable({
   providedIn: 'root',

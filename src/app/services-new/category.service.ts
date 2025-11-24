@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CategoryStructure, CategoryStructureItem } from 'src/app/models/category-structure.interface';
+import { CategoryStructure, CategoryStructureItem } from '../models/legacy/category-structure.interface';
 
 @Injectable({
   providedIn: 'root',

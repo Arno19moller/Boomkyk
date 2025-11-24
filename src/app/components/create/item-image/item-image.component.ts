@@ -4,7 +4,7 @@ import { IonButton, IonCard, IonIcon, IonImg, IonItem, IonList, IonTextarea } fr
 import { PhotoActionSheetComponent } from 'src/app/components/action-sheet/action-sheet.component';
 import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
-import { CategoryStructureItem } from 'src/app/models/category-structure.interface';
+import { CategoryStructureItem } from 'src/app/models/legacy/category-structure.interface';
 
 @Component({
   standalone: true,

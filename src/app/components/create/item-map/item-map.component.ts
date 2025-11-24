@@ -5,7 +5,7 @@ import { PhotoActionSheetComponent } from 'src/app/components/action-sheet/actio
 import { MapComponent } from 'src/app/components/map/map.component';
 import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
-import { Pin } from 'src/app/models/pin.interface';
+import { Pin } from 'src/app/models/legacy/pin.interface';
 
 @Component({
   standalone: true,

@@ -15,9 +15,9 @@ import { ItemImageComponent } from 'src/app/components/create/item-image/item-im
 import { ItemMapComponent } from 'src/app/components/create/item-map/item-map.component';
 import { SelectItemComponent } from 'src/app/components/create/select-item/select-item.component';
 import { VoiceComponent } from 'src/app/components/create/voice/voice.component';
-import { CategoryStructure, CategoryStructureItem } from 'src/app/models/category-structure.interface';
-import { Level } from 'src/app/models/level.interface';
-import { Pin } from 'src/app/models/pin.interface';
+import { CategoryStructure, CategoryStructureItem } from 'src/app/models/legacy/category-structure.interface';
+import { Level } from 'src/app/models/legacy/level.interface';
+import { Pin } from 'src/app/models/legacy/pin.interface';
 import { CategoryService } from 'src/app/services-new/category.service';
 import { RecordingService } from 'src/app/services/recording.service';
 
