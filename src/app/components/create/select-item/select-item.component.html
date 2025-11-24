@@ -1,69 +1,61 @@
 <ion-card>
-  <ion-list class="form-container" lines="none">
-    <ion-item>
-      <ion-select
-        fill="outline"
-        label="Type*"
-        interface="popover"
-        placeholder="Select Type"
-        label-placement="stacked"
-        required="true"
-        style="margin-top: 10px"
-        [(ngModel)]="selectedCategory"
-      >
-        @for (category of categories(); track $index) {
-          <ion-select-option [value]="category">{{ category.name }}</ion-select-option>
+  @if (levels().length > 0) {
+    <form [formGroup]="itemFormGroup">
+      <ion-list class="form-container" lines="none">
+        <!-- Selected Level -->
+        <ion-item>
+          <ion-select
+          #type
+            fill="outline"
+            label="Type*"
+            interface="popover"
+            placeholder="Select Type"
+            label-placement="stacked"
+            required="true"
+            style="margin-top: 10px"
+            formControlName="type"
+            (ionChange)="selectedLevelChange()"
+          >
+            @for (level of levels(); track $index) {
+              <ion-select-option [value]="level">{{ level.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+
+        <!-- New Item Name -->
+        <ion-item>
+          <ion-input
+          #typeValue
+            fill="outline"
+            style="margin-top: 10px"
+            required="true"
+            labelPlacement="stacked"
+            label="New {{ type.value?.name }}"
+            placeholder="Enter new {{ type.value?.name }}"
+            formControlName="typeValue"
+          ></ion-input>
+        </ion-item>
+
+        @if (type?.value?.parent != null && typeValue.value != '') {
+          <!-- Select Parent -->
+          <ion-item>
+            <ion-select
+              fill="outline"
+              label="{{ type.value!.parent!.name }}*"
+              interface="popover"
+              placeholder="Select {{ type.value!.parent!.name }}"
+              label-placement="stacked"
+              required="true"
+              style="margin-top: 10px"
+              formControlName="parent"
+            >
+              @for (level of parentLevels(); track $index) {
+                <ion-select-option [value]="level">{{ level.name }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
         }
-      </ion-select>
-    </ion-item>
-    <ion-item>
-      <!-- Update existing Item -->
-      @if (isEdit()) {
-        <ion-select
-          fill="outline"
-          [label]="selectedCategory()?.name + '*'"
-          interface="popover"
-          placeholder="Select {{ selectedCategory()?.name }}"
-          label-placement="stacked"
-          required="true"
-          style="margin-top: 10px"
-          [(ngModel)]="selectedCategoryItem"
-        >
-          @for (item of selectedCategory()?.values; track $index) {
-            <ion-select-option [value]="item">{{ item.name }}</ion-select-option>
-          }
-        </ion-select>
-        <!-- Add new Item -->
-      } @else {
-        <ion-input
-          fill="outline"
-          label="New {{ selectedCategory()?.name }}"
-          labelPlacement="stacked"
-          placeholder="Enter new {{ selectedCategory()?.name }}"
-          style="margin-top: 10px"
-          [value]="selectedCategoryItem()?.name"
-          (ionInput)="updateName($event)"
-        ></ion-input>
-      }
-    </ion-item>
-    <!-- Select Parent -->
-    @if (selectedCategory()?.parent && selectedCategoryItem()) {
-      <ion-item>
-        <ion-select
-          fill="outline"
-          [label]="selectedCategory()!.parent!.name + '*'"
-          interface="popover"
-          placeholder="Select {{ selectedCategory()!.parent!.name }}"
-          label-placement="stacked"
-          required="true"
-          style="margin-top: 10px"
-          [(ngModel)]="selectedCategoryItem()!.parent"
-        >
-          @for (item of selectedCategory()?.parent?.values; track $index) {
-            <ion-select-option [value]="item">{{ item.name }}</ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
-    }
-  </ion-list>
+      </ion-list>
+    </form>
+  }
 </ion-card>

@@ -12,7 +12,7 @@ import { CategoryStructureItem } from 'src/app/models/category-structure.interfa
 })
 export class ItemImageComponent implements OnInit {
   selectedCategoryItem = input.required<CategoryStructureItem | undefined>();
-  actionSheetType = model.required<'upload' | 'delete'>();
+  actionSheetType = model.required<'action' | 'upload' | 'delete'>();
   isActionSheetOpen = model.required<boolean>();
   images = model.required<{ format: string; webPath: string; isHighlight: boolean }[]>();
   selectedImage = model.required<{ format: string; webPath: string; isHighlight: boolean } | undefined>();

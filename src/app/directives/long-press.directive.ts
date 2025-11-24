@@ -16,6 +16,7 @@ import {
 export class LongPressDirective implements AfterViewInit, OnDestroy {
   @Input() longPressTime: number = 500;
   @Output() longPress: EventEmitter<HTMLElement> = new EventEmitter();
+  @Output() doubleClick: EventEmitter<HTMLElement> = new EventEmitter();
 
   longPressTimeout: any;
   isLongPressing: boolean = false;
@@ -35,6 +36,11 @@ export class LongPressDirective implements AfterViewInit, OnDestroy {
   }
 
   // HostListeners
+  @HostListener('dblclick', ['$event'])
+  onDoubleClick(event: MouseEvent) {
+    this.doubleClick.emit(this.el.nativeElement);
+  }
+
   @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent) {
     // event.preventDefault();
@@ -78,7 +84,7 @@ export class LongPressDirective implements AfterViewInit, OnDestroy {
     this.isLongPressing = true;
     this.longPressTimeout = setTimeout(() => {
       if (this.isLongPressing) {
-        this.longPress.emit();
+        this.longPress.emit(this.el.nativeElement);
       }
     }, this.longPressTime);
   }
@@ -99,7 +105,7 @@ export class LongPressDirective implements AfterViewInit, OnDestroy {
       if (overflowY === 'scroll' || overflowY === 'auto' || overflowX === 'scroll' || overflowX === 'auto') {
         return parent;
       }
-      // parent = parent.parentElement;
+      parent = parent.parentElement;
     }
     return undefined;
   }

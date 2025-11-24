@@ -14,9 +14,32 @@ export class PhotoActionSheetComponent implements OnInit {
 
   header: string = '';
 
-  type = input<'upload' | 'delete'>('delete');
+  type = input<'action' | 'upload' | 'delete'>('delete');
   isOpen = model.required<boolean>();
   buttons: any = [];
+  actionButtons = [
+    {
+      text: 'Edit',
+      role: 'destructive',
+      icon: 'create',
+      data: {
+        action: 'edit',
+      },
+    },
+    {
+      text: 'Delete',
+      role: 'destructive',
+      icon: 'trash',
+      data: {
+        action: 'delete',
+      },
+    },
+    {
+      text: 'Cancel',
+      role: 'cancel',
+    },
+  ];
+
   uploadPhotobuttons = [
     {
       text: 'From Gallery',
@@ -58,8 +81,9 @@ export class PhotoActionSheetComponent implements OnInit {
   constructor() {
     effect(() => {
       const type = this.type();
-      this.header = type === 'upload' ? 'Upload Images' : 'Confirm Delete';
-      this.buttons = type === 'delete' ? this.deleteButtons : this.uploadPhotobuttons;
+      this.header = type === 'action' ? 'Action' : type === 'upload' ? 'Upload Images' : 'Confirm Delete';
+      this.buttons =
+        type === 'action' ? this.actionButtons : type === 'delete' ? this.deleteButtons : this.uploadPhotobuttons;
     });
   }
 

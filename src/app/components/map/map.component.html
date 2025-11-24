@@ -83,9 +83,16 @@
       </ion-list>
     </ion-card>
 
+    <!-- Date popup -->
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
-        <ion-datetime id="datetime" presentation="date" (ionChange)="dateTimeChanged($event)"></ion-datetime>
+        <ion-datetime
+          id="datetime"
+          presentation="date"
+          [showDefaultButtons]="true"
+          [value]="dateString"
+          (ionChange)="dateTimeChanged($event)"
+        ></ion-datetime>
       </ng-template>
     </ion-modal>
   </ion-content>

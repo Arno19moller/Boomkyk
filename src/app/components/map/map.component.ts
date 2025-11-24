@@ -61,6 +61,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
   editable = input.required<boolean>();
   pins = input.required<Pin[]>();
+  selectedPin = input<Pin | undefined>();
 
   mapPins: Pin[] = [];
   leafletMap: any;
@@ -69,6 +70,7 @@ export class MapComponent implements OnInit, OnDestroy {
   isMapLoaded: boolean = false;
   saveCurrentLocation: boolean = false;
   notes: string = '';
+  dateString: string = new Date().toISOString();
 
   currentPin: Pin = {
     id: Guid.create(),
@@ -138,6 +140,11 @@ export class MapComponent implements OnInit, OnDestroy {
       .map((pin) => {
         this.addPin(pin.position!, pin);
       });
+
+    if (this.selectedPin() != undefined) {
+      const marker = this.mapMarkers.find((m) => this.isMarkerEqualToPin(m, this.selectedPin()!));
+      this.selectMarker(marker);
+    }
   }
 
   loadMapEvents(): void {
@@ -161,6 +168,7 @@ export class MapComponent implements OnInit, OnDestroy {
       this.newMarker = this.mapMarkers[this.mapMarkers.length - 1];
     });
 
+    // click anywhere but on pin
     this.leafletMap.on('click', (e: L.LeafletMouseEvent) => {
       this.unselectmarker();
     });
@@ -200,26 +208,13 @@ export class MapComponent implements OnInit, OnDestroy {
   onMarkerClick(e: L.LeafletMouseEvent) {
     const clickedMarker = e.target as L.Marker;
     const index = this.mapMarkers.indexOf(clickedMarker);
-    this.currentMarker = this.mapMarkers[index];
 
-    this.mapMarkers.map((m) => {
-      const isNewMark = this.isCurrentMarkNew(m);
-      const icon = this.getIcon(isNewMark ? 'new' : 'default');
-      m.setIcon(icon);
-    });
-
-    const icon = this.getIcon('selected');
-    this.currentMarker.setIcon(icon);
-
-    const pin = this.getCurrentPin();
-    this.currentPin = pin ? pin : this.newPin;
-    this.notes = this.currentPin.notes;
+    this.selectMarker(this.mapMarkers[index]);
   }
 
   removePin(marker: Marker<any> | undefined) {
     if (marker) {
       const pin = this.getCurrentPin();
-      // if (pin == undefined) return;
       const index = this.mapPins.indexOf(pin!);
       this.mapPins = this.mapPins.filter((_, i) => i !== index);
 
@@ -260,11 +255,31 @@ export class MapComponent implements OnInit, OnDestroy {
     }
   }
 
+  selectMarker(marker: L.Marker<any> | undefined) {
+    if (marker == undefined) return;
+
+    this.currentMarker = marker;
+    this.mapMarkers.map((m) => {
+      const isNewMark = this.isMarkerEqualToPin(m);
+      const icon = this.getIcon(isNewMark ? 'new' : 'default');
+      m.setIcon(icon);
+    });
+
+    const icon = this.getIcon('selected');
+    marker.setIcon(icon);
+
+    const pin = this.getCurrentPin();
+    this.currentPin = pin ? pin : this.newPin;
+    this.notes = this.currentPin.notes;
+    this.dateString = this.currentPin.date.toISOString();
+  }
+
   unselectmarker(): void {
     const icon = this.getIcon(this.newPin.position === this.currentPin.position ? 'new' : 'default');
     this.currentMarker?.setIcon(icon);
     this.currentMarker = undefined;
     this.notes = '';
+    this.dateString = new Date().toISOString();
   }
 
   deleteClicked() {
@@ -274,7 +289,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
   deletePopupClosed(role: string) {
     if (role === 'confirm') {
-      if (this.isCurrentMarkNew(this.currentMarker)) {
+      if (this.isMarkerEqualToPin(this.currentMarker)) {
         this.saveCurrentLocation = false;
       }
       this.removePin(this.currentMarker);
@@ -287,13 +302,14 @@ export class MapComponent implements OnInit, OnDestroy {
     marker.setPopupContent(`<h6>${dateStr}</h6><sub>${pin.notes}</sub>`);
   }
 
-  // Determine if the new mark is a new mark or a saved mark
-  private isCurrentMarkNew(marker: L.Marker<any> | undefined): boolean {
+  private isMarkerEqualToPin(marker: L.Marker<any> | undefined, pin?: Pin): boolean {
     if (!marker) return false;
 
+    pin = pin ?? this.newPin;
+
     const position = marker.getLatLng();
-    const newPosition = this.newPin.position?.coords;
-    return position.lat === newPosition?.latitude && position.lng === newPosition?.longitude;
+    const pinPosition = pin.position?.coords;
+    return position.lat === pinPosition?.latitude && position.lng === pinPosition?.longitude;
   }
 
   private getIcon(type: 'new' | 'selected' | 'default'): L.Icon<L.IconOptions> {
