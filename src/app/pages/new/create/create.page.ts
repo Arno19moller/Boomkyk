@@ -25,7 +25,6 @@ import { LongPressDirective } from 'src/app/directives/long-press.directive';
 import { CategoryStructure, CategoryStructureItem } from 'src/app/models/category-structure.interface';
 import { Level } from 'src/app/models/level.interface';
 import { Pin } from 'src/app/models/pin.interface';
-import { VoiceNote } from 'src/app/models/voice-notes.interface';
 import { CategoryService } from 'src/app/services-new/category.service';
 import { RecordingService } from 'src/app/services/recording.service';
 import { PhotoActionSheetComponent } from '../../../components/action-sheet/action-sheet.component';
@@ -167,20 +166,6 @@ export class CreatePage implements OnInit {
         return images;
       });
     }
-  }
-
-  async playNote(note: VoiceNote) {
-    if (note.isPlaying) {
-      this.recordingService.pausePlayback();
-      note.isPlaying = false;
-      return;
-    }
-    await this.recordingService.playFile(note);
-  }
-
-  deleteVoiceNoteClicked(): void {
-    this.actionSheetType = 'delete';
-    this.isActionSheetOpen.set(true);
   }
 
   mapModalClosed(pins: Pin[]) {
