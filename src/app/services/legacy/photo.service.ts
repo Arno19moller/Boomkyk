@@ -4,9 +4,9 @@ import { Capacitor } from '@capacitor/core';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Platform } from '@ionic/angular';
 import { Guid } from 'guid-typescript';
-import { ImageType } from '../models/legacy/image-type.enum';
-import { BoomkykPhoto } from '../models/legacy/photo.interface';
-import { Tree } from '../models/legacy/tree.interface';
+import { ImageType } from '../../models/legacy/image-type.enum';
+import { BoomkykPhoto } from '../../models/legacy/photo.interface';
+import { Tree } from '../../models/legacy/tree.interface';
 import { DatabaseService } from './database.service';
 
 @Injectable({

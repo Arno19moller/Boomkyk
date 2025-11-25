@@ -1,9 +1,8 @@
-import { Component, effect, inject, Input, input, model, OnInit, signal } from '@angular/core';
+import { Component, effect, EventEmitter, inject, Input, input, model, OnInit, Output, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IonCard, IonInput, IonItem, IonList, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
-import { CategoryStructure, CategoryStructureItem } from 'src/app/models/legacy/category-structure.interface';
-import { Level } from 'src/app/models/legacy/level.interface';
-import { CategoryService } from 'src/app/services-new/category.service';
+import { NewCategory, NewCategoryItem } from 'src/app/models/new-category.interface';
+import { NewCategoryService } from 'src/app/services/new-category.service';
 
 @Component({
   standalone: true,
@@ -13,81 +12,67 @@ import { CategoryService } from 'src/app/services-new/category.service';
   imports: [IonInput, IonItem, IonList, IonCard, IonSelect, IonSelectOption, FormsModule, ReactiveFormsModule],
 })
 export class SelectItemComponent implements OnInit {
-  private categoryService = inject(CategoryService);
+  private newCategoryService = inject(NewCategoryService);
 
-  categories: CategoryStructure[] = [];
+  categories = signal<NewCategory[]>([]);
   isEdit = input.required<boolean>();
-  selectedCategory = model.required<CategoryStructure | undefined>();
-  selectedCategoryItem = model.required<CategoryStructureItem | undefined>();
+  parentItems = signal<NewCategoryItem[]>([]);
+  parentCategory = signal<NewCategory | undefined>(undefined);
+  selectedCategory = model.required<NewCategory | undefined>();
+  selectedCategoryItem = model.required<NewCategoryItem | undefined>();
 
   @Input() itemFormGroup = new FormGroup({
-    type: new FormControl<Level | undefined>(undefined, [Validators.required]),
+    type: new FormControl<NewCategory | undefined>(undefined, [Validators.required]),
     typeValue: new FormControl('', [Validators.required]),
-    newTypeValue: new FormControl(''),
-    parent: new FormControl<Level | undefined>(undefined, [Validators.required]),
+    parent: new FormControl<NewCategory | undefined>(undefined, [Validators.required]),
   });
-
-  levels = signal<Level[]>([]);
-  parentLevels = signal<Level[]>([]);
+  @Output() parentValidatorChange = new EventEmitter<boolean>();
 
   constructor() {
     effect(() => {
-      if (this.itemFormGroup.controls['type'].value == undefined) {
-        this.itemFormGroup.controls['type']!.setValue(this.levels()[0]);
+      if (this.selectedCategory() != undefined && this.itemFormGroup.controls['type'].value == undefined) {
+        this.itemFormGroup.controls['type']!.setValue(this.selectedCategory());
+        this.selectedLevelChange(this.selectedCategory());
       }
     });
   }
 
   ngOnInit() {
-    this.categoryService.getCategories().then((categories) => {
+    this.newCategoryService.getCategories().then((categories) => {
       if (categories == undefined) return;
-
-      categories = categories.sort((a, b) => a.level - b.level);
-      this.categories = categories;
-
-      const levels = categories.map((cat) => {
-        const lvl = {
-          name: cat.name,
-          level: cat.level,
-        };
-        if (cat.parent != undefined) {
-          return {
-            ...lvl,
-            parent: {
-              name: cat.parent!.name,
-              level: cat.parent!.level,
-            },
-          };
-        } else {
-          return lvl;
-        }
-      });
-      this.levels.set(levels.length > 0 ? levels : []);
-      this.selectedLevelChange(this.levels()[0]);
+      this.categories.set(categories);
     });
   }
 
-  selectedLevelChange(level: Level | undefined = undefined): void {
-    const lvl = level ?? this.itemFormGroup.controls['type'].value;
-    const parentLvls = this.categories
-      .filter((c) => c.level === lvl?.parent?.level)
-      .flatMap((c: any) => {
-        return c.values.map((val: CategoryStructureItem) => {
-          return {
-            level: c.level,
-            name: val.name,
-          };
-        });
-      });
+  async selectedLevelChange(category: NewCategory | undefined = undefined): Promise<void> {
+    let parentItems: NewCategoryItem[] = [];
+    const cat = category ?? this.itemFormGroup.controls['type'].value;
 
-    this.parentLevels.set(parentLvls);
+    await this.getParentCategoryItems(parentItems, cat!);
+    this.resetParentControls(this.parentItems());
+
+    this.parentCategory.set(this.categories().find((c) => c.id.toString() === cat?.parentId?.toString()));
+    this.selectedCategory.set(this.categories().find((c) => c.id.toString() === cat?.id.toString()));
+  }
+
+  private async getParentCategoryItems(parentItems: NewCategoryItem[], cat: NewCategory) {
+    const level = cat?.level ?? 0;
+    const categories = await this.newCategoryService.getCategoryItemsByLevel(level + 1);
+
+    if (categories == undefined) return;
+    parentItems = categories;
+    this.parentItems.set(parentItems);
+  }
+
+  private resetParentControls(parentItems: NewCategoryItem[]): void {
     this.itemFormGroup.controls['parent'].setValue(undefined);
-    if (parentLvls.length === 0) {
-      this.itemFormGroup.controls['parent'].clearValidators();
+
+    this.parentValidatorChange.emit(parentItems.length !== 0);
+
+    if (parentItems.length === 0) {
+      this.itemFormGroup.controls['parent'].removeValidators([Validators.required]);
     } else {
       this.itemFormGroup.controls['parent'].addValidators([Validators.required]);
     }
-
-    this.selectedCategoryItem.set(this.categories.find((c) => c.name === lvl?.name && c.level === lvl.level));
   }
 }

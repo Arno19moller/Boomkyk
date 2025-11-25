@@ -1,5 +1,5 @@
 import { Position } from '@capacitor/geolocation';
-import { AudioRecording } from './audio-recording.interface';
+import { AudioRecording } from '../audio-recording.interface';
 import { BoomkykPhoto } from './photo.interface';
 
 export interface CategoryStructure {

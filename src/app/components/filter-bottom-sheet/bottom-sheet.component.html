@@ -13,7 +13,7 @@
           @for (item of filteredStructures(); track $index) {
             @if (item.level > 0) {
               <ion-item>
-                <ion-select
+                <!-- <ion-select
                   label-placement="fixed"
                   interface="popover"
                   placeholder="Select {{ item.name }}"
@@ -24,7 +24,7 @@
                   @for (val of item.values; track $index) {
                     <ion-select-option [value]="val.name">{{ val.name }}</ion-select-option>
                   }
-                </ion-select>
+                </ion-select> -->
               </ion-item>
             }
           }

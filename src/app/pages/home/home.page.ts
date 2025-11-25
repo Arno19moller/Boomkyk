@@ -22,11 +22,14 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { CategoryFilter } from 'src/app/models/legacy/category-filter.interface';
-import { CategoryStructure } from 'src/app/models/legacy/category-structure.interface';
+import { Guid } from 'guid-typescript';
+import { CategoryFilter } from 'src/app/models/category-filter.interface';
 import { Tree } from 'src/app/models/legacy/tree.interface';
-import { CategoryService } from 'src/app/services-new/category.service';
-import { DatabaseService } from 'src/app/services/database.service';
+import { NewCategory, NewCategoryItem } from 'src/app/models/new-category.interface';
+import { ItemsService } from 'src/app/services/items.service';
+import { DatabaseService } from 'src/app/services/legacy/database.service';
+import { NewCategoryService } from 'src/app/services/new-category.service';
+import { NewImageService } from 'src/app/services/new-image.service';
 import { BottomSheetComponent } from '../../components/filter-bottom-sheet/bottom-sheet.component';
 
 @Component({
@@ -60,13 +63,17 @@ import { BottomSheetComponent } from '../../components/filter-bottom-sheet/botto
   ],
 })
 export class HomePage implements OnInit {
-  private categoryService = inject(CategoryService);
+  private categoryService = inject(NewCategoryService);
+  private itemsService = inject(ItemsService);
+  private imageService = inject(NewImageService);
 
   protected databaseService = inject(DatabaseService);
   protected isOpen = signal<boolean>(false);
-  protected items = signal<Tree[][]>([]);
-  protected categories = signal<CategoryStructure[]>([]);
+  protected trees = signal<Tree[][]>([]);
+  protected categories = signal<NewCategory[]>([]);
   protected filters = signal<CategoryFilter[]>([]);
+
+  protected items = signal<NewCategoryItem[]>([]);
 
   protected filteredStructures: Signal<any> = computed(() => {
     const filters = this.filters();
@@ -78,6 +85,16 @@ export class HomePage implements OnInit {
   constructor() {}
 
   ngOnInit() {
+    this.itemsService.getItems().then((items) => {
+      this.items.set(items);
+      this.items.update((items) => {
+        items.forEach(async (item) => {
+          const images = await this.imageService.getImagesByGuids([item.highlightImageId ?? Guid.create()]);
+          item.highlightImage = images?.length > 0 ? images[0] : undefined;
+        });
+        return items;
+      });
+    });
     this.databaseService.getTrees().then((trees) => {
       const treeList: Tree[][] = [];
       for (let i = 0; i < trees.length; i += 2) {
@@ -87,10 +104,10 @@ export class HomePage implements OnInit {
           treeList.push([trees[i]]);
         }
       }
-      this.items.set(treeList);
+      this.trees.set(treeList);
     });
 
-    this.categoryService.getCategories().then((categories) => {
+    this.categoryService.getCategoryItems().then((categories) => {
       this.categories.update(() => categories ?? []);
     });
   }

@@ -30,17 +30,16 @@
     [itemFormGroup]="itemFormGroup"
     [(selectedCategory)]="selectedCategory"
     [(selectedCategoryItem)]="selectedCategoryItem"
+    (parentValidatorChange)="parentValidatorChange($event)"
   ></app-select-item>
 
   @if(itemFormGroup.valid){
-  <app-item-image
-    [selectedCategoryItem]="selectedCategoryItem()"
-    [(images)]="images"
-  ></app-item-image>
+  <app-item-image [(selectedCategoryItem)]="selectedCategoryItem" [(images)]="images"></app-item-image>
 
   <!-- Voice Notes -->
-  <app-voice [(audioFiles)]="selectedCategoryItem()!.audioFiles"></app-voice>
+  <app-voice [selectedCategoryItem]="selectedCategoryItem()" [(audioFiles)]="audioFiles"></app-voice>
 
   <!-- Map -->
-  <app-item-map [(mapPins)]="mapPins"></app-item-map>
+  <app-item-map [selectedCategoryItem]="selectedCategoryItem()"[(mapPins)]="mapPins"></app-item-map>
   }
+</ion-content>

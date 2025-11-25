@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
-import { ImageType } from '../models/legacy/image-type.enum';
-import { Tree } from '../models/legacy/tree.interface';
-import { VoiceNote } from '../models/legacy/voice-notes.interface';
+import { ImageType } from '../../models/legacy/image-type.enum';
+import { Tree } from '../../models/legacy/tree.interface';
+import { VoiceNote } from '../../models/legacy/voice-notes.interface';
 
 @Injectable({
   providedIn: 'root',

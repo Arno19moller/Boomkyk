@@ -1,11 +1,11 @@
 <ion-card>
-  @if (levels().length > 0) {
+  @if (categories().length > 0) {
     <form [formGroup]="itemFormGroup">
       <ion-list class="form-container" lines="none">
         <!-- Selected Level -->
         <ion-item>
           <ion-select
-          #type
+            #type
             fill="outline"
             label="Type*"
             interface="popover"
@@ -16,7 +16,7 @@
             formControlName="type"
             (ionChange)="selectedLevelChange()"
           >
-            @for (level of levels(); track $index) {
+            @for (level of categories(); track $index) {
               <ion-select-option [value]="level">{{ level.name }}</ion-select-option>
             }
           </ion-select>
@@ -36,20 +36,20 @@
           ></ion-input>
         </ion-item>
 
-        @if (type?.value?.parent != null && typeValue.value != '') {
+        @if (parentCategory() != undefined) {
           <!-- Select Parent -->
           <ion-item>
             <ion-select
               fill="outline"
-              label="{{ type.value!.parent!.name }}*"
+              label="{{ parentCategory()!.name }}*"
               interface="popover"
-              placeholder="Select {{ type.value!.parent!.name }}"
+              placeholder="Select {{ parentCategory()!.name }}"
               label-placement="stacked"
               required="true"
               style="margin-top: 10px"
               formControlName="parent"
             >
-              @for (level of parentLevels(); track $index) {
+              @for (level of parentItems(); track $index) {
                 <ion-select-option [value]="level">{{ level.name }}</ion-select-option>
               }
             </ion-select>

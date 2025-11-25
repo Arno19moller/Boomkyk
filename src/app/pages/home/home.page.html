@@ -30,22 +30,22 @@
   <ion-grid>
     @for (item of items(); track $index) {
     <ion-row>
-      @for (t of item; track $index) {
+      <!-- @for (t of item; track $index) { -->
       <ion-col>
-        <ion-card class="item-card" [attr.id]="t.id['value']" [routerLink]="['/view', { id: t.id['value'] }]">
-          @if(t.images && t.images.length > 0 && t.images![0].webviewPath != ''){
-          <ion-img class="item-image" [src]="t.images![0].webviewPath"></ion-img>
+        <ion-card class="item-card" [attr.id]="item.id['value']" [routerLink]="['/view', { id: item.id['value'] }]">
+          @if(item.highlightImage && item.highlightImage.webPath != ''){
+          <ion-img class="item-image" [src]="item.highlightImage.webPath"></ion-img>
           } @else {
           <ion-img class="item-image" src="../../../assets/images/image-not-found.jpg"></ion-img>
           }
           <ion-card-header>
             <sub style="margin: 0px"> Family > Genus </sub>
-            <ion-card-title> {{t.title}} </ion-card-title>
+            <ion-card-title> {{item.name}} </ion-card-title>
           </ion-card-header>
           <sub style="margin: 0px; margin: 0px; position: absolute; bottom: 10px; right: 5px"> 2025-03-07 </sub>
         </ion-card>
       </ion-col>
-      }
+      <!-- } -->
     </ion-row>
     }
   </ion-grid>

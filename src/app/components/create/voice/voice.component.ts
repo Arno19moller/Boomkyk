@@ -1,4 +1,4 @@
-import { Component, model, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, input, model, OnInit, signal } from '@angular/core';
 import { Directory } from '@capacitor/filesystem';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
@@ -13,8 +13,11 @@ import {
   IonList,
 } from '@ionic/angular/standalone';
 import { VoiceRecorder } from 'capacitor-voice-recorder';
+import { Guid } from 'guid-typescript';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
-import { AudioRecording } from 'src/app/models/legacy/audio-recording.interface';
+import { AudioRecording } from 'src/app/models/audio-recording.interface';
+import { NewCategoryItem } from 'src/app/models/new-category.interface';
+import { NewAudioService } from 'src/app/services/new-audio.service';
 import { PopupComponent } from '../../popup/popup.component';
 
 @Component({
@@ -37,7 +40,10 @@ import { PopupComponent } from '../../popup/popup.component';
   ],
 })
 export class VoiceComponent implements OnInit {
-  audioFiles = model.required<AudioRecording[] | undefined>();
+  newAudioService = inject(NewAudioService);
+
+  selectedCategoryItem = input.required<NewCategoryItem | undefined>();
+  audioFiles = model.required<AudioRecording[]>();
 
   protected longPressInterval: any;
   protected loadingText: string = 'Recording';
@@ -47,7 +53,15 @@ export class VoiceComponent implements OnInit {
   protected confirmDeleteBody: string = '';
   private selectedRecordingIndex: number | undefined = undefined;
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      if (this.selectedCategoryItem()?.audioFileIds) {
+        this.newAudioService.getAudioFilesByGuid(this.selectedCategoryItem()?.audioFileIds!).then((audioFiles) => {
+          this.audioFiles.set(audioFiles);
+        });
+      }
+    });
+  }
 
   async ngOnInit() {
     await VoiceRecorder.requestAudioRecordingPermission();
@@ -79,17 +93,20 @@ export class VoiceComponent implements OnInit {
     if (result?.value?.recordDataBase64) {
       const recordData = result.value.recordDataBase64;
       const fileName = `${new Date().getTime()}.wav`;
+      const index = this.audioFiles()?.slice(-1)[0]?.index ?? 0;
+      const newAudio = {
+        id: Guid.create(),
+        //path: fileName,
+        directory: Directory.Data,
+        data: recordData,
+        name: fileName,
+        index: index + 1,
+        isPlaying: false,
+      };
+
       this.audioFiles.update((files) => {
         files = files == undefined ? [] : files;
-        const index = files.slice(-1)[0]?.index ?? 0;
-        files.push({
-          path: fileName,
-          directory: Directory.Data,
-          data: recordData,
-          name: fileName,
-          index: index + 1,
-          isPlaying: false,
-        });
+        files.push(newAudio);
         return files;
       });
     }
@@ -100,14 +117,21 @@ export class VoiceComponent implements OnInit {
     const base64Sound = audioFile.data;
 
     this.audioRef = new Audio(`data:audio/aac;base64,${base64Sound}`);
-    this.audioRef.oncanplaythrough = () => {
-      audioFile.isPlaying = true;
-      this.audioRef!.play();
-    };
-    this.audioRef.onended = () => {
+
+    if (audioFile.isPlaying) {
+      this.audioRef!.pause();
+      this.audioRef!.currentTime = 0;
       audioFile.isPlaying = false;
-    };
-    this.audioRef.load();
+    } else {
+      this.audioRef.oncanplaythrough = () => {
+        audioFile.isPlaying = true;
+        this.audioRef!.play();
+      };
+      this.audioRef.onended = () => {
+        audioFile.isPlaying = false;
+      };
+      this.audioRef.load();
+    }
   }
 
   deleteButtonClicked(audioFile: AudioRecording): void {

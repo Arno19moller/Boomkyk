@@ -1,10 +1,14 @@
-import { Component, input, model, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, model, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { IonButton, IonCard, IonIcon, IonImg, IonItem, IonList, IonTextarea } from '@ionic/angular/standalone';
+import { Guid } from 'guid-typescript';
 import { PhotoActionSheetComponent } from 'src/app/components/action-sheet/action-sheet.component';
 import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
-import { CategoryStructureItem } from 'src/app/models/legacy/category-structure.interface';
+import { NewCategoryItem } from 'src/app/models/new-category.interface';
+import { NewImage } from 'src/app/models/new-image.interface';
+import { NewImageService } from 'src/app/services/new-image.service';
 
 @Component({
   standalone: true,
@@ -22,34 +26,50 @@ import { CategoryStructureItem } from 'src/app/models/legacy/category-structure.
     LongPressDirective,
     PhotoActionSheetComponent,
     PopupComponent,
+    FormsModule,
   ],
 })
 export class ItemImageComponent implements OnInit {
-  selectedCategoryItem = input.required<CategoryStructureItem | undefined>();
-  images = model.required<{ format: string; webPath: string; isHighlight: boolean }[]>();
+  private newImageService = inject(NewImageService);
+
+  selectedCategoryItem = model.required<NewCategoryItem | undefined>();
+  images = model.required<NewImage[]>();
 
   protected actionSheetType: 'action' | 'upload' | 'delete' = 'upload';
   protected isActionSheetOpen = signal<boolean>(false);
-  protected selectedImage = signal<{ format: string; webPath: string; isHighlight: boolean } | undefined>(undefined);
+  protected selectedImage = signal<NewImage | undefined>(undefined);
   protected openConfirmDelete = signal<boolean>(false);
   protected confirmDeleteBody: string = '';
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      this.newImageService.getImagesByGuids(this.selectedCategoryItem()?.imageIds ?? []).then((images) => {
+        this.images.set(images);
+      });
+    });
+  }
 
   ngOnInit() {}
 
-  startLongPress(image: { format: string; webPath: string; isHighlight: boolean }) {
+  startLongPress(image: NewImage) {
     this.actionSheetType = 'delete';
     this.selectedImage.set(image);
     this.isActionSheetOpen.set(true);
   }
 
-  doubleClick(image: { format: string; webPath: string; isHighlight: boolean }): void {
+  doubleClick(image: NewImage): void {
     this.images.update((images) => {
       images.map((image) => (image.isHighlight = false));
       return images;
     });
     image.isHighlight = true;
+
+    if (this.selectedCategoryItem() != undefined) {
+      this.selectedCategoryItem.update((item) => {
+        item!.highlightImageId = image.id;
+        return item;
+      });
+    }
   }
 
   actionSheetClosed(event: any): void {
@@ -82,17 +102,15 @@ export class ItemImageComponent implements OnInit {
     });
 
     if (images && images?.photos?.length > 0) {
-      this.images.update((imags) => {
-        const formattedImgs = images.photos.map((photo) => {
-          return {
-            format: photo.format,
-            webPath: photo.webPath!,
-            isHighlight: false,
-          };
-        });
-        imags = [...formattedImgs, ...imags];
-        return imags;
+      const formattedImgs = images.photos.map((photo) => {
+        return {
+          id: Guid.create(),
+          format: photo.format,
+          webPath: photo.webPath!,
+          isHighlight: false,
+        };
       });
+      this.addImages(formattedImgs);
     }
   }
 
@@ -106,14 +124,20 @@ export class ItemImageComponent implements OnInit {
     });
 
     if (image) {
-      this.images.update((images) => {
-        images.push({
+      this.addImages([
+        {
+          id: Guid.create(),
           format: image.format,
           webPath: image.webPath!,
           isHighlight: false,
-        });
-        return images;
-      });
+        },
+      ]);
     }
+  }
+
+  private addImages(newImages: NewImage[]) {
+    this.images.update((images) => {
+      return [...images, ...newImages];
+    });
   }
 }

@@ -28,7 +28,7 @@ import {
   trash,
   triangle,
 } from 'ionicons/icons';
-import { DatabaseService } from './services/database.service';
+import { DatabaseService } from './services/legacy/database.service';
 
 @Component({
   selector: 'app-root',

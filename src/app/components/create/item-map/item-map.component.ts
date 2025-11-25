@@ -1,11 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, model, OnInit, signal } from '@angular/core';
-import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCol, IonGrid, IonIcon, IonModal, IonRow } from '@ionic/angular/standalone';
+import { Component, effect, inject, input, model, OnInit, signal } from '@angular/core';
+import {
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCol,
+  IonGrid,
+  IonIcon,
+  IonModal,
+  IonRow,
+} from '@ionic/angular/standalone';
 import { PhotoActionSheetComponent } from 'src/app/components/action-sheet/action-sheet.component';
 import { MapComponent } from 'src/app/components/map/map.component';
 import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
-import { Pin } from 'src/app/models/legacy/pin.interface';
+import { NewCategoryItem } from 'src/app/models/new-category.interface';
+import { Pin } from 'src/app/models/pin.interface';
+import { MapService } from 'src/app/services/map.service';
 
 @Component({
   standalone: true,
@@ -30,6 +42,9 @@ import { Pin } from 'src/app/models/legacy/pin.interface';
   ],
 })
 export class ItemMapComponent implements OnInit {
+  mapService = inject(MapService);
+
+  selectedCategoryItem = input.required<NewCategoryItem | undefined>();
   mapPins = model.required<Pin[]>();
 
   protected showMapModal: boolean = false;
@@ -39,7 +54,13 @@ export class ItemMapComponent implements OnInit {
   protected confirmDeleteBody: string = '';
   protected selectedPin: Pin | undefined = undefined;
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      this.mapService.getAudioFilesByGuid(this.selectedCategoryItem()?.pinIds ?? []).then((pins) => {
+        this.mapPins.set(pins);
+      });
+    });
+  }
 
   ngOnInit() {}
 

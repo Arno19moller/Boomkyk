@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
-import { TreeType } from '../models/legacy/tree-type.enum';
-import { Tree } from '../models/legacy/tree.interface';
+import { TreeType } from '../../models/legacy/tree-type.enum';
+import { Tree } from '../../models/legacy/tree.interface';
 import { DatabaseService } from './database.service';
 
 @Injectable({

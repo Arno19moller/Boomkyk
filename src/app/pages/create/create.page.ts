@@ -11,15 +11,17 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
+import { Guid } from 'guid-typescript';
 import { ItemImageComponent } from 'src/app/components/create/item-image/item-image.component';
 import { ItemMapComponent } from 'src/app/components/create/item-map/item-map.component';
 import { SelectItemComponent } from 'src/app/components/create/select-item/select-item.component';
 import { VoiceComponent } from 'src/app/components/create/voice/voice.component';
-import { CategoryStructure, CategoryStructureItem } from 'src/app/models/legacy/category-structure.interface';
-import { Level } from 'src/app/models/legacy/level.interface';
-import { Pin } from 'src/app/models/legacy/pin.interface';
-import { CategoryService } from 'src/app/services-new/category.service';
-import { RecordingService } from 'src/app/services/recording.service';
+import { AudioRecording } from 'src/app/models/audio-recording.interface';
+import { NewCategory, NewCategoryItem } from 'src/app/models/new-category.interface';
+import { NewImage } from 'src/app/models/new-image.interface';
+import { Pin } from 'src/app/models/pin.interface';
+import { RecordingService } from 'src/app/services/legacy/recording.service';
+import { NewCategoryService } from 'src/app/services/new-category.service';
 
 @Component({
   selector: 'app-create',
@@ -45,43 +47,63 @@ import { RecordingService } from 'src/app/services/recording.service';
   ],
 })
 export class CreatePage implements OnInit {
-  private categoryService = inject(CategoryService);
+  private categoryService = inject(NewCategoryService);
   protected recordingService = inject(RecordingService);
 
   isEdit: boolean = false;
-  categories: CategoryStructure[] = [];
+  selectedCategory = signal<NewCategory | undefined>(undefined);
+  selectedCategoryItem = signal<NewCategoryItem | undefined>(undefined);
 
-  selectedCategory = signal<CategoryStructure | undefined>(undefined);
-  selectedCategoryItem = signal<CategoryStructureItem | undefined>(undefined);
-  images = signal<{ format: string; webPath: string; isHighlight: boolean }[]>([]);
   mapPins = signal<Pin[]>([]);
+  images = signal<NewImage[]>([]);
+  audioFiles = signal<AudioRecording[]>([]);
 
   itemFormGroup = new FormGroup({
-    type: new FormControl<Level | undefined>(undefined, [Validators.required]),
+    type: new FormControl<NewCategory | undefined>(undefined, [Validators.required]),
     typeValue: new FormControl('', [Validators.required]),
-    newTypeValue: new FormControl(''),
-    parent: new FormControl<Level | undefined>(undefined, [Validators.required]),
+    parent: new FormControl<NewCategory | undefined>(undefined, [Validators.required]),
   });
 
   constructor() {}
 
-  ngOnInit() {
-    this.categoryService.getCategories().then((categories) => {
-      this.categories = [];
+  async ngOnInit() {
+    let categoryItems = await this.categoryService.getCategoryItems();
+    if (categoryItems && categoryItems.length > 0) {
+      categoryItems = categoryItems?.sort((a, b) => a.level - b.level);
+      this.selectedCategoryItem.set(categoryItems[0]);
+    }
 
-      if (categories && categories.length > 0) {
-        categories = categories?.sort((a, b) => a.level - b.level);
-        this.categories = categories;
-        this.selectedCategory.set(categories[0]);
-      }
-    });
+    let categories = await this.categoryService.getCategories();
+    if (categories && categories.length > 0) {
+      categories = categories?.sort((a, b) => a.level - b.level);
+      this.selectedCategory.set(categories[0]);
+    }
+  }
+
+  parentValidatorChange($event: boolean) {
+    if ($event) {
+      this.itemFormGroup.controls['parent'].addValidators([Validators.required]);
+    } else {
+      this.itemFormGroup.controls['parent'].removeValidators([Validators.required]);
+    }
   }
 
   onSubmit(): void {
     if (this.itemFormGroup.valid) {
-      console.log(this.categories);
-
-      const type = this.categories.find((c) => c.level === this.itemFormGroup.value.type?.level);
+      const newItem: NewCategoryItem = {
+        id: Guid.create(),
+        name: this.itemFormGroup.value.typeValue!,
+        level: this.itemFormGroup.value.type!.level,
+        parentId: this.itemFormGroup.value.parent!.id,
+        notes: this.selectedCategoryItem()?.notes!,
+        newCategoryId: this.selectedCategory()?.id!,
+        audioFileIds: this.audioFiles().map((recording) => recording.id),
+        imageIds: this.images().map((image) => image.id),
+        highlightImageId: this.images().find((image) => image.isHighlight)?.id,
+        pinIds: this.mapPins().map((pin) => pin.id),
+      };
+      console.log(newItem);
+      //const type = this.categories.find((c) => c.level === this.itemFormGroup.value.type?.level);
       //   const item: Item = {
       //     id: Guid.create(),
       //     title: this.itemFormGroup.value.typeValue!,
@@ -92,6 +114,8 @@ export class CreatePage implements OnInit {
       //     locations: this.mapPins(),
       //   };
       //   this.databaseService.saveTree(item);
+    } else {
+      console.log(this.itemFormGroup.controls['parent']);
     }
   }
 }
