@@ -80,21 +80,13 @@ export class CreatePage implements OnInit {
     }
   }
 
-  parentValidatorChange($event: boolean) {
-    if ($event) {
-      this.itemFormGroup.controls['parent'].addValidators([Validators.required]);
-    } else {
-      this.itemFormGroup.controls['parent'].removeValidators([Validators.required]);
-    }
-  }
-
   onSubmit(): void {
     if (this.itemFormGroup.valid) {
       const newItem: NewCategoryItem = {
         id: Guid.create(),
         name: this.itemFormGroup.value.typeValue!,
         level: this.itemFormGroup.value.type!.level,
-        parentId: this.itemFormGroup.value.parent!.id,
+        parentId: this.itemFormGroup.value.parent?.id,
         notes: this.selectedCategoryItem()?.notes!,
         newCategoryId: this.selectedCategory()?.id!,
         audioFileIds: this.audioFiles().map((recording) => recording.id),

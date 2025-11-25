@@ -21,11 +21,11 @@ export class SelectItemComponent implements OnInit {
   selectedCategory = model.required<NewCategory | undefined>();
   selectedCategoryItem = model.required<NewCategoryItem | undefined>();
 
-  @Input() itemFormGroup = new FormGroup({
-    type: new FormControl<NewCategory | undefined>(undefined, [Validators.required]),
-    typeValue: new FormControl('', [Validators.required]),
-    parent: new FormControl<NewCategory | undefined>(undefined, [Validators.required]),
-  });
+  @Input({ required: true }) itemFormGroup!: FormGroup<{
+    type: FormControl<NewCategory | null | undefined>;
+    typeValue: FormControl<string | null>;
+    parent: FormControl<NewCategory | null | undefined>;
+  }>;
   @Output() parentValidatorChange = new EventEmitter<boolean>();
 
   constructor() {
@@ -65,14 +65,13 @@ export class SelectItemComponent implements OnInit {
   }
 
   private resetParentControls(parentItems: NewCategoryItem[]): void {
-    this.itemFormGroup.controls['parent'].setValue(undefined);
-
-    this.parentValidatorChange.emit(parentItems.length !== 0);
-
     if (parentItems.length === 0) {
       this.itemFormGroup.controls['parent'].removeValidators([Validators.required]);
     } else {
       this.itemFormGroup.controls['parent'].addValidators([Validators.required]);
+      this.itemFormGroup.controls['parent'].setValue(undefined);
     }
+    this.itemFormGroup.controls['parent'].updateValueAndValidity();
+    this.itemFormGroup.controls['parent'].setErrors(null);
   }
 }
