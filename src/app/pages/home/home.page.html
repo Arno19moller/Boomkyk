@@ -28,10 +28,9 @@
   </ion-header>
 
   <ion-grid>
-    @for (item of items(); track $index) {
     <ion-row>
-      <!-- @for (t of item; track $index) { -->
-      <ion-col>
+      @for (item of items(); track $index) {
+      <ion-col size="6">
         <ion-card class="item-card" [attr.id]="item.id['value']" [routerLink]="['/view', { id: item.id['value'] }]">
           @if(item.highlightImage && item.highlightImage.webPath != ''){
           <ion-img class="item-image" [src]="item.highlightImage.webPath"></ion-img>
@@ -51,9 +50,8 @@
           </sub>
         </ion-card>
       </ion-col>
-      <!-- } -->
+      }
     </ion-row>
-    }
   </ion-grid>
 
   @if(filteredStructures()){

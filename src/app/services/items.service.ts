@@ -215,15 +215,12 @@ export class ItemsService {
   private parseGuid(guid: any): Guid {
     if (!guid) return Guid.createEmpty();
 
-    // If it's already a proper Guid instance, return it
     if (guid instanceof Guid) return guid;
 
-    // If it's a plain object with a 'value' property (from JSON deserialization)
     if (typeof guid === 'object' && guid.value) {
       return Guid.parse(guid.value);
     }
 
-    // If it's a string
     if (typeof guid === 'string') {
       return Guid.parse(guid);
     }
