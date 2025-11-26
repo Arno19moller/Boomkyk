@@ -88,7 +88,7 @@ export class CreatePage implements OnInit {
     }
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.itemFormGroup.valid) {
       let highlightImageId = this.images().find((image) => image.isHighlight)?.id;
       highlightImageId = highlightImageId ?? this.images()[0]?.id;
@@ -107,11 +107,11 @@ export class CreatePage implements OnInit {
         createDate: new Date(),
       };
 
-      if (this.audioFiles().length > 0) this.audioService.addAudioFiles(this.audioFiles());
-      if (this.images().length > 0) this.imageService.addImages(this.images());
-      if (this.mapPins().length > 0) this.mapService.addPins(this.mapPins());
+      if (this.audioFiles().length > 0) await this.audioService.addAudioFiles(this.audioFiles());
+      if (this.images().length > 0) await this.imageService.addImages(this.images());
+      if (this.mapPins().length > 0) await this.mapService.addPins(this.mapPins());
 
-      this.itemsService.addItem(newItem);
+      await this.itemsService.addItem(newItem);
       this.navController.back();
     } else {
       console.log(this.itemFormGroup.controls['parent']);
