@@ -111,10 +111,18 @@ export class HomePage implements OnInit, ViewWillEnter {
         items.forEach(async (item) => {
           const images = await this.imageService.getImagesByGuids([item.highlightImageId ?? Guid.create()]);
           item.highlightImage = images?.length > 0 ? images[0] : undefined;
+          await this.setHierarchy(item);
         });
         return items;
       });
     });
+  }
+
+  private async setHierarchy(item: NewCategoryItem | undefined) {
+    if(item == undefined) return;
+
+    var hierarchy = await this.categoryService.getHierarchy(item);
+    item.categoryHierarchy = hierarchy;
   }
 
   async filterGroups(filterString: any): Promise<void> {

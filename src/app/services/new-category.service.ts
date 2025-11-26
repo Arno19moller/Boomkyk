@@ -85,4 +85,27 @@ export class NewCategoryService {
       resolve(categories.filter((c) => c.level === level));
     });
   }
+
+  public async getHierarchy(item: NewCategoryItem | undefined): Promise<string[]> {
+    if (item && item.newCategoryId) {
+      const categoryItems = await this.getCategoryItems();
+      const hierarchy: string[] = [];
+
+      // Start with the current item
+      let currentItem: NewCategoryItem | undefined = item;
+
+      // Build hierarchy by traversing parent category items
+      while (currentItem) {
+        if (currentItem.parentId) {
+          currentItem = categoryItems.find((ci) => ci.id.toString() === currentItem!.parentId!.toString());
+        } else {
+          currentItem = undefined;
+        }
+        if (currentItem != undefined) hierarchy.unshift(currentItem.name);
+      }
+
+      return hierarchy;
+    }
+    return [];
+  }
 }

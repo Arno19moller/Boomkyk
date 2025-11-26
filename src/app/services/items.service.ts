@@ -16,6 +16,13 @@ export class ItemsService {
     });
   }
 
+  getItemByGuid(guid: Guid): Promise<NewCategoryItem | undefined> {
+    const item = this.items.find((item) => guid.toString() === item.id.toString());
+    return new Promise((resolve) => {
+      resolve(item);
+    });
+  }
+
   getItemsByGuid(guids: Guid[]): Promise<NewCategoryItem[]> {
     const items = this.items.filter((item) => guids.some((guid) => guid.toString() === item.id.toString()));
     return new Promise((resolve) => {

@@ -19,6 +19,7 @@ export interface NewCategoryItem {
   imageIds?: Guid[];
   highlightImageId?: Guid;
   pinIds?: Guid[];
-  highlightImage?: NewImage; // used in home page
   createDate?: Date;
+  highlightImage?: NewImage; // used in home page
+  categoryHierarchy?: string[]; // used to display in home and view
 }

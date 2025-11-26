@@ -15,6 +15,7 @@
     </ion-buttons>
   </ion-header>
 
+  @if(selectedItem() != undefined){
   <swiper-container
     style="
       --swiper-navigation-color: #fff;
@@ -31,25 +32,15 @@
     pagination-clickable="true"
     [ngStyle]="{'height': imgHeight + '%'}"
   >
+    @for (image of images(); track $index) {
     <swiper-slide lazy="true">
       <div class="swiper-zoom-container">
-        <img
-          class="tree-image"
-          loading="lazy"
-          src="https://images.unsplash.com/photo-1740465458182-d0f760438548?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        />
+        <img class="tree-image" loading="lazy" [src]="image.webPath" />
       </div>
     </swiper-slide>
-    <swiper-slide lazy="true">
-      <div class="swiper-zoom-container">
-        <img
-          class="tree-image"
-          loading="lazy"
-          src="https://images.unsplash.com/photo-1739775849503-273cf122d6dd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        />
-      </div>
-    </swiper-slide>
+    }
   </swiper-container>
+  }
 
   <ion-modal
     [isOpen]="isModalOpen"
@@ -62,11 +53,15 @@
   >
     <ng-template>
       <ion-header style="display: flex; justify-content: center; align-items: center; flex-direction: column">
-        <h2 style="margin-bottom: 5px">Giraffe</h2>
-        <sub style="margin-bottom: 15px">Animal > Mammal</sub>
+        <h2 style="margin-bottom: 5px">{{selectedItem()!.name}}</h2>
+        <sub style="margin-bottom: 15px; display: flex; justify-content: center; align-items: center; width: 100%">
+          @for (hierarchy of selectedItem()!.categoryHierarchy; track $index) { {{hierarchy}} @if (!$last) {
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+          } }
+        </sub>
       </ion-header>
       <ion-content>
-        <ion-list class="form-container" lines="none" style="margin-top: 10px; border-radius: 7px;">
+        <ion-list class="form-container" lines="none" style="margin-top: 10px; border-radius: 7px">
           <ion-item>
             <ion-textarea
               labelPlacement="stacked"
@@ -75,14 +70,15 @@
               autoGrow="true"
               style="color: white"
               [disabled]="true"
-              [value]="notes"
+              [value]="selectedItem()!.notes"
             >
             </ion-textarea>
           </ion-item>
         </ion-list>
-        <div style="margin: 10px 12px; height: 200px; overflow: hidden;">
-          <app-map [pins]="[]" [markerCoordinate]="[]" [editable]="false"></app-map>
+        <div style="margin: 10px 12px; height: 200px; overflow: hidden">
+          <app-map [editable]="false" [selectedItem]="selectedItem()" [pins]="pins()"></app-map>
         </div>
+        <app-voice [audioFiles]="audioFiles()" [selectedCategoryItem]="selectedItem()"></app-voice>
       </ion-content>
     </ng-template>
   </ion-modal>

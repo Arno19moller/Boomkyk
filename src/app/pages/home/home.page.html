@@ -39,10 +39,16 @@
           <ion-img class="item-image" src="../../../assets/images/image-not-found.jpg"></ion-img>
           }
           <ion-card-header>
-            <sub style="margin: 0px"> Family > Genus </sub>
+            <sub style="margin: 0px; display: flex; justify-content: start; align-items: center; width: 100%">
+              @for (hierarchy of item.categoryHierarchy; track $index) { {{hierarchy}} @if (!$last) {
+              <ion-icon name="chevron-forward-outline"></ion-icon>
+              } }
+            </sub>
             <ion-card-title> {{item.name}} </ion-card-title>
           </ion-card-header>
-          <sub style="margin: 0px; margin: 0px; position: absolute; bottom: 10px; right: 5px"> {{item.createDate | date: 'yyyy-MM-dd'}} </sub>
+          <sub style="margin: 0px; margin: 0px; position: absolute; bottom: 10px; right: 5px">
+            {{item.createDate | date: 'yyyy-MM-dd'}}
+          </sub>
         </ion-card>
       </ion-col>
       <!-- } -->
@@ -51,7 +57,7 @@
   </ion-grid>
 
   @if(filteredStructures()){
-<h5>hellooo</h5>
+  <h5>hellooo</h5>
   }
 
   <app-bottom-sheet [(isOpen)]="isOpen" [structures]="categories()" [(filters)]="filters"></app-bottom-sheet>
