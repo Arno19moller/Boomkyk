@@ -53,9 +53,9 @@ export class NewImageService {
     }
   }
 
-  async removeImage(image: NewImage) {
+  async removeImage(imageId: Guid) {
     await this.initialiseStorage();
-    const guidString = image.id.toString(); // or handle value prop
+    const guidString = imageId.toString(); // or handle value prop
     await this._storage?.remove(this.IMAGE_PREFIX + guidString);
   }
 

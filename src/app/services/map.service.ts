@@ -53,10 +53,10 @@ export class MapService {
     }
   }
 
-  async removePin(removePin: Pin) {
+  async removePin(removePinId: Guid) {
     await this.initialiseStorage();
     const guidString =
-      typeof removePin.id === 'string' ? removePin.id : (removePin.id as any).value || removePin.id.toString();
+      typeof removePinId === 'string' ? removePinId : (removePinId as any).value || removePinId.toString();
     await this._storage?.remove(`${this.PIN_PREFIX}${guidString}`);
   }
 

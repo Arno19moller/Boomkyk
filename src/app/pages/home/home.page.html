@@ -30,7 +30,7 @@
   <ion-grid>
     <ion-row>
       @for (item of items(); track $index) {
-      <ion-col size="6">
+      <ion-col size="6" appLongPress (longPress)="openActionSheet(item)">
         <ion-card class="item-card" [attr.id]="item.id['value']" [routerLink]="['/view', { id: item.id['value'] }]">
           @if(item.highlightImage && item.highlightImage.webPath != ''){
           <ion-img class="item-image" [src]="item.highlightImage.webPath"></ion-img>
@@ -71,3 +71,20 @@
     </ion-fab-list>
   </ion-fab>
 </ion-content>
+
+
+<!-- Action Sheet -->
+  <app-action-sheet
+    [type]="actionSheetType"
+    [(isOpen)]="isActionSheetOpen"
+    (closed)="actionSheetClosed($event)"
+  ></app-action-sheet>
+
+  <!-- Confirmation Popup -->
+  <app-popup
+    [(isAlertOpen)]="openConfirmDelete"
+    [heading]="'Delete'"
+    [body]="confirmDeleteBody"
+    [buttonType]="'confirm'"
+    (popupClosed)="deletePopupClosed($event)"
+  ></app-popup>

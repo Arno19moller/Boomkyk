@@ -53,10 +53,10 @@ export class NewAudioService {
     }
   }
 
-  async removeAudioFile(audioFile: AudioRecording) {
+  async removeAudioFile(audioFileId: Guid) {
     await this.initialiseStorage();
     const guidString =
-      typeof audioFile.id === 'string' ? audioFile.id : (audioFile.id as any).value || audioFile.id.toString();
+      typeof audioFileId === 'string' ? audioFileId : (audioFileId as any).value || audioFileId.toString();
     await this._storage?.remove(`${this.AUDIO_PREFIX}${guidString}`);
   }
 

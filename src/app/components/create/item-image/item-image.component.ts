@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { IonButton, IonCard, IonIcon, IonImg, IonItem, IonList, IonTextarea } from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
-import { PhotoActionSheetComponent } from 'src/app/components/action-sheet/action-sheet.component';
+import { ActionSheetComponent } from 'src/app/components/action-sheet/action-sheet.component';
 import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
 import { NewCategoryItem } from 'src/app/models/new-category.interface';
@@ -24,7 +24,7 @@ import { NewImageService } from 'src/app/services/new-image.service';
     IonList,
     IonCard,
     LongPressDirective,
-    PhotoActionSheetComponent,
+    ActionSheetComponent,
     PopupComponent,
     FormsModule,
   ],

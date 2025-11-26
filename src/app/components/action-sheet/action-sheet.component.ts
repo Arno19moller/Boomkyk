@@ -9,7 +9,7 @@ import type { OverlayEventDetail } from '@ionic/core';
   styleUrls: ['./action-sheet.component.scss'],
   imports: [IonActionSheet],
 })
-export class PhotoActionSheetComponent implements OnInit {
+export class ActionSheetComponent implements OnInit {
   @Output() closed: EventEmitter<string> = new EventEmitter();
 
   header: string = '';

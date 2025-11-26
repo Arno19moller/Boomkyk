@@ -138,12 +138,13 @@ export class ItemsService {
   async removeItem(removeItem: NewCategoryItem): Promise<void> {
     await this.initialiseStorage();
 
-    // Remove the full item
-    await this._storage?.remove(`${this.ITEM_PREFIX}${removeItem.id.toString()}`);
+    const guidString =
+      typeof removeItem.id === 'string' ? removeItem.id : (removeItem.id as any).value || removeItem.id.toString();
+    await this._storage?.remove(`${this.ITEM_PREFIX}${guidString}`);
 
     // Update the index
     const index = await this.getItemsIndex();
-    const updatedIndex = index.filter((indexEntry) => indexEntry.id.toString() !== removeItem.id.toString());
+    const updatedIndex = index.filter((indexEntry) => this.parseGuid(indexEntry.id).toString() !== guidString);
     await this._storage?.set(this.ITEMS_INDEX_KEY, updatedIndex);
   }
 

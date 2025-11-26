@@ -11,7 +11,7 @@ import {
   IonModal,
   IonRow,
 } from '@ionic/angular/standalone';
-import { PhotoActionSheetComponent } from 'src/app/components/action-sheet/action-sheet.component';
+import { ActionSheetComponent } from 'src/app/components/action-sheet/action-sheet.component';
 import { MapComponent } from 'src/app/components/map/map.component';
 import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
@@ -36,7 +36,7 @@ import { MapService } from 'src/app/services/map.service';
     IonCardContent,
     IonModal,
     MapComponent,
-    PhotoActionSheetComponent,
+    ActionSheetComponent,
     PopupComponent,
     LongPressDirective,
   ],
