@@ -10,26 +10,26 @@ export class MapService {
 
   constructor() {}
 
-  getAudioFilesByGuid(guids: Guid[]): Promise<Pin[]> {
+  getPinsByGuid(guids: Guid[]): Promise<Pin[]> {
     const pins = this.pins.filter((pin) => guids.some((guid) => guid.toString() === pin.id.toString()));
     return new Promise((resolve) => {
       resolve(pins);
     });
   }
 
-  setAudioFiles(pins: Pin[]) {
+  setPins(pins: Pin[]) {
     this.pins = pins;
   }
 
-  addAudioFile(pin: Pin) {
+  addPin(pin: Pin) {
     this.pins.push(pin);
   }
 
-  addAudioFiles(pins: Pin[]) {
+  addPins(pins: Pin[]) {
     this.pins.push(...pins);
   }
 
-  removeAudioFile(removePin: Pin) {
+  removePin(removePin: Pin) {
     this.pins = this.pins.filter((pin) => pin.id.toString() !== removePin.id.toString());
   }
 }

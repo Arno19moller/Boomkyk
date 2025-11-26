@@ -21,6 +21,7 @@ import {
   IonSearchbar,
   IonTitle,
   IonToolbar,
+  ViewWillEnter,
 } from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
 import { CategoryFilter } from 'src/app/models/category-filter.interface';
@@ -62,7 +63,7 @@ import { BottomSheetComponent } from '../../components/filter-bottom-sheet/botto
     BottomSheetComponent,
   ],
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, ViewWillEnter {
   private categoryService = inject(NewCategoryService);
   private itemsService = inject(ItemsService);
   private imageService = inject(NewImageService);
@@ -85,6 +86,25 @@ export class HomePage implements OnInit {
   constructor() {}
 
   ngOnInit() {
+    // this.databaseService.getTrees().then((trees) => {
+    //   const treeList: Tree[][] = [];
+    //   for (let i = 0; i < trees.length; i += 2) {
+    //     if (i + 1 < trees.length) {
+    //       treeList.push([trees[i], trees[i + 1]]);
+    //     } else {
+    //       treeList.push([trees[i]]);
+    //     }
+    //   }
+    //   this.trees.set(treeList);
+    // });
+    // this.categoryService.getCategoryItems().then((categories) => {});
+  }
+
+  ionViewWillEnter() {
+    this.getItems();
+  }
+
+  async getItems() {
     this.itemsService.getItems().then((items) => {
       this.items.set(items);
       this.items.update((items) => {
@@ -94,21 +114,6 @@ export class HomePage implements OnInit {
         });
         return items;
       });
-    });
-    this.databaseService.getTrees().then((trees) => {
-      const treeList: Tree[][] = [];
-      for (let i = 0; i < trees.length; i += 2) {
-        if (i + 1 < trees.length) {
-          treeList.push([trees[i], trees[i + 1]]);
-        } else {
-          treeList.push([trees[i]]);
-        }
-      }
-      this.trees.set(treeList);
-    });
-
-    this.categoryService.getCategoryItems().then((categories) => {
-      this.categories.update(() => categories ?? []);
     });
   }
 

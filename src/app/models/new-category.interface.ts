@@ -20,4 +20,5 @@ export interface NewCategoryItem {
   highlightImageId?: Guid;
   pinIds?: Guid[];
   highlightImage?: NewImage; // used in home page
+  createDate?: Date;
 }

@@ -56,7 +56,7 @@ export class ItemMapComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      this.mapService.getAudioFilesByGuid(this.selectedCategoryItem()?.pinIds ?? []).then((pins) => {
+      this.mapService.getPinsByGuid(this.selectedCategoryItem()?.pinIds ?? []).then((pins) => {
         this.mapPins.set(pins);
       });
     });

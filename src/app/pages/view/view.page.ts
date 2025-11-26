@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { StatusBar } from '@capacitor/status-bar';
-import { NavController, ViewWillLeave } from '@ionic/angular';
+import { NavController, Platform, ViewWillLeave } from '@ionic/angular';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal } from '@ionic/angular/standalone';
 import { MapComponent } from 'src/app/components/map/map.component';
 import { register } from 'swiper/element/bundle';
@@ -28,6 +28,7 @@ register();
 export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
   private navController = inject(NavController);
   private cdr = inject(ChangeDetectorRef);
+  private platform = inject(Platform);
 
   @ViewChild(IonModal) modal!: IonModal;
 
@@ -39,7 +40,9 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
   constructor() {}
 
   async ngOnInit() {
-    await StatusBar.setOverlaysWebView({ overlay: true });
+    if (this.platform.is('hybrid')) {
+      await StatusBar.setOverlaysWebView({ overlay: true });
+    }
   }
 
   ngAfterViewInit() {
@@ -68,7 +71,9 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
   }
 
   async goBack() {
-    await StatusBar.setOverlaysWebView({ overlay: false });
+    if (this.platform.is('hybrid')) {
+      await StatusBar.setOverlaysWebView({ overlay: false });
+    }
     this.navController.navigateBack('home');
   }
 
@@ -77,6 +82,8 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
-    StatusBar.setOverlaysWebView({ overlay: false });
+    if (this.platform.is('hybrid')) {
+      StatusBar.setOverlaysWebView({ overlay: false });
+    }
   }
 }

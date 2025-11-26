@@ -10,6 +10,7 @@ import {
   IonIcon,
   IonTitle,
   IonToolbar,
+  NavController,
 } from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
 import { ItemImageComponent } from 'src/app/components/create/item-image/item-image.component';
@@ -20,8 +21,11 @@ import { AudioRecording } from 'src/app/models/audio-recording.interface';
 import { NewCategory, NewCategoryItem } from 'src/app/models/new-category.interface';
 import { NewImage } from 'src/app/models/new-image.interface';
 import { Pin } from 'src/app/models/pin.interface';
-import { RecordingService } from 'src/app/services/legacy/recording.service';
+import { ItemsService } from 'src/app/services/items.service';
+import { MapService } from 'src/app/services/map.service';
+import { NewAudioService } from 'src/app/services/new-audio.service';
 import { NewCategoryService } from 'src/app/services/new-category.service';
+import { NewImageService } from 'src/app/services/new-image.service';
 
 @Component({
   selector: 'app-create',
@@ -47,8 +51,12 @@ import { NewCategoryService } from 'src/app/services/new-category.service';
   ],
 })
 export class CreatePage implements OnInit {
+  private itemsService = inject(ItemsService);
+  private mapService = inject(MapService);
+  private audioService = inject(NewAudioService);
   private categoryService = inject(NewCategoryService);
-  protected recordingService = inject(RecordingService);
+  private imageService = inject(NewImageService);
+  private navController = inject(NavController);
 
   isEdit: boolean = false;
   selectedCategory = signal<NewCategory | undefined>(undefined);
@@ -82,6 +90,9 @@ export class CreatePage implements OnInit {
 
   onSubmit(): void {
     if (this.itemFormGroup.valid) {
+      let highlightImageId = this.images().find((image) => image.isHighlight)?.id;
+      highlightImageId = highlightImageId ?? this.images()[0]?.id;
+
       const newItem: NewCategoryItem = {
         id: Guid.create(),
         name: this.itemFormGroup.value.typeValue!,
@@ -91,21 +102,17 @@ export class CreatePage implements OnInit {
         newCategoryId: this.selectedCategory()?.id!,
         audioFileIds: this.audioFiles().map((recording) => recording.id),
         imageIds: this.images().map((image) => image.id),
-        highlightImageId: this.images().find((image) => image.isHighlight)?.id,
+        highlightImageId: highlightImageId,
         pinIds: this.mapPins().map((pin) => pin.id),
+        createDate: new Date(),
       };
-      console.log(newItem);
-      //const type = this.categories.find((c) => c.level === this.itemFormGroup.value.type?.level);
-      //   const item: Item = {
-      //     id: Guid.create(),
-      //     title: this.itemFormGroup.value.typeValue!,
-      //     type: this.itemFormGroup.value.type!,
-      //     groupId: this.itemFormGroup.value.parent!,
-      //     images: this.images(),
-      //     voiceNotes: this.recordingService.recordings(),
-      //     locations: this.mapPins(),
-      //   };
-      //   this.databaseService.saveTree(item);
+
+      if (this.audioFiles().length > 0) this.audioService.addAudioFiles(this.audioFiles());
+      if (this.images().length > 0) this.imageService.addImages(this.images());
+      if (this.mapPins().length > 0) this.mapService.addPins(this.mapPins());
+
+      this.itemsService.addItem(newItem);
+      this.navController.back();
     } else {
       console.log(this.itemFormGroup.controls['parent']);
     }
