@@ -37,7 +37,7 @@
   <app-item-image [(selectedCategoryItem)]="selectedCategoryItem" [(images)]="images"></app-item-image>
 
   <!-- Voice Notes -->
-  <app-voice [selectedCategoryItem]="selectedCategoryItem()" [(audioFiles)]="audioFiles"></app-voice>
+  <app-voice [selectedCategoryItem]="selectedCategoryItem()" [(audioFiles)]="audioFiles" [allowEdit]="true"></app-voice>
 
   <!-- Map -->
   <app-item-map [selectedCategoryItem]="selectedCategoryItem()" [(mapPins)]="mapPins"></app-item-map>

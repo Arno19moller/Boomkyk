@@ -44,6 +44,7 @@ export class VoiceComponent implements OnInit {
 
   selectedCategoryItem = input.required<NewCategoryItem | undefined>();
   audioFiles = model.required<AudioRecording[]>();
+  allowEdit = input.required<boolean>();
 
   protected longPressInterval: any;
   protected loadingText: string = 'Recording';
@@ -150,6 +151,8 @@ export class VoiceComponent implements OnInit {
   }
 
   deleteButtonClicked(audioFile: AudioRecording): void {
+    if (!this.allowEdit()) return;
+
     const index = this.audioFiles()!.indexOf(audioFile);
     this.selectedRecordingIndex = index;
 

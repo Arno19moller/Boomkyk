@@ -100,7 +100,7 @@
             </ion-textarea>
           </ion-item>
         </ion-list>
-        <app-voice [audioFiles]="audioFiles()" [selectedCategoryItem]="selectedItem()"></app-voice>
+        <app-voice [audioFiles]="audioFiles()" [selectedCategoryItem]="selectedItem()" [allowEdit]="false"></app-voice>
         <ion-accordion-group (ionChange)="onAccordionChange($event)" style="margin: 10px 10px; border-radius: 7px; overflow: hidden;">
           <ion-accordion value="map">
             <ion-item slot="header" color="light">
