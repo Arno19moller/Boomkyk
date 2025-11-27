@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import {
   IonButton,
   IonButtons,
@@ -77,6 +77,7 @@ export class HomePage implements OnInit, ViewWillEnter {
   private audioService = inject(NewAudioService);
   private categoryService = inject(NewCategoryService);
   private imageService = inject(NewImageService);
+  private router = inject(Router);
 
   protected databaseService = inject(DatabaseService);
   protected isOpen = signal<boolean>(false);
@@ -150,7 +151,11 @@ export class HomePage implements OnInit, ViewWillEnter {
       this.confirmDeleteBody = `Are you sure you want to delete ${this.selectedItem()?.name}?`;
       this.openConfirmDelete.set(true);
     } else if (event === 'edit' && this.selectedItem()) {
-      alert();
+      this.router.navigate(['/create'], {
+        queryParams: {
+          id: this.selectedItem()?.id.toString(),
+        },
+      });
     }
   }
 

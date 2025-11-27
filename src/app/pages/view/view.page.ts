@@ -10,7 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StatusBar } from '@capacitor/status-bar';
 import { NavController, Platform, ViewWillLeave } from '@ionic/angular';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal } from '@ionic/angular/standalone';
@@ -59,8 +59,14 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
   private mapService = inject(MapService);
   private audioService = inject(NewAudioService);
   private categoryService = inject(NewCategoryService);
+  private router = inject(Router);
 
   @ViewChild(IonModal) modal!: IonModal;
+
+  protected actionSheetType: 'action' = 'action';
+  protected isActionSheetOpen = signal<boolean>(false);
+  protected openConfirmDelete = signal<boolean>(false);
+  protected confirmDeleteBody: string = '';
 
   imgHeight: number = 37;
   isModalOpen: boolean = true;
@@ -140,6 +146,33 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
 
     var hierarchy = await this.categoryService.getHierarchy(item);
     item.categoryHierarchy = hierarchy;
+  }
+
+  deletePopupClosed($event: Event) {
+    console.log($event);
+  }
+
+  deletePopsupClosed(event: string): void {
+    if (event === 'confirm') {
+      this.deleteItem();
+    }
+  }
+
+  private async deleteItem() {
+    if (this.selectedItem() == undefined) return;
+
+    this.selectedItem()?.pinIds?.forEach(async (pinId) => {
+      await this.mapService.removePin(pinId);
+    });
+    this.selectedItem()?.audioFileIds?.forEach(async (audioFileId) => {
+      await this.audioService.removeAudioFile(audioFileId);
+    });
+    this.selectedItem()?.imageIds?.forEach(async (imageId) => {
+      await this.imageService.removeImage(imageId);
+    });
+    await this.itemsService.removeItem(this.selectedItem()!);
+
+    this.router.navigate(['/home']);
   }
 
   async goBack() {

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import {
   IonBackButton,
   IonButton,
@@ -57,10 +58,15 @@ export class CreatePage implements OnInit {
   private categoryService = inject(NewCategoryService);
   private imageService = inject(NewImageService);
   private navController = inject(NavController);
+  private route = inject(ActivatedRoute);
 
-  isEdit: boolean = false;
+  isEdit = signal<boolean>(false);
   selectedCategory = signal<NewCategory | undefined>(undefined);
   selectedCategoryItem = signal<NewCategoryItem | undefined>(undefined);
+  selectedParentItem = signal<NewCategoryItem | undefined>(undefined);
+  selectedItemId: Guid | undefined;
+
+  @ViewChild(SelectItemComponent) selectItemComponent!: SelectItemComponent;
 
   mapPins = signal<Pin[]>([]);
   images = signal<NewImage[]>([]);
@@ -75,17 +81,69 @@ export class CreatePage implements OnInit {
   constructor() {}
 
   async ngOnInit() {
-    let categoryItems = await this.categoryService.getCategoryItems();
-    if (categoryItems && categoryItems.length > 0) {
-      categoryItems = categoryItems?.sort((a, b) => a.level - b.level);
-      this.selectedCategoryItem.set(categoryItems[0]);
-    }
+    this.route.queryParamMap.subscribe(async (params) => {
+      const id = params.get('id');
 
-    let categories = await this.categoryService.getCategories();
-    if (categories && categories.length > 0) {
-      categories = categories?.sort((a, b) => a.level - b.level);
-      this.selectedCategory.set(categories[0]);
-    }
+      if (id) {
+        this.isEdit.set(true);
+        this.selectedItemId = Guid.parse(id);
+
+        const item = await this.itemsService.getItemByGuid(this.selectedItemId);
+        this.selectedCategoryItem.set(item);
+
+        if (item != undefined) {
+          // Set basic item details
+          this.itemFormGroup.controls['typeValue'].setValue(item.name);
+
+          // Handle Category
+          const categories = await this.categoryService.getCategories();
+          const category = categories?.find((c) => c.id.toString() === item.newCategoryId?.toString());
+
+          if (category) {
+            this.itemFormGroup.controls['type'].setValue(category);
+            this.selectedCategory.set(category);
+
+            // Handle Parent
+            if (item.parentId) {
+              const parentItems = await this.categoryService.getCategoryItemsByLevel(category.level + 1);
+              const parent = parentItems?.find((p) => p.id.toString() === item.parentId?.toString());
+              if (parent) {
+                this.selectedParentItem.set(parent);
+              }
+            }
+          }
+
+          // Load related data
+          if (item.imageIds && item.imageIds.length > 0) {
+            const images = await this.imageService.getImagesByGuids(item.imageIds);
+            this.images.set(images);
+          }
+
+          if (item.audioFileIds && item.audioFileIds.length > 0) {
+            const audioFiles = await this.audioService.getAudioFilesByGuid(item.audioFileIds);
+            this.audioFiles.set(audioFiles);
+          }
+
+          if (item.pinIds && item.pinIds.length > 0) {
+            const pins = await this.mapService.getPinsByGuid(item.pinIds);
+            this.mapPins.set(pins);
+          }
+        }
+      } else {
+        // Default initialization for create mode
+        let categoryItems = await this.categoryService.getCategoryItems();
+        if (categoryItems && categoryItems.length > 0) {
+          categoryItems = categoryItems?.sort((a, b) => a.level - b.level);
+          this.selectedCategoryItem.set(categoryItems[0]);
+        }
+
+        let categories = await this.categoryService.getCategories();
+        if (categories && categories.length > 0) {
+          categories = categories?.sort((a, b) => a.level - b.level);
+          this.selectedCategory.set(categories[0]);
+        }
+      }
+    });
   }
 
   async onSubmit(): Promise<void> {
@@ -96,7 +154,7 @@ export class CreatePage implements OnInit {
       const newItem: NewCategoryItem = {
         id: Guid.create(),
         name: this.itemFormGroup.value.typeValue!,
-        level: this.itemFormGroup.value.type!.level,
+        level: this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level,
         parentId: this.itemFormGroup.value.parent?.id,
         notes: this.selectedCategoryItem()?.notes!,
         newCategoryId: this.selectedCategory()?.id!,
@@ -107,14 +165,80 @@ export class CreatePage implements OnInit {
         createDate: new Date(),
       };
 
-      if (this.audioFiles().length > 0) await this.audioService.addAudioFiles(this.audioFiles());
-      if (this.images().length > 0) await this.imageService.addImages(this.images());
-      if (this.mapPins().length > 0) await this.mapService.addPins(this.mapPins());
+      if (this.isEdit() && this.selectedItemId) {
+        this.addAndRemoveItems();
+        newItem.id = this.selectedItemId;
+        await this.itemsService.updateItem(newItem);
+      } else {
+        if (this.audioFiles().length > 0) await this.audioService.addAudioFiles(this.audioFiles());
+        if (this.images().length > 0) await this.imageService.addImages(this.images());
+        if (this.mapPins().length > 0) await this.mapService.addPins(this.mapPins());
 
-      await this.itemsService.addItem(newItem);
+        await this.itemsService.addItem(newItem);
+      }
       this.navController.back();
     } else {
       console.log(this.itemFormGroup.controls['parent']);
+    }
+  }
+
+  private async addAndRemoveItems() {
+    const imagesToDelete =
+      this.selectedCategoryItem()?.imageIds?.filter(
+        (id) => !this.images().some((image) => image.id.toString() === id.toString()),
+      ) ?? [];
+    const audioFilesToDelete =
+      this.selectedCategoryItem()?.audioFileIds?.filter(
+        (id) => !this.audioFiles().some((audio) => audio.id.toString() === id.toString()),
+      ) ?? [];
+    const pinsToDelete =
+      this.selectedCategoryItem()?.pinIds?.filter(
+        (id) => !this.mapPins().some((pin) => pin.id.toString() === id.toString()),
+      ) ?? [];
+
+    if (imagesToDelete?.length > 0) {
+      for (const imageId of imagesToDelete) {
+        await this.imageService.removeImage(imageId);
+      }
+    }
+    if (pinsToDelete?.length > 0) {
+      for (const pinId of pinsToDelete) {
+        await this.mapService.removePin(pinId);
+      }
+    }
+    if (audioFilesToDelete?.length > 0) {
+      for (const audioFileId of audioFilesToDelete) {
+        await this.imageService.removeImage(audioFileId);
+      }
+    }
+
+    const imagesToAdd =
+      this.images()?.filter(
+        (id) => !this.selectedCategoryItem()?.imageIds?.some((image) => image.toString() === id.toString()),
+      ) ?? [];
+    const audioFilesToAdd =
+      this.audioFiles()?.filter(
+        (id) => !this.selectedCategoryItem()?.audioFileIds?.some((audio) => audio.toString() === id.toString()),
+      ) ?? [];
+    const pinsToAdd =
+      this.mapPins()?.filter(
+        (id) => !this.selectedCategoryItem()?.pinIds?.some((pin) => pin.toString() === id.toString()),
+      ) ?? [];
+
+    if (imagesToAdd?.length > 0) {
+      for (const image of imagesToAdd) {
+        await this.imageService.addImage(image);
+      }
+    }
+    if (audioFilesToAdd?.length > 0) {
+      for (const audioFile of audioFilesToAdd) {
+        await this.audioService.addAudioFile(audioFile);
+      }
+    }
+    if (pinsToAdd?.length > 0) {
+      for (const pin of pinsToAdd) {
+        await this.mapService.addPin(pin);
+      }
     }
   }
 }

@@ -3,10 +3,10 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
+    <ion-title> {{ !isEdit() ? 'Create' : 'Update' }} </ion-title>
     <ion-button slot="end" (click)="onSubmit()">
       <ion-icon name="save" slot="start"></ion-icon>
-      {{ !isEdit ? 'Save' : 'Update' }}
+      {{ !isEdit() ? 'Save' : 'Update' }}
     </ion-button>
   </ion-toolbar>
 </ion-header>
@@ -17,19 +17,20 @@
       <ion-buttons slot="start">
         <ion-back-button></ion-back-button>
       </ion-buttons>
-      <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
+      <ion-title> {{ !isEdit() ? 'Create' : 'Update' }} </ion-title>
       <ion-button slot="end" (click)="onSubmit()">
         <ion-icon name="save" slot="start"></ion-icon>
-        {{ !isEdit ? 'Save' : 'Update' }}
+        {{ !isEdit() ? 'Save' : 'Update' }}
       </ion-button>
     </ion-toolbar>
   </ion-header>
 
   <app-select-item
-    [isEdit]="isEdit"
+    [isEdit]="isEdit()"
     [itemFormGroup]="itemFormGroup"
     [(selectedCategory)]="selectedCategory"
     [(selectedCategoryItem)]="selectedCategoryItem"
+    [(selectedParentItem)]="selectedParentItem"
   ></app-select-item>
 
   @if(itemFormGroup.valid){

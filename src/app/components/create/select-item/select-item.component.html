@@ -14,6 +14,7 @@
             required="true"
             style="margin-top: 10px"
             formControlName="type"
+            [compareWith]="compareWith"
             (ionChange)="selectedLevelChange()"
           >
             @for (level of categories(); track $index) {
@@ -48,6 +49,7 @@
               required="true"
               style="margin-top: 10px"
               formControlName="parent"
+              [compareWith]="compareWith"
             >
               @for (level of parentItems(); track $index) {
                 <ion-select-option [value]="level">{{ level.name }}</ion-select-option>
