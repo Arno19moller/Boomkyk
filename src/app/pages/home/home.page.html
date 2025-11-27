@@ -33,9 +33,9 @@
       <ion-col size="6" appLongPress (longPress)="openActionSheet(item)">
         <ion-card class="item-card" [attr.id]="item.id['value']" [routerLink]="['/view', { id: item.id['value'] }]">
           @if(item.highlightImage && item.highlightImage.webPath != ''){
-          <ion-img class="item-image" [src]="item.highlightImage.webPath"></ion-img>
+          <ion-img class="item-image" [src]="item.highlightImage.webPath" loading="lazy"></ion-img>
           } @else {
-          <ion-img class="item-image" src="../../../assets/images/image-not-found.jpg"></ion-img>
+          <ion-img class="item-image" src="../../../assets/images/image-not-found.jpg" loading="lazy"></ion-img>
           }
           <ion-card-header>
             <sub style="margin: 0px; display: flex; justify-content: start; align-items: center; width: 100%">

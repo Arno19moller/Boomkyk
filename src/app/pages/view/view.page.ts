@@ -13,6 +13,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { StatusBar } from '@capacitor/status-bar';
 import { NavController, Platform, ViewWillLeave } from '@ionic/angular';
 import {
+  IonAccordion,
+  IonAccordionGroup,
   IonButton,
   IonButtons,
   IonContent,
@@ -53,6 +55,8 @@ register();
     IonIcon,
     IonButton,
     IonButtons,
+    IonAccordion,
+    IonAccordionGroup,
     MapComponent,
     VoiceComponent,
     CommonModule,
@@ -92,11 +96,12 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
   audioFiles = signal<AudioRecording[]>([]);
   private animationFrameId: number | undefined;
   private isNavigating: boolean = false;
+  protected placeholderImage: string = 'assets/images/image-not-found.jpg';
+  protected isMapLoaded = signal<boolean>(false);
 
   constructor() {}
 
   async ionViewWillEnter() {
-    console.log('ionViewWillEnter called');
     this.isModalOpen = true;
     this.isNavigating = false;
 
@@ -105,11 +110,9 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
     }
 
     const id = this.route.snapshot.paramMap.get('id');
-    console.log('Route ID:', id);
 
     if (id) {
       const item = await this.itemsService.getItemByGuid(Guid.parse(id));
-      console.log('Fetched item:', item);
 
       await this.setSelectedItem(item);
       await this.setPins(item);
@@ -144,17 +147,12 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
   }
 
   private async setSelectedItem(item: NewCategoryItem | undefined) {
-    console.log('setSelectedItem called with:', item);
     if (item) {
       if (item.imageIds && item.imageIds.length > 0) {
         const images = await this.imageService.getImagesByGuids(item.imageIds);
-        console.log('Loaded images:', images);
         this.images.set(images);
       }
       this.selectedItem.set(item);
-      console.log('selectedItem set to:', this.selectedItem());
-    } else {
-      console.log('Item is undefined, not setting selectedItem');
     }
   }
 
@@ -179,8 +177,19 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
     item.categoryHierarchy = hierarchy;
   }
 
+  handleImageError(event: any) {
+    event.target.src = this.placeholderImage;
+  }
+
+  onAccordionChange(event: any) {
+    const value = event.detail.value;
+    // If map accordion is opened, load the map
+    if (value === 'map' || (Array.isArray(value) && value.includes('map'))) {
+      this.isMapLoaded.set(true);
+    }
+  }
+
   deletePopupClosed(event: any) {
-    console.log('deletePopupClosed', event);
     if (event === 'confirm') {
       this.deleteItem();
     }
@@ -188,10 +197,9 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
   }
 
   editItem() {
-    console.log('editItem clicked');
     if (this.selectedItem()) {
       this.isNavigating = true;
-      this.isModalOpen = false; // Close the modal before navigating
+      this.isModalOpen = false;
       this.router.navigate(['/create'], {
         queryParams: { id: this.selectedItem()!.id.toString() },
       });
@@ -199,10 +207,8 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
   }
 
   confirmDelete() {
-    console.log('confirmDelete clicked');
     this.confirmDeleteBody = `Are you sure you want to delete ${this.selectedItem()?.name}?`;
     this.openConfirmDelete.set(true);
-    console.log('openConfirmDelete set to true', this.openConfirmDelete());
   }
 
   private async deleteItem() {
@@ -219,8 +225,7 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
     });
     await this.itemsService.removeItem(this.selectedItem()!);
 
-    this.isNavigating = true;
-    this.router.navigate(['/home']);
+    await this.goBack();
   }
 
   async goBack() {
@@ -229,19 +234,22 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
     if (this.platform.is('hybrid')) {
       await StatusBar.setOverlaysWebView({ overlay: false });
     }
+
     this.navController.navigateBack('home');
   }
 
   ionViewWillLeave() {
-    // Only dismiss modal if we're not navigating to another page (Edit/Delete)
-    if (!this.isNavigating) {
-      this.modal.dismiss();
-    }
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-    }
-    if (this.platform.is('hybrid')) {
-      StatusBar.setOverlaysWebView({ overlay: false });
-    }
+    setTimeout(() => {
+      // Only dismiss modal if we're not navigating to another page (Edit/Delete)
+      if (!this.isNavigating) {
+        this.modal.dismiss();
+      }
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+      }
+      if (this.platform.is('hybrid')) {
+        StatusBar.setOverlaysWebView({ overlay: false });
+      }
+    }, 100);
   }
 }

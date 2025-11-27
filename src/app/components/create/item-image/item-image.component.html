@@ -24,6 +24,8 @@
                 [class.highlight]="image.isHighlight"
                 (longPress)="startLongPress(image)"
                 (dblclick)="doubleClick(image)"
+                (ionError)="handleImageError($event)"
+                loading="lazy"
                 >
               </ion-img>
             }

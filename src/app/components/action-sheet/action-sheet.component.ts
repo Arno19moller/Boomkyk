@@ -30,6 +30,7 @@ export class ActionSheetComponent implements OnInit {
       text: 'Delete',
       role: 'destructive',
       icon: 'trash',
+      color: 'danger',
       data: {
         action: 'delete',
       },

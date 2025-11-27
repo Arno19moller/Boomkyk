@@ -28,6 +28,7 @@ import { ActionSheetComponent } from 'src/app/components/action-sheet/action-she
 import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
 import { CategoryFilter } from 'src/app/models/category-filter.interface';
+import { CategoryStructure } from 'src/app/models/category-structure.interface';
 import { Tree } from 'src/app/models/legacy/tree.interface';
 import { NewCategory, NewCategoryItem } from 'src/app/models/new-category.interface';
 import { ItemsService } from 'src/app/services/items.service';
@@ -82,9 +83,31 @@ export class HomePage implements OnInit, ViewWillEnter {
   protected databaseService = inject(DatabaseService);
   protected isOpen = signal<boolean>(false);
   protected trees = signal<Tree[][]>([]);
-  protected categories = signal<NewCategory[]>([]);
+  protected categories = signal<CategoryStructure[]>([]);
   protected filters = signal<CategoryFilter[]>([]);
-  protected items = signal<NewCategoryItem[]>([]);
+  protected allItems = signal<NewCategoryItem[]>([]);
+  protected searchQuery = signal<string>('');
+  protected items = computed(() => {
+    const query = this.searchQuery().toLowerCase();
+    const filters = this.filters();
+    let items = this.allItems();
+
+    // Filter by search query
+    if (query) {
+      items = items.filter((item) => item.name.toLowerCase().includes(query));
+    }
+
+    // Filter by category
+    if (filters.length > 0) {
+      items = items.filter((item) => {
+        return filters.every((filter) => {
+          return item.name === filter.value || item.categoryHierarchy?.includes(filter.value);
+        });
+      });
+    }
+
+    return items;
+  });
 
   protected actionSheetType: 'action' = 'action';
   protected isActionSheetOpen = signal<boolean>(false);
@@ -113,7 +136,10 @@ export class HomePage implements OnInit, ViewWillEnter {
     //   }
     //   this.trees.set(treeList);
     // });
-    // this.categoryService.getCategoryItems().then((categories) => {});
+    this.categoryService.getCategories().then(async (categories) => {
+      const categoryItems = await this.categoryService.getCategoryItems();
+      this.buildCategoryStructures(categories, categoryItems);
+    });
   }
 
   ionViewWillEnter() {
@@ -122,8 +148,8 @@ export class HomePage implements OnInit, ViewWillEnter {
 
   async getItems() {
     this.itemsService.getItems().then((items) => {
-      this.items.set(items);
-      this.items.update((items) => {
+      this.allItems.set(items);
+      this.allItems.update((items) => {
         items.forEach(async (item) => {
           const images = await this.imageService.getImagesByGuids([item.highlightImageId ?? Guid.create()]);
           item.highlightImage = images?.length > 0 ? images[0] : undefined;
@@ -179,19 +205,22 @@ export class HomePage implements OnInit, ViewWillEnter {
     });
     await this.itemsService.removeItem(this.selectedItem()!);
 
-    this.items.update((items) => {
+    this.allItems.update((items) => {
       return items.filter((item) => item.id !== this.selectedItem()?.id);
     });
   }
 
   async filterGroups(filterString: any): Promise<void> {
-    // if (filterString) {
-    //   filterString = filterString.toLowerCase();
-    //   this.groups = (await this.databaseService.getTreesByType(TreeType.Family)).filter((x) =>
-    //     x.title.toLowerCase().includes(filterString),
-    //   );
-    // } else {
-    //   this.groups = await this.databaseService.getTreesByType(TreeType.Family);
-    // }
+    this.searchQuery.set(filterString);
+  }
+
+  private buildCategoryStructures(categories: NewCategory[], items: NewCategoryItem[]) {
+    const structures: CategoryStructure[] = categories.map((category) => {
+      return {
+        ...category,
+        values: items.filter((item) => item.newCategoryId?.toString() === category.id.toString()),
+      };
+    });
+    this.categories.set(structures);
   }
 }

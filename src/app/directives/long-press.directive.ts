@@ -22,6 +22,9 @@ export class LongPressDirective implements AfterViewInit, OnDestroy {
   isLongPressing: boolean = false;
   private scrollableParent: HTMLElement | undefined = undefined;
   private parentScrollListener!: () => void;
+  private initialX: number = 0;
+  private initialY: number = 0;
+  private moveThreshold: number = 10; // pixels
 
   constructor(private el: ElementRef) {}
 
@@ -44,13 +47,43 @@ export class LongPressDirective implements AfterViewInit, OnDestroy {
   @HostListener('mousedown', ['$event'])
   onMouseDown(event: MouseEvent) {
     // event.preventDefault();
+    this.initialX = event.clientX;
+    this.initialY = event.clientY;
     this.startLongPress();
   }
 
   @HostListener('touchstart', ['$event'])
   onTouchStart(event: TouchEvent) {
     // event.preventDefault();
+    if (event.touches.length > 0) {
+      this.initialX = event.touches[0].clientX;
+      this.initialY = event.touches[0].clientY;
+    }
     this.startLongPress();
+  }
+
+  @HostListener('mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (this.isLongPressing) {
+      const deltaX = Math.abs(event.clientX - this.initialX);
+      const deltaY = Math.abs(event.clientY - this.initialY);
+
+      if (deltaX > this.moveThreshold || deltaY > this.moveThreshold) {
+        this.endLongPress();
+      }
+    }
+  }
+
+  @HostListener('touchmove', ['$event'])
+  onTouchMove(event: TouchEvent) {
+    if (this.isLongPressing && event.touches.length > 0) {
+      const deltaX = Math.abs(event.touches[0].clientX - this.initialX);
+      const deltaY = Math.abs(event.touches[0].clientY - this.initialY);
+
+      if (deltaX > this.moveThreshold || deltaY > this.moveThreshold) {
+        this.endLongPress();
+      }
+    }
   }
 
   @HostListener('mouseup')

@@ -40,6 +40,7 @@ export class ItemImageComponent implements OnInit {
   protected selectedImage = signal<NewImage | undefined>(undefined);
   protected openConfirmDelete = signal<boolean>(false);
   protected confirmDeleteBody: string = '';
+  protected placeholderImage: string = 'assets/images/image-not-found.jpg';
 
   constructor() {
     effect(() => {
@@ -139,5 +140,9 @@ export class ItemImageComponent implements OnInit {
     this.images.update((images) => {
       return [...images, ...newImages];
     });
+  }
+
+  handleImageError(event: any) {
+    event.target.src = this.placeholderImage;
   }
 }
