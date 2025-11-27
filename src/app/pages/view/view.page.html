@@ -94,8 +94,8 @@
               style="margin-top: 10px"
               autoGrow="true"
               style="color: white"
-              [disabled]="true"
-              [value]="selectedItem()!.notes"
+              [disabled]="false"
+              [(ngModel)]="selectedItem()!.notes"
             >
             </ion-textarea>
           </ion-item>

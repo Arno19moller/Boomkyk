@@ -114,24 +114,39 @@ export class VoiceComponent implements OnInit {
   }
 
   async playFile(audioFile: AudioRecording): Promise<void> {
-    const base64Sound = audioFile.data;
+    const wasPlaying = audioFile.isPlaying;
 
+    // Stop currently playing audio if any
+    if (this.audioRef) {
+      this.audioRef.oncanplaythrough = null;
+      this.audioRef.onended = null;
+      this.audioRef.pause();
+      this.audioRef.currentTime = 0;
+    }
+
+    // Reset all files to not playing
+    this.audioFiles.update((files) => files.map((f) => ({ ...f, isPlaying: false })));
+
+    // If it was playing, we just wanted to pause, so we are done.
+    if (wasPlaying) {
+      return;
+    }
+
+    // Start playing the new file
+    const base64Sound = audioFile.data;
     this.audioRef = new Audio(`data:audio/aac;base64,${base64Sound}`);
 
-    if (audioFile.isPlaying) {
-      this.audioRef!.pause();
-      this.audioRef!.currentTime = 0;
-      audioFile.isPlaying = false;
-    } else {
-      this.audioRef.oncanplaythrough = () => {
-        audioFile.isPlaying = true;
-        this.audioRef!.play();
-      };
-      this.audioRef.onended = () => {
-        audioFile.isPlaying = false;
-      };
-      this.audioRef.load();
-    }
+    this.audioRef.oncanplaythrough = () => {
+      // Update the specific file to playing
+      this.audioFiles.update((files) => files.map((f) => (f.id === audioFile.id ? { ...f, isPlaying: true } : f)));
+      this.audioRef!.play();
+    };
+
+    this.audioRef.onended = () => {
+      this.audioFiles.update((files) => files.map((f) => (f.id === audioFile.id ? { ...f, isPlaying: false } : f)));
+    };
+
+    this.audioRef.load();
   }
 
   deleteButtonClicked(audioFile: AudioRecording): void {

@@ -25,6 +25,7 @@ import {
   IonList,
   IonModal,
   IonPopover,
+  IonTextarea,
 } from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
 import { VoiceComponent } from 'src/app/components/create/voice/voice.component';
@@ -49,6 +50,7 @@ register();
   styleUrls: ['./view.page.scss'],
   standalone: true,
   imports: [
+    IonTextarea,
     IonModal,
     IonContent,
     IonHeader,
