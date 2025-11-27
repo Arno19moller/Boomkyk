@@ -5,7 +5,6 @@ import {
   Component,
   CUSTOM_ELEMENTS_SCHEMA,
   inject,
-  OnInit,
   signal,
   ViewChild,
 } from '@angular/core';
@@ -13,10 +12,22 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StatusBar } from '@capacitor/status-bar';
 import { NavController, Platform, ViewWillLeave } from '@ionic/angular';
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonModal } from '@ionic/angular/standalone';
+import {
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonModal,
+  IonPopover,
+} from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
 import { VoiceComponent } from 'src/app/components/create/voice/voice.component';
 import { MapComponent } from 'src/app/components/map/map.component';
+import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { AudioRecording } from 'src/app/models/audio-recording.interface';
 import { NewCategoryItem } from 'src/app/models/new-category.interface';
 import { NewImage } from 'src/app/models/new-image.interface';
@@ -46,10 +57,15 @@ register();
     VoiceComponent,
     CommonModule,
     FormsModule,
+    IonPopover,
+    IonList,
+    IonItem,
+    IonLabel,
+    PopupComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
+export class ViewPage implements ViewWillLeave, AfterViewInit {
   private navController = inject(NavController);
   private cdr = inject(ChangeDetectorRef);
   private platform = inject(Platform);
@@ -75,17 +91,25 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
   pins = signal<Pin[]>([]);
   audioFiles = signal<AudioRecording[]>([]);
   private animationFrameId: number | undefined;
+  private isNavigating: boolean = false;
 
   constructor() {}
 
-  async ngOnInit() {
+  async ionViewWillEnter() {
+    console.log('ionViewWillEnter called');
+    this.isModalOpen = true;
+    this.isNavigating = false;
+
     if (this.platform.is('hybrid')) {
       await StatusBar.setOverlaysWebView({ overlay: true });
     }
 
     const id = this.route.snapshot.paramMap.get('id');
+    console.log('Route ID:', id);
+
     if (id) {
       const item = await this.itemsService.getItemByGuid(Guid.parse(id));
+      console.log('Fetched item:', item);
 
       await this.setSelectedItem(item);
       await this.setPins(item);
@@ -120,10 +144,17 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
   }
 
   private async setSelectedItem(item: NewCategoryItem | undefined) {
-    if (item && item.imageIds && item.imageIds.length > 0) {
-      const images = await this.imageService.getImagesByGuids(item.imageIds);
-      this.images.set(images);
+    console.log('setSelectedItem called with:', item);
+    if (item) {
+      if (item.imageIds && item.imageIds.length > 0) {
+        const images = await this.imageService.getImagesByGuids(item.imageIds);
+        console.log('Loaded images:', images);
+        this.images.set(images);
+      }
       this.selectedItem.set(item);
+      console.log('selectedItem set to:', this.selectedItem());
+    } else {
+      console.log('Item is undefined, not setting selectedItem');
     }
   }
 
@@ -148,14 +179,30 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
     item.categoryHierarchy = hierarchy;
   }
 
-  deletePopupClosed($event: Event) {
-    console.log($event);
-  }
-
-  deletePopsupClosed(event: string): void {
+  deletePopupClosed(event: any) {
+    console.log('deletePopupClosed', event);
     if (event === 'confirm') {
       this.deleteItem();
     }
+    this.openConfirmDelete.set(false);
+  }
+
+  editItem() {
+    console.log('editItem clicked');
+    if (this.selectedItem()) {
+      this.isNavigating = true;
+      this.isModalOpen = false; // Close the modal before navigating
+      this.router.navigate(['/create'], {
+        queryParams: { id: this.selectedItem()!.id.toString() },
+      });
+    }
+  }
+
+  confirmDelete() {
+    console.log('confirmDelete clicked');
+    this.confirmDeleteBody = `Are you sure you want to delete ${this.selectedItem()?.name}?`;
+    this.openConfirmDelete.set(true);
+    console.log('openConfirmDelete set to true', this.openConfirmDelete());
   }
 
   private async deleteItem() {
@@ -172,10 +219,13 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
     });
     await this.itemsService.removeItem(this.selectedItem()!);
 
+    this.isNavigating = true;
     this.router.navigate(['/home']);
   }
 
   async goBack() {
+    if (this.isNavigating) return;
+
     if (this.platform.is('hybrid')) {
       await StatusBar.setOverlaysWebView({ overlay: false });
     }
@@ -183,7 +233,10 @@ export class ViewPage implements OnInit, ViewWillLeave, AfterViewInit {
   }
 
   ionViewWillLeave() {
-    this.modal.dismiss();
+    // Only dismiss modal if we're not navigating to another page (Edit/Delete)
+    if (!this.isNavigating) {
+      this.modal.dismiss();
+    }
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
     }
