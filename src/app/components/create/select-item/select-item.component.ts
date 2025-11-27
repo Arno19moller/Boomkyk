@@ -29,30 +29,29 @@ export class SelectItemComponent implements OnInit {
   @Output() parentValidatorChange = new EventEmitter<boolean>();
 
   constructor() {
-    effect(() => {
+    effect(async () => {
       if (this.selectedCategory() != undefined && this.itemFormGroup.controls['type'].value == undefined) {
-        this.itemFormGroup.controls['type']!.setValue(this.selectedCategory());
+        const categories = await this.newCategoryService.getCategories();
+        if (categories == undefined) return;
+        this.categories.set(categories);
+
         this.selectedLevelChange(this.selectedCategory());
       }
     });
   }
 
-  ngOnInit() {
-    this.newCategoryService.getCategories().then((categories) => {
-      if (categories == undefined) return;
-      this.categories.set(categories);
-    });
-  }
+  async ngOnInit() {}
 
   async selectedLevelChange(category: NewCategory | undefined = undefined): Promise<void> {
     let parentItems: NewCategoryItem[] = [];
     const cat = category ?? this.itemFormGroup.controls['type'].value;
-
+    
     await this.getParentCategoryItems(parentItems, cat!);
     this.resetParentControls(this.parentItems());
-
+    
     this.parentCategory.set(this.categories().find((c) => c.id.toString() === cat?.parentId?.toString()));
     this.selectedCategory.set(this.categories().find((c) => c.id.toString() === cat?.id.toString()));
+    this.itemFormGroup.controls['type'].setValue(this.selectedCategory());
   }
 
   private async getParentCategoryItems(parentItems: NewCategoryItem[], cat: NewCategory) {
