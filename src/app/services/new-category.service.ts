@@ -163,7 +163,7 @@ export class NewCategoryService {
   }
 
   // Helper to save a category and update index
-  private async saveCategory(category: NewCategory): Promise<void> {
+  public async saveCategory(category: NewCategory): Promise<void> {
     const guidString = category.id.toString();
     await this._storage?.set(`${this.CATEGORY_PREFIX}${guidString}`, category);
 
@@ -173,6 +173,47 @@ export class NewCategoryService {
       index.push(category.id);
       await this._storage?.set(this.CATEGORIES_INDEX_KEY, index);
     }
+  }
+
+  async deleteCategory(id: Guid): Promise<void> {
+    const guidString = id.toString();
+    await this._storage?.remove(`${this.CATEGORY_PREFIX}${guidString}`);
+
+    // Update index
+    let index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
+    index = index.filter((itemId: any) => {
+      const idStr = typeof itemId === 'string' ? itemId : (itemId as any).value || itemId.toString();
+      return idStr !== guidString;
+    });
+    await this._storage?.set(this.CATEGORIES_INDEX_KEY, index);
+  }
+
+  public async canDeleteCategory(categoryId: Guid): Promise<boolean> {
+    const categories = await this.getCategories();
+    const categoryItems = await this.getCategoryItems();
+
+    // 1. Find all descendant categories (recursive)
+    const descendants = this.getAllDescendants(categoryId, categories);
+    const allRelevantCategoryIds = [categoryId.toString(), ...descendants.map((c) => c.id.toString())];
+
+    // 2. Check if any item belongs to any of these categories
+    const hasLinkedItems = categoryItems.some(
+      (item) => item.newCategoryId && allRelevantCategoryIds.includes(item.newCategoryId.toString()),
+    );
+
+    return !hasLinkedItems;
+  }
+
+  private getAllDescendants(parentId: Guid, allCategories: NewCategory[]): NewCategory[] {
+    let descendants: NewCategory[] = [];
+    const children = allCategories.filter((c) => c.parentId && c.parentId.toString() === parentId.toString());
+
+    for (const child of children) {
+      descendants.push(child);
+      descendants = [...descendants, ...this.getAllDescendants(child.id, allCategories)];
+    }
+
+    return descendants;
   }
 
   // Helper to save a category item and update index
@@ -186,6 +227,19 @@ export class NewCategoryService {
       index.push(item.id);
       await this._storage?.set(this.CATEGORY_ITEMS_INDEX_KEY, index);
     }
+  }
+
+  async deleteCategoryItem(id: Guid): Promise<void> {
+    const guidString = id.toString();
+    await this._storage?.remove(`${this.CATEGORY_ITEM_PREFIX}${guidString}`);
+
+    // Update index
+    let index = (await this._storage?.get(this.CATEGORY_ITEMS_INDEX_KEY)) || [];
+    index = index.filter((itemId: any) => {
+      const idStr = typeof itemId === 'string' ? itemId : (itemId as any).value || itemId.toString();
+      return idStr !== guidString;
+    });
+    await this._storage?.set(this.CATEGORY_ITEMS_INDEX_KEY, index);
   }
 
   private deserializeCategory(data: any): NewCategory {

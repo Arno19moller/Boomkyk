@@ -199,9 +199,10 @@ export class CreatePage implements OnInit {
       id: Guid.create(),
       name: this.itemFormGroup.value.typeValue!,
       level: this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level,
+      newCategoryId: this.selectedCategory()?.id!,
       parentId: this.itemFormGroup.value.parent?.id,
       createDate: new Date(),
-    }
+    };
       await this.categoryService.saveCategoryItem(category);
   }
 

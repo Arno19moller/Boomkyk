@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, Signal, signal } from '@angular/core';
+import { Component, computed, inject, Signal, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
@@ -18,6 +18,9 @@ import {
   IonHeader,
   IonIcon,
   IonImg,
+  IonMenu,
+  IonMenuButton,
+  IonMenuToggle,
   IonRow,
   IonSearchbar,
   IonTitle,
@@ -71,6 +74,9 @@ import { FilterBottomSheetComponent } from '../../components/filter-bottom-sheet
     ActionSheetComponent,
     PopupComponent,
     LongPressDirective,
+    IonMenu,
+    IonMenuButton,
+    IonMenuToggle,
   ],
 })
 export class HomePage implements ViewWillEnter {
@@ -82,6 +88,7 @@ export class HomePage implements ViewWillEnter {
   private router = inject(Router);
   private platform = inject(Platform);
   private alertController = inject(AlertController);
+  @ViewChild(IonMenu) menu!: IonMenu;
 
   protected databaseService = inject(DatabaseService);
   protected isOpen = signal<boolean>(false);
@@ -190,6 +197,11 @@ export class HomePage implements ViewWillEnter {
 
   handleImageError(event: any) {
     event.target.src = this.placeholderImage;
+  }
+
+  menuButtonClicked(type: string) {
+    this.router.navigate([`/${type}`]);
+    this.menu.close();
   }
 
   openActionSheet(item: NewCategoryItem) {
