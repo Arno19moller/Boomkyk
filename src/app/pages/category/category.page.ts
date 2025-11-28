@@ -36,9 +36,9 @@ import { NewCategory } from 'src/app/models/new-category.interface';
 import { NewCategoryService } from 'src/app/services/new-category.service';
 
 @Component({
-  selector: 'app-level',
-  templateUrl: './level.page.html',
-  styleUrls: ['./level.page.scss'],
+  selector: 'app-category',
+  templateUrl: './category.page.html',
+  styleUrls: ['./category.page.scss'],
   standalone: true,
   imports: [
     IonCard,
@@ -70,7 +70,7 @@ import { NewCategoryService } from 'src/app/services/new-category.service';
     LongPressDirective,
   ],
 })
-export class LevelPage implements OnInit {
+export class CategoryPage implements OnInit {
   @ViewChild(IonModal) modal!: IonModal;
 
   categories: NewCategory[] = [];
@@ -104,7 +104,7 @@ export class LevelPage implements OnInit {
   }
 
   async loadData() {
-    this.categories = await this.newCategoryService.getCategories();
+    this.categories = await this.newCategoryService.getCategoryItems();
   }
 
   getParentName(parentId: Guid | undefined): string {
@@ -162,7 +162,7 @@ export class LevelPage implements OnInit {
       createDate: this.currentCategory.createDate || new Date(),
     };
 
-    await this.newCategoryService.saveCategory(categoryToSave);
+    await this.newCategoryService.saveCategoryItem(categoryToSave);
     await this.loadData();
     this.isModalOpen = false;
     this.modal.dismiss(null, 'confirm');
@@ -183,7 +183,7 @@ export class LevelPage implements OnInit {
   async deleteCategory() {
     if (!this.selectedCategory) return;
 
-    const canDelete = await this.newCategoryService.canDeleteCategory(this.selectedCategory.id);
+    const canDelete = true; //await this.newCategoryService.canDeleteCategoryItem(this.selectedCategory.id);
 
     if (!canDelete) {
       const alert = await this.alertController.create({
@@ -195,7 +195,7 @@ export class LevelPage implements OnInit {
       return;
     }
 
-    await this.newCategoryService.deleteCategory(this.selectedCategory.id);
+    await this.newCategoryService.deleteCategoryItem(this.selectedCategory.id);
     await this.loadData();
     this.selectedCategory = undefined;
   }

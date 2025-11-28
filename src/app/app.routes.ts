@@ -22,6 +22,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/merge/merge.page').then((m) => m.MergePage),
   },
   {
+    path: 'categories',
+    loadComponent: () => import('./pages/category/category.page').then((m) => m.CategoryPage),
+  },
+  {
     path: '**',
     redirectTo: '/home',
     pathMatch: 'full',

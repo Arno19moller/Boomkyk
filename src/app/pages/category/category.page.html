@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>Levels</ion-title>
+    <ion-title>Categories</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="openAddModal()">
         <ion-icon slot="start" name="add"></ion-icon>
@@ -19,7 +19,7 @@
       <ion-buttons slot="start">
         <ion-back-button></ion-back-button>
       </ion-buttons>
-      <ion-title size="large">Levels</ion-title>
+      <ion-title size="large">Categories</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -67,7 +67,7 @@
           <ion-buttons slot="start">
             <ion-button (click)="cancel()">Cancel</ion-button>
           </ion-buttons>
-          <ion-title>{{ isEditing ? 'Edit Level' : 'Add Level' }}</ion-title>
+          <ion-title>{{ isEditing ? 'Edit Category' : 'Add Category' }}</ion-title>
           <ion-buttons slot="end">
             <ion-button (click)="confirm()" [strong]="true">Save</ion-button>
           </ion-buttons>
