@@ -176,7 +176,7 @@ export class NewCategoryService {
   }
 
   // Helper to save a category item and update index
-  private async saveCategoryItem(item: NewCategoryItem): Promise<void> {
+  async saveCategoryItem(item: NewCategoryItem): Promise<void> {
     const guidString = item.id.toString();
     await this._storage?.set(`${this.CATEGORY_ITEM_PREFIX}${guidString}`, item);
 

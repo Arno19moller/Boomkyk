@@ -33,7 +33,7 @@
     [(selectedParentItem)]="selectedParentItem"
   ></app-select-item>
 
-  @if(itemFormGroup.valid){
+  @if(itemFormGroup.valid && selectedCategory()?.level === 0){
   <app-item-image [(selectedCategoryItem)]="selectedCategoryItem" [(images)]="images"></app-item-image>
 
   <!-- Voice Notes -->

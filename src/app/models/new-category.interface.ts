@@ -6,6 +6,7 @@ export interface NewCategory {
   name: string;
   level: number;
   parentId?: Guid;
+  createDate?: Date;
 }
 
 export interface NewCategoryItem {
@@ -13,7 +14,7 @@ export interface NewCategoryItem {
   name: string;
   level: number;
   parentId?: Guid;
-  notes: string;
+  notes?: string;
   newCategoryId?: Guid;
   audioFileIds?: Guid[];
   imageIds?: Guid[];
@@ -22,4 +23,5 @@ export interface NewCategoryItem {
   createDate?: Date;
   highlightImage?: NewImage; // used in home page
   categoryHierarchy?: string[]; // used to display in home and view
+  allowContent?: boolean;
 }

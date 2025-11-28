@@ -148,38 +148,61 @@ export class CreatePage implements OnInit {
 
   async onSubmit(): Promise<void> {
     if (this.itemFormGroup.valid) {
-      let highlightImageId = this.images().find((image) => image.isHighlight)?.id;
-      highlightImageId = highlightImageId ?? this.images()[0]?.id;
-
-      const newItem: NewCategoryItem = {
-        id: Guid.create(),
-        name: this.itemFormGroup.value.typeValue!,
-        level: this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level,
-        parentId: this.itemFormGroup.value.parent?.id,
-        notes: this.selectedCategoryItem()?.notes!,
-        newCategoryId: this.selectedCategory()?.id!,
-        audioFileIds: this.audioFiles().map((recording) => recording.id),
-        imageIds: this.images().map((image) => image.id),
-        highlightImageId: highlightImageId,
-        pinIds: this.mapPins().map((pin) => pin.id),
-        createDate: new Date(),
-      };
-
-      if (this.isEdit() && this.selectedItemId) {
-        this.addAndRemoveItems();
-        newItem.id = this.selectedItemId;
-        await this.itemsService.updateItem(newItem);
-      } else {
-        if (this.audioFiles().length > 0) await this.audioService.addAudioFiles(this.audioFiles());
-        if (this.images().length > 0) await this.imageService.addImages(this.images());
-        if (this.mapPins().length > 0) await this.mapService.addPins(this.mapPins());
-
-        await this.itemsService.addItem(newItem);
+      // Add item
+      if ((this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level) === 0) {
+        await this.saveItem();
       }
+      // Add Category
+      else {
+        await this.saveCategory();
+      }
+
       this.navController.back();
     } else {
       console.log(this.itemFormGroup.controls['parent']);
     }
+  }
+
+  private async saveItem() {
+    let highlightImageId = this.images().find((image) => image.isHighlight)?.id;
+    highlightImageId = highlightImageId ?? this.images()[0]?.id;
+
+    const newItem: NewCategoryItem = {
+      id: Guid.create(),
+      name: this.itemFormGroup.value.typeValue!,
+      level: this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level,
+      parentId: this.itemFormGroup.value.parent?.id,
+      notes: this.selectedCategoryItem()?.notes!,
+      newCategoryId: this.selectedCategory()?.id!,
+      audioFileIds: this.audioFiles().map((recording) => recording.id),
+      imageIds: this.images().map((image) => image.id),
+      highlightImageId: highlightImageId,
+      pinIds: this.mapPins().map((pin) => pin.id),
+      createDate: this.selectedCategoryItem()?.createDate ?? new Date(),
+    };
+
+    if (this.isEdit() && this.selectedItemId) {
+      this.addAndRemoveItems();
+      newItem.id = this.selectedItemId;
+      await this.itemsService.updateItem(newItem);
+    } else {
+      if (this.audioFiles().length > 0) await this.audioService.addAudioFiles(this.audioFiles());
+      if (this.images().length > 0) await this.imageService.addImages(this.images());
+      if (this.mapPins().length > 0) await this.mapService.addPins(this.mapPins());
+
+      await this.itemsService.addItem(newItem);
+    }
+  }
+
+  private async saveCategory(){
+    const category: NewCategoryItem = {
+      id: Guid.create(),
+      name: this.itemFormGroup.value.typeValue!,
+      level: this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level,
+      parentId: this.itemFormGroup.value.parent?.id,
+      createDate: new Date(),
+    }
+      await this.categoryService.saveCategoryItem(category);
   }
 
   private async addAndRemoveItems() {

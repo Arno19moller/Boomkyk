@@ -33,7 +33,7 @@
       <ion-col size="6" appLongPress (longPress)="openActionSheet(item)">
         <ion-card class="item-card" [attr.id]="item.id['value']" [routerLink]="['/view', { id: item.id['value'] }]">
           @if(item.highlightImage && item.highlightImage.webPath != ''){
-          <ion-img class="item-image" [src]="item.highlightImage.webPath" loading="lazy"></ion-img>
+          <ion-img class="item-image" [src]="item.highlightImage.webPath" loading="lazy" (ionError)="handleImageError($event)"></ion-img>
           } @else {
           <ion-img class="item-image" src="../../../assets/images/image-not-found.jpg" loading="lazy"></ion-img>
           }
@@ -58,7 +58,7 @@
   <h5>hellooo</h5>
   }
 
-  <app-bottom-sheet [(isOpen)]="isOpen" [structures]="categories()" [(filters)]="filters"></app-bottom-sheet>
+  <app-filter-bottom-sheet [(isOpen)]="isOpen" [structures]="categories()" [(filters)]="filters"></app-filter-bottom-sheet>
 
   <ion-fab slot="fixed" horizontal="center" vertical="bottom">
     <ion-fab-button>

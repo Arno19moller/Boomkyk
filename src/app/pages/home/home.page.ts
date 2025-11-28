@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, Signal, signal } from '@angular/core';
+import { Component, computed, inject, Signal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { AlertController, Platform } from '@ionic/angular';
 import {
   IonButton,
   IonButtons,
@@ -37,7 +38,7 @@ import { MapService } from 'src/app/services/map.service';
 import { NewAudioService } from 'src/app/services/new-audio.service';
 import { NewCategoryService } from 'src/app/services/new-category.service';
 import { NewImageService } from 'src/app/services/new-image.service';
-import { BottomSheetComponent } from '../../components/filter-bottom-sheet/bottom-sheet.component';
+import { FilterBottomSheetComponent } from '../../components/filter-bottom-sheet/filter-bottom-sheet.component';
 
 @Component({
   selector: 'app-home',
@@ -66,19 +67,21 @@ import { BottomSheetComponent } from '../../components/filter-bottom-sheet/botto
     CommonModule,
     RouterModule,
     FormsModule,
-    BottomSheetComponent,
+    FilterBottomSheetComponent,
     ActionSheetComponent,
     PopupComponent,
     LongPressDirective,
   ],
 })
-export class HomePage implements OnInit, ViewWillEnter {
+export class HomePage implements ViewWillEnter {
   private itemsService = inject(ItemsService);
   private mapService = inject(MapService);
   private audioService = inject(NewAudioService);
   private categoryService = inject(NewCategoryService);
   private imageService = inject(NewImageService);
   private router = inject(Router);
+  private platform = inject(Platform);
+  private alertController = inject(AlertController);
 
   protected databaseService = inject(DatabaseService);
   protected isOpen = signal<boolean>(false);
@@ -114,6 +117,8 @@ export class HomePage implements OnInit, ViewWillEnter {
   protected openConfirmDelete = signal<boolean>(false);
   protected confirmDeleteBody: string = '';
   protected selectedItem = signal<NewCategoryItem | undefined>(undefined);
+  protected placeholderImage: string = 'assets/images/image-not-found.jpg';
+  protected hasPageLoaded: boolean = false;
 
   protected filteredStructures: Signal<any> = computed(() => {
     const filters = this.filters();
@@ -124,39 +129,55 @@ export class HomePage implements OnInit, ViewWillEnter {
 
   constructor() {}
 
-  ngOnInit() {
-    // this.databaseService.getTrees().then((trees) => {
-    //   const treeList: Tree[][] = [];
-    //   for (let i = 0; i < trees.length; i += 2) {
-    //     if (i + 1 < trees.length) {
-    //       treeList.push([trees[i], trees[i + 1]]);
-    //     } else {
-    //       treeList.push([trees[i]]);
-    //     }
-    //   }
-    //   this.trees.set(treeList);
-    // });
-    this.categoryService.getCategories().then(async (categories) => {
-      const categoryItems = await this.categoryService.getCategoryItems();
-      this.buildCategoryStructures(categories, categoryItems);
-    });
+  async ionViewWillEnter() {
+    if (!this.hasPageLoaded) await this.loadPage();
+
+    await this.getItems();
   }
 
-  ionViewWillEnter() {
-    this.getItems();
+  async loadPage() {
+    const categories = await this.categoryService.getCategories();
+    const categoryItems = await this.categoryService.getCategoryItems();
+    this.buildCategoryStructures(categories, categoryItems);
+
+    this.platform.backButton.subscribeWithPriority(10, async () => {
+      const alert = await this.alertController.create({
+        header: 'Exit App?',
+        message: 'Do you want to exit the application?',
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+            handler: () => {
+              console.log('Exit cancelled');
+            },
+          },
+          {
+            text: 'Exit',
+            handler: () => {
+              (navigator as any)['app'].exitApp(); // For exiting the app on Cordova/Capacitor
+            },
+          },
+        ],
+      });
+      await alert.present();
+    });
+
+    this.hasPageLoaded = true;
   }
 
   async getItems() {
-    this.itemsService.getItems().then((items) => {
-      this.allItems.set(items);
-      this.allItems.update((items) => {
-        items.forEach(async (item) => {
-          const images = await this.imageService.getImagesByGuids([item.highlightImageId ?? Guid.create()]);
-          item.highlightImage = images?.length > 0 ? images[0] : undefined;
-          await this.setHierarchy(item);
-        });
-        return items;
+    let items = await this.itemsService.getItems();
+    items = items.filter((item) => item.level === 0);
+
+    this.allItems.set(items);
+    this.allItems.update((items) => {
+      items.forEach(async (item) => {
+        const images = await this.imageService.getImagesByGuids([item.highlightImageId ?? Guid.create()]);
+        item.highlightImage = images?.length > 0 ? images[0] : undefined;
+        await this.setHierarchy(item);
       });
+      return items;
     });
   }
 
@@ -165,6 +186,10 @@ export class HomePage implements OnInit, ViewWillEnter {
 
     var hierarchy = await this.categoryService.getHierarchy(item);
     item.categoryHierarchy = hierarchy;
+  }
+
+  handleImageError(event: any) {
+    event.target.src = this.placeholderImage;
   }
 
   openActionSheet(item: NewCategoryItem) {

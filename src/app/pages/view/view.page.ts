@@ -100,6 +100,7 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
   private isNavigating: boolean = false;
   protected placeholderImage: string = 'assets/images/image-not-found.jpg';
   protected isMapLoaded = signal<boolean>(false);
+  protected hasLoadedHeightWatcher: boolean = false;
 
   constructor() {}
 
@@ -121,6 +122,16 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
       await this.setAudioFiles(item);
       await this.setHierarchy(item);
     }
+
+    if (this.hasLoadedHeightWatcher) {
+      const modalElement = this.modal['el'];
+      const wrapper = modalElement.shadowRoot?.querySelector('.modal-wrapper');
+      this.loadHeightWatcher(wrapper!);
+    }
+
+    this.platform.backButton.subscribeWithPriority(10, () => {
+      this.goBack();
+    });
   }
 
   ngAfterViewInit() {
@@ -130,22 +141,27 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
       const wrapper = modalElement.shadowRoot?.querySelector('.modal-wrapper');
 
       if (wrapper) {
-        const update = () => {
-          const rect = wrapper.getBoundingClientRect();
-          const windowHeight = window.innerHeight;
-          const topPercentage = (rect.top / windowHeight) * 100;
-
-          if (Math.abs(this.imgHeight - topPercentage) > 0.1) {
-            this.imgHeight = topPercentage + 1;
-            this.cdr.detectChanges();
-          }
-
-          this.animationFrameId = requestAnimationFrame(update);
-        };
-
-        update();
+        this.loadHeightWatcher(wrapper);
       }
     }, 500);
+  }
+
+  private loadHeightWatcher(wrapper: Element) {
+    const update = () => {
+      const rect = wrapper.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const topPercentage = (rect.top / windowHeight) * 100;
+
+      if (Math.abs(this.imgHeight - topPercentage) > 0.1) {
+        this.imgHeight = topPercentage + 1;
+        this.cdr.detectChanges();
+      }
+
+      this.animationFrameId = requestAnimationFrame(update);
+    };
+
+    update();
+    this.hasLoadedHeightWatcher = true;
   }
 
   private async setSelectedItem(item: NewCategoryItem | undefined) {
@@ -185,7 +201,6 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
 
   onAccordionChange(event: any) {
     const value = event.detail.value;
-    // If map accordion is opened, load the map
     if (value === 'map' || (Array.isArray(value) && value.includes('map'))) {
       this.isMapLoaded.set(true);
     }

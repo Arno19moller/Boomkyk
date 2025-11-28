@@ -34,7 +34,6 @@ export class ItemsService {
 
     for (const indexEntry of index) {
       const item = await this.getItemByGuid(indexEntry.id);
-      console.log(item);
       if (item) {
         items.push(item);
       }
