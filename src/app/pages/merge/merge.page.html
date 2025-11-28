@@ -1,0 +1,274 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Merge Items</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="merge-container">
+    <!-- Step 1: Select Items -->
+    <ion-card style="margin: 0">
+      <ion-card-header>
+        <ion-card-title>Select Items to Merge</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">First Item</ion-label>
+          <ion-select
+            [(ngModel)]="selectedItem1Id"
+            (ionChange)="onItem1Selected()"
+            placeholder="Select first item"
+            interface="popover"
+          >
+            @for (item of allItems; track item.id) {
+            <ion-select-option [value]="item.id.toString()"> {{ item.name }} </ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Second Item</ion-label>
+          <ion-select
+            [(ngModel)]="selectedItem2Id"
+            (ionChange)="onItem2Selected()"
+            placeholder="Select second item"
+            interface="popover"
+          >
+            @for (item of allItems; track item.id) {
+            <ion-select-option [value]="item.id.toString()"> {{ item.name }} </ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Step 2: Configure Merge (shown after both items selected) -->
+    @if (showMergeForm()) {
+    <div class="merge-configuration">
+      <!-- Merged Item Properties -->
+      <ion-card style="margin: 0">
+        <ion-card-header>
+          <ion-card-title>Merged Item Properties</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-item>
+            <ion-label position="stacked">Name</ion-label>
+            <ion-input [(ngModel)]="mergedName" placeholder="Enter name"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Level</ion-label>
+            <ion-select [(ngModel)]="mergedLevel" (ionChange)="onLevelChange()" interface="popover">
+              <ion-select-option [value]="0">Species (0)</ion-select-option>
+              <ion-select-option [value]="1">Genus (1)</ion-select-option>
+              <ion-select-option [value]="2">Family (2)</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Parent</ion-label>
+            <ion-select
+              [(ngModel)]="mergedParentId"
+              [compareWith]="compareWith"
+              placeholder="Select parent (optional)"
+              interface="popover"
+            >
+              <ion-select-option [value]="undefined">None</ion-select-option>
+              @for (parent of availableParents; track parent.id) {
+              <ion-select-option [value]="parent.id"> {{ parent.name }} </ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Content Selection -->
+      <div class="items-comparison">
+        <!-- Item 1 Content -->
+        @if (item1) {
+        <ion-card class="item-card">
+          <ion-card-header>
+            <ion-card-title>{{ item1.item.name }}</ion-card-title>
+            <ion-chip color="primary">Item 1</ion-chip>
+          </ion-card-header>
+          <ion-card-content>
+            <!-- Images -->
+            @if (item1.images.length > 0) {
+            <div class="content-section">
+              <h3>Images ({{ item1.images.length }})</h3>
+              <div class="image-grid">
+                @for (image of item1.images; track image.id) {
+                <div class="image-item">
+                  <ion-checkbox
+                    [checked]="item1.selectedImages.has(image.id.toString())"
+                    (ionChange)="toggleImage(item1, image.id.toString())"
+                  ></ion-checkbox>
+                  <ion-img [src]="image.webPath" class="thumbnail"></ion-img>
+                </div>
+                }
+              </div>
+            </div>
+            }
+
+            <!-- Audio Files -->
+            @if (item1.audioFiles.length > 0) {
+            <div class="content-section">
+              <h3>Audio Files ({{ item1.audioFiles.length }})</h3>
+              <ion-list>
+                @for (audio of item1.audioFiles; track audio.id) {
+                <ion-item>
+                  <ion-checkbox
+                    slot="start"
+                    [checked]="item1.selectedAudioFiles.has(audio.id.toString())"
+                    (ionChange)="toggleAudioFile(item1, audio.id.toString())"
+                  ></ion-checkbox>
+                  <ion-label>{{ audio.name || 'Audio ' + $index }}</ion-label>
+                </ion-item>
+                }
+              </ion-list>
+            </div>
+            }
+
+            <!-- Pins -->
+            @if (item1.pins.length > 0) {
+            <div class="content-section">
+              <h3>Pins ({{ item1.pins.length }})</h3>
+              <ion-list>
+                @for (pin of item1.pins; track pin.id) {
+                <ion-item>
+                  <ion-checkbox
+                    slot="start"
+                    [checked]="item1.selectedPins.has(pin.id.toString())"
+                    (ionChange)="togglePin(item1, pin.id.toString())"
+                  ></ion-checkbox>
+                  <ion-label>
+                    <p>Lat: {{ pin.position?.coords?.latitude }}, Lng: {{ pin.position?.coords?.longitude }}</p>
+                  </ion-label>
+                </ion-item>
+                }
+              </ion-list>
+            </div>
+            }
+
+            <!-- Notes -->
+            @if (item1.item.notes) {
+            <div class="content-section">
+              <h3>Notes</h3>
+              <ion-item>
+                <ion-checkbox
+                  slot="start"
+                  [(ngModel)]="item1.useNotes"
+                  (ionChange)="onNotesToggle(item1)"
+                ></ion-checkbox>
+                <ion-label class="ion-text-wrap">
+                  <p>{{ item1.item.notes }}</p>
+                </ion-label>
+              </ion-item>
+            </div>
+            }
+          </ion-card-content>
+        </ion-card>
+        }
+
+        <!-- Item 2 Content -->
+        @if (item2) {
+        <ion-card class="item-card">
+          <ion-card-header>
+            <ion-card-title>{{ item2.item.name }}</ion-card-title>
+            <ion-chip color="secondary">Item 2</ion-chip>
+          </ion-card-header>
+          <ion-card-content>
+            <!-- Images -->
+            @if (item2.images.length > 0) {
+            <div class="content-section">
+              <h3>Images ({{ item2.images.length }})</h3>
+              <div class="image-grid">
+                @for (image of item2.images; track image.id) {
+                <div class="image-item">
+                  <ion-checkbox
+                    [checked]="item2.selectedImages.has(image.id.toString())"
+                    (ionChange)="toggleImage(item2, image.id.toString())"
+                  ></ion-checkbox>
+                  <ion-img [src]="image.webPath" class="thumbnail"></ion-img>
+                </div>
+                }
+              </div>
+            </div>
+            }
+
+            <!-- Audio Files -->
+            @if (item2.audioFiles.length > 0) {
+            <div class="content-section">
+              <h3>Audio Files ({{ item2.audioFiles.length }})</h3>
+              <ion-list>
+                @for (audio of item2.audioFiles; track audio.id) {
+                <ion-item>
+                  <ion-checkbox
+                    slot="start"
+                    [checked]="item2.selectedAudioFiles.has(audio.id.toString())"
+                    (ionChange)="toggleAudioFile(item2, audio.id.toString())"
+                  ></ion-checkbox>
+                  <ion-label>{{ audio.name || 'Audio ' + $index }}</ion-label>
+                </ion-item>
+                }
+              </ion-list>
+            </div>
+            }
+
+            <!-- Pins -->
+            @if (item2.pins.length > 0) {
+            <div class="content-section">
+              <h3>Pins ({{ item2.pins.length }})</h3>
+              <ion-list>
+                @for (pin of item2.pins; track pin.id) {
+                <ion-item>
+                  <ion-checkbox
+                    slot="start"
+                    [checked]="item2.selectedPins.has(pin.id.toString())"
+                    (ionChange)="togglePin(item2, pin.id.toString())"
+                  ></ion-checkbox>
+                  <ion-label>
+                    <p>Lat: {{ pin.position?.coords?.latitude }}, Lng: {{ pin.position?.coords?.longitude }}</p>
+                  </ion-label>
+                </ion-item>
+                }
+              </ion-list>
+            </div>
+            }
+
+            <!-- Notes -->
+            @if (item2.item.notes) {
+            <div class="content-section">
+              <h3>Notes</h3>
+              <ion-item>
+                <ion-checkbox
+                  slot="start"
+                  [(ngModel)]="item2.useNotes"
+                  (ionChange)="onNotesToggle(item2)"
+                ></ion-checkbox>
+                <ion-label class="ion-text-wrap">
+                  <p>{{ item2.item.notes }}</p>
+                </ion-label>
+              </ion-item>
+            </div>
+            }
+          </ion-card-content>
+        </ion-card>
+        }
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <ion-button expand="block" color="medium" (click)="cancel()"> Cancel </ion-button>
+        <ion-button expand="block" color="primary" (click)="performMerge()" [disabled]="isLoading()">
+          <ion-icon slot="start" name="git-merge"></ion-icon>
+          {{ isLoading() ? 'Merging...' : 'Merge Items' }}
+        </ion-button>
+      </div>
+    </div>
+    }
+  </div>
+</ion-content>
