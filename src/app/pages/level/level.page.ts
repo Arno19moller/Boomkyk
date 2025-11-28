@@ -37,8 +37,8 @@ import { NewCategoryService } from 'src/app/services/new-category.service';
 
 @Component({
   selector: 'app-category',
-  templateUrl: './category.page.html',
-  styleUrls: ['./category.page.scss'],
+  templateUrl: './level.page.html',
+  styleUrls: ['./level.page.scss'],
   standalone: true,
   imports: [
     IonCard,
@@ -70,7 +70,7 @@ import { NewCategoryService } from 'src/app/services/new-category.service';
     LongPressDirective,
   ],
 })
-export class CategoryPage implements OnInit {
+export class LevelPage implements OnInit {
   @ViewChild(IonModal) modal!: IonModal;
 
   categories: NewCategory[] = [];

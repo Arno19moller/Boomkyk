@@ -14,8 +14,8 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/view/view.page').then((m) => m.ViewPage),
   },
   {
-    path: 'category',
-    loadComponent: () => import('./pages/category/category.page').then((m) => m.CategoryPage),
+    path: 'level',
+    loadComponent: () => import('./pages/level/level.page').then((m) => m.LevelPage),
   },
   {
     path: 'merge',

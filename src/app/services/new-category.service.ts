@@ -99,7 +99,26 @@ export class NewCategoryService {
 
   public async getCategories(): Promise<NewCategory[]> {
     await this.initialiseStorage();
-    const index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
+    let index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
+
+    // Deduplicate the index by GUID string value
+    const seenIds = new Set<string>();
+    const deduplicatedIndex: any[] = [];
+
+    for (const id of index) {
+      const guidString = typeof id === 'string' ? id : (id as any).value || id.toString();
+      if (!seenIds.has(guidString)) {
+        seenIds.add(guidString);
+        deduplicatedIndex.push(id);
+      }
+    }
+
+    // If we found duplicates, save the cleaned index
+    if (deduplicatedIndex.length !== index.length) {
+      await this._storage?.set(this.CATEGORIES_INDEX_KEY, deduplicatedIndex);
+      index = deduplicatedIndex;
+    }
+
     const categories: NewCategory[] = [];
 
     for (const id of index) {
@@ -169,7 +188,15 @@ export class NewCategoryService {
 
     // Update index
     const index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
-    if (!index.some((id: any) => id.toString() === guidString)) {
+
+    // Check if this ID already exists in the index (handle different GUID formats)
+    const existingIndex = index.findIndex((id: any) => {
+      const idStr = typeof id === 'string' ? id : (id as any).value || id.toString();
+      return idStr === guidString;
+    });
+
+    // Only add to index if it doesn't exist
+    if (existingIndex === -1) {
       index.push(category.id);
       await this._storage?.set(this.CATEGORIES_INDEX_KEY, index);
     }
