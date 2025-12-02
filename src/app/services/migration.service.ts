@@ -89,19 +89,13 @@ export class MigrationService {
 
     // Create NewCategoryItem
     const newItem: NewCategoryItem = {
-      id: tree.id, // Keep the same ID if possible, or generate new one? Keeping same ID is better for relationships if they were preserved, but here relationships are via groupId.
-      // Actually, legacy uses groupId for parent-child. New uses parentId.
-      // We need to map groupId to parentId.
-      // Since we are iterating all trees, we can just copy the ID.
-      // However, we need to ensure the parent exists.
-      // If we migrate top-down (Family -> Genus -> Species), parents should exist.
-      // Legacy trees are sorted by title in getTrees(). We might need to sort by Type/Level.
+      id: tree.id,
       name: tree.title,
       level: level,
       newCategoryId: newCategoryId,
-      parentId: tree.groupId ? Guid.parse(tree.groupId['value']) : undefined, // Legacy groupId is the parent ID
+      parentId: tree.groupId ? Guid.parse(tree.groupId['value']) : undefined, 
       notes: this.formatTreeInfo(tree),
-      createDate: new Date(), // Or try to find a date in legacy? Legacy doesn't seem to have create date on Tree, only on Photo.
+      createDate: new Date(),
     };
 
     // Migrate Images
@@ -157,24 +151,10 @@ export class MigrationService {
     const newId = Guid.create();
     const newImage: NewImage = {
       id: newId,
-      format: 'jpeg', // Assumed from legacy save
-      webPath: photo.webviewPath || '', // Legacy has webviewPath.
-      // Note: Legacy stores files in Directory.Data. New system also seems to use Directory.Data (implied by not seeing directory arg in NewImageService, but it uses Storage).
-      // Wait, NewImageService just stores metadata in Storage. It doesn't seem to handle file moving?
-      // NewImageService.saveImageToStorage just saves the object.
-      // The actual file needs to be there.
-      // Legacy photo.filepath is the filename (e.g. "123123.jpeg").
-      // NewImage.webPath seems to be the full path or webview path.
-      // If the file is already in Directory.Data, we might just need to point to it.
-      // However, NewImage interface has `webPath`.
-      // Let's assume we just copy the path.
+      format: 'jpeg',
+      webPath: photo.webviewPath || '', 
       isHighlight: false,
     };
-
-    // We might need to ensure the file exists or copy it if the new system expects a different naming convention.
-    // Legacy: `fileName` (timestamp.jpeg).
-    // New: `webPath`.
-    // If we just keep the file as is, it should be fine.
 
     await this.imageService.addImage(newImage);
     return newId;
@@ -184,21 +164,12 @@ export class MigrationService {
     const newId = Guid.create();
     const newAudio: AudioRecording = {
       id: newId,
-      name: note.recordingName, // Legacy stores filename here
+      name: note.recordingName,
       directory: Directory.Data,
-      data: '', // Legacy doesn't store data in memory, it reads from file.
-      // Looking at NewAudioService, it just saves the object.
-      // Looking at AudioRecording interface, data is string | Blob.
-      // If it's just metadata, maybe we don't need to load the data.
+      data: '',
       index: 0,
       isPlaying: false,
-    } as any; // Cast to any to avoid strict type checks if I missed something, but try to be correct.
-
-    // Actually, let's look at AudioRecording interface again.
-    // import { Directory } from '@capacitor/filesystem';
-    // export interface AudioRecording { ... directory: Directory; ... }
-
-    // I need to import Directory in this file.
+    } as any; 
 
     await this.audioService.addAudioFile(newAudio);
     return newId;
