@@ -38,6 +38,7 @@ import { NewCategory, NewCategoryItem } from 'src/app/models/new-category.interf
 import { ItemsService } from 'src/app/services/items.service';
 import { DatabaseService } from 'src/app/services/legacy/database.service';
 import { MapService } from 'src/app/services/map.service';
+import { MigrationService } from 'src/app/services/migration.service';
 import { NewAudioService } from 'src/app/services/new-audio.service';
 import { NewCategoryService } from 'src/app/services/new-category.service';
 import { NewImageService } from 'src/app/services/new-image.service';
@@ -85,6 +86,7 @@ export class HomePage implements ViewWillEnter {
   private audioService = inject(NewAudioService);
   private categoryService = inject(NewCategoryService);
   private imageService = inject(NewImageService);
+  private migrationService = inject(MigrationService);
   private router = inject(Router);
   private platform = inject(Platform);
   private alertController = inject(AlertController);
@@ -259,5 +261,10 @@ export class HomePage implements ViewWillEnter {
       };
     });
     this.categories.set(structures);
+  }
+
+  async migrateData() {
+    await this.migrationService.migrate();
+    await this.getItems(); // Refresh items after migration
   }
 }
