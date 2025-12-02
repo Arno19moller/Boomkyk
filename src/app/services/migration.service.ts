@@ -52,12 +52,11 @@ export class MigrationService {
 
       // 3. Migrate each tree
       for (const tree of trees) {
-        this.loadingService.loadingMessage = `Migrating ${tree.title}...`;
         await this.migrateTree(tree, familyCategory.id, genusCategory.id, speciesCategory.id);
       }
 
       console.log('Migration completed successfully.');
-      // alert('Migration completed successfully!');
+      alert('Migration completed successfully!');
     } catch (error) {
       console.error('Migration failed:', error);
       alert(`Migration failed: ${error}`);

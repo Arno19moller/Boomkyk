@@ -176,7 +176,7 @@ export class HomePage implements ViewWillEnter {
   }
 
   async getItems() {
-    let items = await this.itemsService.getItems();
+    let items = await this.itemsService.getItems();    
 
     items = items.filter((item) => item.level === 0);
 

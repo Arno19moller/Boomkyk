@@ -44,14 +44,7 @@ export class NewCategoryService {
       // Define Category Items
       const fam1: NewCategoryItem = {
         id: Guid.create(),
-        name: 'Fam 1',
-        level: 2,
-        newCategoryId: family.id,
-        notes: '',
-      };
-      const fam2: NewCategoryItem = {
-        id: Guid.create(),
-        name: 'Fam 2',
+        name: 'Family 1',
         level: 2,
         newCategoryId: family.id,
         notes: '',
@@ -64,30 +57,6 @@ export class NewCategoryService {
         parentId: fam1.id,
         notes: '',
       };
-      const gen2: NewCategoryItem = {
-        id: Guid.create(),
-        name: 'Genus 2',
-        level: 1,
-        newCategoryId: genus.id,
-        parentId: fam2.id,
-        notes: '',
-      };
-      const spec1: NewCategoryItem = {
-        id: Guid.create(),
-        name: 'Species 1',
-        level: 0,
-        newCategoryId: species.id, // Corrected to point to Species Category
-        parentId: gen1.id,
-        notes: '',
-      };
-      const spec2: NewCategoryItem = {
-        id: Guid.create(),
-        name: 'Species 2',
-        level: 0,
-        newCategoryId: species.id, // Corrected to point to Species Category
-        parentId: gen2.id,
-        notes: '',
-      };
 
       // Save Categories
       await this.saveCategory(family);
@@ -96,11 +65,7 @@ export class NewCategoryService {
 
       // Save Category Items
       await this.saveCategoryItem(fam1);
-      await this.saveCategoryItem(fam2);
       await this.saveCategoryItem(gen1);
-      await this.saveCategoryItem(gen2);
-      await this.saveCategoryItem(spec1);
-      await this.saveCategoryItem(spec2);
     }
   }
 

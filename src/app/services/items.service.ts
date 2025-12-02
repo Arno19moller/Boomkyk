@@ -44,7 +44,7 @@ export class ItemsService {
       const items: NewCategoryItem[] = [];
 
       for (const indexEntry of index) {
-        const item = await this.getItemByGuid(Guid.parse(indexEntry.id.toString()));
+        const item = await this.getItemByGuid(indexEntry.id);
 
         if (item) {
           items.push(item);
