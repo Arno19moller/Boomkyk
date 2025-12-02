@@ -44,7 +44,8 @@ export class ItemsService {
       const items: NewCategoryItem[] = [];
 
       for (const indexEntry of index) {
-        const item = await this.getItemByGuid(indexEntry.id);
+        const item = await this.getItemByGuid(Guid.parse(indexEntry.id.toString()));
+
         if (item) {
           items.push(item);
         }
@@ -124,9 +125,10 @@ export class ItemsService {
     }
     try {
       await this.initialiseStorage();
+      const id = item.id as any;
 
       // Store the full item
-      await this._storage?.set(`${this.ITEM_PREFIX}${item.id.toString()}`, item);
+      await this._storage?.set(`${this.ITEM_PREFIX}${id.value.toString()}`, item);
 
       // Update the index
       const index = await this.getItemsIndex();

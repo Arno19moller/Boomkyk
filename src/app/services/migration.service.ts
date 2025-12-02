@@ -9,6 +9,7 @@ import { VoiceNote } from '../models/legacy/voice-notes.interface';
 import { NewCategoryItem } from '../models/new-category.interface';
 import { NewImage } from '../models/new-image.interface';
 import { Pin } from '../models/pin.interface';
+import { ItemsService } from './items.service';
 import { DatabaseService } from './legacy/database.service';
 import { LoadingService } from './loading.service';
 import { MapService } from './map.service';
@@ -21,6 +22,7 @@ import { NewImageService } from './new-image.service';
 })
 export class MigrationService {
   private databaseService = inject(DatabaseService);
+  private itemsService = inject(ItemsService);
   private categoryService = inject(NewCategoryService);
   private imageService = inject(NewImageService);
   private audioService = inject(NewAudioService);
@@ -55,7 +57,7 @@ export class MigrationService {
       }
 
       console.log('Migration completed successfully.');
-      alert('Migration completed successfully!');
+      // alert('Migration completed successfully!');
     } catch (error) {
       console.error('Migration failed:', error);
       alert(`Migration failed: ${error}`);
@@ -68,6 +70,7 @@ export class MigrationService {
     // Map TreeType to Category ID and Level
     let newCategoryId: Guid;
     let level: number;
+    let isSpecies = false;
 
     switch (tree.type) {
       case TreeType.Family:
@@ -81,6 +84,7 @@ export class MigrationService {
       case TreeType.Species:
         newCategoryId = speciesCatId;
         level = 0;
+        isSpecies = true;
         break;
       default:
         console.warn(`Unknown TreeType for tree ${tree.title}. Skipping.`);
@@ -93,7 +97,7 @@ export class MigrationService {
       name: tree.title,
       level: level,
       newCategoryId: newCategoryId,
-      parentId: tree.groupId ? Guid.parse(tree.groupId['value']) : undefined, 
+      parentId: tree.groupId ? Guid.parse(tree.groupId['value']) : undefined,
       notes: this.formatTreeInfo(tree),
       createDate: new Date(),
     };
@@ -133,7 +137,8 @@ export class MigrationService {
     }
 
     // Save the new item
-    await this.categoryService.saveCategoryItem(newItem);
+    if (isSpecies) await this.itemsService.addItem(newItem);
+    else await this.categoryService.saveCategoryItem(newItem);
   }
 
   private formatTreeInfo(tree: Tree): string {
@@ -152,7 +157,7 @@ export class MigrationService {
     const newImage: NewImage = {
       id: newId,
       format: 'jpeg',
-      webPath: photo.webviewPath || '', 
+      webPath: photo.webviewPath || '',
       isHighlight: false,
     };
 
@@ -169,7 +174,7 @@ export class MigrationService {
       data: '',
       index: 0,
       isPlaying: false,
-    } as any; 
+    } as any;
 
     await this.audioService.addAudioFile(newAudio);
     return newId;

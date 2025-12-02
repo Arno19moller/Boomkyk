@@ -9,6 +9,7 @@ import { LoadingService } from './loading.service';
   providedIn: 'root',
 })
 export class NewCategoryService {
+  private seeded: boolean = false;
   private storage = inject(Storage);
   private loadingService = inject(LoadingService);
 
@@ -33,7 +34,8 @@ export class NewCategoryService {
   private async seedDatabase(): Promise<void> {
     const categoriesIndex = await this._storage?.get(this.CATEGORIES_INDEX_KEY);
 
-    if (!categoriesIndex || categoriesIndex.length === 0) {
+    if ((!categoriesIndex || categoriesIndex.length === 0) && !this.seeded) {
+      this.seeded = true;
       // Define Categories
       const family: NewCategory = { id: Guid.create(), name: 'Family', level: 2 };
       const genus: NewCategory = { id: Guid.create(), name: 'Genus', level: 1, parentId: family.id };
@@ -300,7 +302,8 @@ export class NewCategoryService {
       this.loadingService.loadingMessage = 'Saving category item...';
     }
     try {
-      const guidString = item.id.toString();
+      const id = item.id as any;
+      const guidString = id.value.toString();
 
       // Check if the categoryItem already exists
       const existingItem = await this._storage?.get(`${this.CATEGORY_ITEM_PREFIX}${guidString}`);
