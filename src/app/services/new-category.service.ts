@@ -1,19 +1,24 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { Guid } from 'guid-typescript';
 import { NewCategory, NewCategoryItem } from '../models/new-category.interface';
+
+import { LoadingService } from './loading.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NewCategoryService {
+  private storage = inject(Storage);
+  private loadingService = inject(LoadingService);
+
   private _storage: Storage | null = null;
   private readonly CATEGORIES_INDEX_KEY = 'categories_index';
   private readonly CATEGORY_ITEMS_INDEX_KEY = 'category_items_index';
   private readonly CATEGORY_PREFIX = 'category_';
   private readonly CATEGORY_ITEM_PREFIX = 'category_item_';
 
-  constructor(private storage: Storage) {
+  constructor() {
     this.initialiseStorage();
   }
 
@@ -98,58 +103,80 @@ export class NewCategoryService {
   }
 
   public async getCategories(): Promise<NewCategory[]> {
-    await this.initialiseStorage();
-    let index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Loading categories...';
+    }
+    try {
+      await this.initialiseStorage();
+      let index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
 
-    // Deduplicate the index by GUID string value
-    const seenIds = new Set<string>();
-    const deduplicatedIndex: any[] = [];
+      // Deduplicate the index by GUID string value
+      const seenIds = new Set<string>();
+      const deduplicatedIndex: any[] = [];
 
-    for (const id of index) {
-      const guidString = typeof id === 'string' ? id : (id as any).value || id.toString();
-      if (!seenIds.has(guidString)) {
-        seenIds.add(guidString);
-        deduplicatedIndex.push(id);
+      for (const id of index) {
+        const guidString = typeof id === 'string' ? id : (id as any).value || id.toString();
+        if (!seenIds.has(guidString)) {
+          seenIds.add(guidString);
+          deduplicatedIndex.push(id);
+        }
+      }
+
+      // If we found duplicates, save the cleaned index
+      if (deduplicatedIndex.length !== index.length) {
+        await this._storage?.set(this.CATEGORIES_INDEX_KEY, deduplicatedIndex);
+        index = deduplicatedIndex;
+      }
+
+      const categories: NewCategory[] = [];
+
+      for (const id of index) {
+        const guidString = typeof id === 'string' ? id : (id as any).value || id.toString();
+        const category = await this._storage?.get(`${this.CATEGORY_PREFIX}${guidString}`);
+        if (category) {
+          categories.push(this.deserializeCategory(category));
+        }
+      }
+
+      categories.sort((a, b) => a.level - b.level);
+      categories.sort((a, b) => a.name.localeCompare(b.name));
+      return categories;
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
       }
     }
-
-    // If we found duplicates, save the cleaned index
-    if (deduplicatedIndex.length !== index.length) {
-      await this._storage?.set(this.CATEGORIES_INDEX_KEY, deduplicatedIndex);
-      index = deduplicatedIndex;
-    }
-
-    const categories: NewCategory[] = [];
-
-    for (const id of index) {
-      const guidString = typeof id === 'string' ? id : (id as any).value || id.toString();
-      const category = await this._storage?.get(`${this.CATEGORY_PREFIX}${guidString}`);
-      if (category) {
-        categories.push(this.deserializeCategory(category));
-      }
-    }
-
-    categories.sort((a, b) => a.level - b.level);
-    categories.sort((a, b) => a.name.localeCompare(b.name));
-    return categories;
   }
 
   public async getCategoryItems(): Promise<NewCategoryItem[]> {
-    await this.initialiseStorage();
-    const index = (await this._storage?.get(this.CATEGORY_ITEMS_INDEX_KEY)) || [];
-    const items: NewCategoryItem[] = [];
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Loading category items...';
+    }
+    try {
+      await this.initialiseStorage();
+      const index = (await this._storage?.get(this.CATEGORY_ITEMS_INDEX_KEY)) || [];
+      const items: NewCategoryItem[] = [];
 
-    for (const id of index) {
-      const guidString = typeof id === 'string' ? id : (id as any).value || id.toString();
-      const item = await this._storage?.get(`${this.CATEGORY_ITEM_PREFIX}${guidString}`);
-      if (item) {
-        items.push(this.deserializeCategoryItem(item));
+      for (const id of index) {
+        const guidString = typeof id === 'string' ? id : (id as any).value || id.toString();
+        const item = await this._storage?.get(`${this.CATEGORY_ITEM_PREFIX}${guidString}`);
+        if (item) {
+          items.push(this.deserializeCategoryItem(item));
+        }
+      }
+
+      items.sort((a, b) => a.level - b.level);
+      items.sort((a, b) => a.name.localeCompare(b.name));
+      return items;
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
       }
     }
-
-    items.sort((a, b) => a.level - b.level);
-    items.sort((a, b) => a.name.localeCompare(b.name));
-    return items;
   }
 
   public async getCategoryItemsByLevel(level: number): Promise<NewCategoryItem[]> {
@@ -183,36 +210,58 @@ export class NewCategoryService {
 
   // Helper to save a category and update index
   public async saveCategory(category: NewCategory): Promise<void> {
-    const guidString = category.id.toString();
-    await this._storage?.set(`${this.CATEGORY_PREFIX}${guidString}`, category);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Saving category...';
+    }
+    try {
+      const guidString = category.id.toString();
+      await this._storage?.set(`${this.CATEGORY_PREFIX}${guidString}`, category);
 
-    // Update index
-    const index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
+      // Update index
+      const index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
 
-    // Check if this ID already exists in the index (handle different GUID formats)
-    const existingIndex = index.findIndex((id: any) => {
-      const idStr = typeof id === 'string' ? id : (id as any).value || id.toString();
-      return idStr === guidString;
-    });
+      // Check if this ID already exists in the index (handle different GUID formats)
+      const existingIndex = index.findIndex((id: any) => {
+        const idStr = typeof id === 'string' ? id : (id as any).value || id.toString();
+        return idStr === guidString;
+      });
 
-    // Only add to index if it doesn't exist
-    if (existingIndex === -1) {
-      index.push(category.id);
-      await this._storage?.set(this.CATEGORIES_INDEX_KEY, index);
+      // Only add to index if it doesn't exist
+      if (existingIndex === -1) {
+        index.push(category.id);
+        await this._storage?.set(this.CATEGORIES_INDEX_KEY, index);
+      }
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
     }
   }
 
   async deleteCategory(id: Guid): Promise<void> {
-    const guidString = id.toString();
-    await this._storage?.remove(`${this.CATEGORY_PREFIX}${guidString}`);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Deleting category...';
+    }
+    try {
+      const guidString = id.toString();
+      await this._storage?.remove(`${this.CATEGORY_PREFIX}${guidString}`);
 
-    // Update index
-    let index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
-    index = index.filter((itemId: any) => {
-      const idStr = typeof itemId === 'string' ? itemId : (itemId as any).value || itemId.toString();
-      return idStr !== guidString;
-    });
-    await this._storage?.set(this.CATEGORIES_INDEX_KEY, index);
+      // Update index
+      let index = (await this._storage?.get(this.CATEGORIES_INDEX_KEY)) || [];
+      index = index.filter((itemId: any) => {
+        const idStr = typeof itemId === 'string' ? itemId : (itemId as any).value || itemId.toString();
+        return idStr !== guidString;
+      });
+      await this._storage?.set(this.CATEGORIES_INDEX_KEY, index);
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
+    }
   }
 
   public async canDeleteCategory(categoryId: Guid): Promise<boolean> {
@@ -245,28 +294,54 @@ export class NewCategoryService {
 
   // Helper to save a category item and update index
   async saveCategoryItem(item: NewCategoryItem): Promise<void> {
-    const guidString = item.id.toString();
-    await this._storage?.set(`${this.CATEGORY_ITEM_PREFIX}${guidString}`, item);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Saving category item...';
+    }
+    try {
+      const guidString = item.id.toString();
 
-    // Update index
-    const index = (await this._storage?.get(this.CATEGORY_ITEMS_INDEX_KEY)) || [];
-    if (!index.some((id: any) => id.toString() === guidString)) {
-      index.push(item.id);
-      await this._storage?.set(this.CATEGORY_ITEMS_INDEX_KEY, index);
+      // Check if the categoryItem already exists
+      const existingItem = await this._storage?.get(`${this.CATEGORY_ITEM_PREFIX}${guidString}`);
+      await this._storage?.set(`${this.CATEGORY_ITEM_PREFIX}${guidString}`, item);
+
+      if (!existingItem) {
+        const index = (await this._storage?.get(this.CATEGORY_ITEMS_INDEX_KEY)) || [];
+        if (!index.some((id: any) => id.toString() === guidString)) {
+          index.push(item.id);
+          await this._storage?.set(this.CATEGORY_ITEMS_INDEX_KEY, index);
+        }
+      }
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
     }
   }
 
   async deleteCategoryItem(id: Guid): Promise<void> {
-    const guidString = id.toString();
-    await this._storage?.remove(`${this.CATEGORY_ITEM_PREFIX}${guidString}`);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Deleting category item...';
+    }
+    try {
+      const guidString = id.toString();
+      await this._storage?.remove(`${this.CATEGORY_ITEM_PREFIX}${guidString}`);
 
-    // Update index
-    let index = (await this._storage?.get(this.CATEGORY_ITEMS_INDEX_KEY)) || [];
-    index = index.filter((itemId: any) => {
-      const idStr = typeof itemId === 'string' ? itemId : (itemId as any).value || itemId.toString();
-      return idStr !== guidString;
-    });
-    await this._storage?.set(this.CATEGORY_ITEMS_INDEX_KEY, index);
+      // Update index
+      let index = (await this._storage?.get(this.CATEGORY_ITEMS_INDEX_KEY)) || [];
+      index = index.filter((itemId: any) => {
+        const idStr = typeof itemId === 'string' ? itemId : (itemId as any).value || itemId.toString();
+        return idStr !== guidString;
+      });
+      await this._storage?.set(this.CATEGORY_ITEMS_INDEX_KEY, index);
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
+    }
   }
 
   private deserializeCategory(data: any): NewCategory {

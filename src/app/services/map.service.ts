@@ -1,16 +1,21 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { Guid } from 'guid-typescript';
 import { Pin } from '../models/pin.interface';
+
+import { LoadingService } from './loading.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MapService {
+  private storage = inject(Storage);
+  private loadingService = inject(LoadingService);
+
   private _storage: Storage | null = null;
   private readonly PIN_PREFIX = 'pin_';
 
-  constructor(private storage: Storage) {
+  constructor() {
     this.initialiseStorage();
   }
 
@@ -22,42 +27,97 @@ export class MapService {
   }
 
   async getPinsByGuid(guids: Guid[]): Promise<Pin[]> {
-    await this.initialiseStorage();
-    const pins: Pin[] = [];
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Loading pins...';
+    }
+    try {
+      await this.initialiseStorage();
+      const pins: Pin[] = [];
 
-    for (const guid of guids) {
-      const guidString = typeof guid === 'string' ? guid : (guid as any).value || guid.toString();
-      const pin = await this._storage?.get(`${this.PIN_PREFIX}${guidString}`);
+      for (const guid of guids) {
+        const guidString = typeof guid === 'string' ? guid : (guid as any).value || guid.toString();
+        const pin = await this._storage?.get(`${this.PIN_PREFIX}${guidString}`);
 
-      if (pin) {
-        pins.push(this.deserializePin(pin));
+        if (pin) {
+          pins.push(this.deserializePin(pin));
+        }
+      }
+
+      return pins;
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
       }
     }
-
-    return pins;
   }
 
   async setPins(pins: Pin[]) {
-    await this.addPins(pins);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Saving pins...';
+    }
+    try {
+      await this.addPins(pins);
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
+    }
   }
 
   async addPin(pin: Pin) {
-    await this.initialiseStorage();
-    await this.savePinToStorage(pin);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Adding pin...';
+    }
+    try {
+      await this.initialiseStorage();
+      await this.savePinToStorage(pin);
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
+    }
   }
 
   async addPins(pins: Pin[]) {
-    await this.initialiseStorage();
-    for (const pin of pins) {
-      await this.savePinToStorage(pin);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Adding pins...';
+    }
+    try {
+      await this.initialiseStorage();
+      for (const pin of pins) {
+        await this.savePinToStorage(pin);
+      }
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
     }
   }
 
   async removePin(removePinId: Guid) {
-    await this.initialiseStorage();
-    const guidString =
-      typeof removePinId === 'string' ? removePinId : (removePinId as any).value || removePinId.toString();
-    await this._storage?.remove(`${this.PIN_PREFIX}${guidString}`);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Removing pin...';
+    }
+    try {
+      await this.initialiseStorage();
+      const guidString =
+        typeof removePinId === 'string' ? removePinId : (removePinId as any).value || removePinId.toString();
+      await this._storage?.remove(`${this.PIN_PREFIX}${guidString}`);
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
+    }
   }
 
   private async savePinToStorage(pin: Pin) {

@@ -8,6 +8,7 @@ import { PopupComponent } from 'src/app/components/popup/popup.component';
 import { LongPressDirective } from 'src/app/directives/long-press.directive';
 import { NewCategoryItem } from 'src/app/models/new-category.interface';
 import { NewImage } from 'src/app/models/new-image.interface';
+import { LoadingService } from 'src/app/services/loading.service';
 import { NewImageService } from 'src/app/services/new-image.service';
 
 @Component({
@@ -31,6 +32,7 @@ import { NewImageService } from 'src/app/services/new-image.service';
 })
 export class ItemImageComponent implements OnInit {
   private newImageService = inject(NewImageService);
+  private loadingService = inject(LoadingService);
 
   selectedCategoryItem = model.required<NewCategoryItem | undefined>();
   images = model.required<NewImage[]>();
@@ -95,10 +97,16 @@ export class ItemImageComponent implements OnInit {
   }
 
   private async addPhotosFromGallery(): Promise<void> {
+    setTimeout(() => {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Adding images...';
+    }, 200);
+
     const images = await Camera.pickImages({
       quality: 60,
       limit: 10,
     }).catch(() => {
+      this.loadingService.isLoading = false;
       return;
     });
 
@@ -116,11 +124,17 @@ export class ItemImageComponent implements OnInit {
   }
 
   private async addPhotosFromCamera(): Promise<void> {
+    setTimeout(() => {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Adding image...';
+    }, 200);
+
     const image = await Camera.getPhoto({
       resultType: CameraResultType.Uri,
       source: CameraSource.Camera,
       quality: 60,
     }).catch(() => {
+      this.loadingService.isLoading = false;
       return;
     });
 
@@ -140,6 +154,7 @@ export class ItemImageComponent implements OnInit {
     this.images.update((images) => {
       return [...images, ...newImages];
     });
+    this.loadingService.isLoading = false;
   }
 
   handleImageError(event: any) {

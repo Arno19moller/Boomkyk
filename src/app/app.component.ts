@@ -34,6 +34,7 @@ import {
   triangle,
 } from 'ionicons/icons';
 import { DatabaseService } from './services/legacy/database.service';
+import { LoadingService } from './services/loading.service';
 
 @Component({
   selector: 'app-root',
@@ -43,6 +44,7 @@ import { DatabaseService } from './services/legacy/database.service';
 })
 export class AppComponent implements OnInit {
   public databaseService = inject(DatabaseService);
+  public loadingService = inject(LoadingService);
 
   constructor() {
     addIcons({

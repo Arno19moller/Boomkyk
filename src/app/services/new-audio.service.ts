@@ -1,16 +1,21 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { Guid } from 'guid-typescript';
 import { AudioRecording } from '../models/audio-recording.interface';
+
+import { LoadingService } from './loading.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NewAudioService {
+  private storage = inject(Storage);
+  private loadingService = inject(LoadingService);
+
   private _storage: Storage | null = null;
   private readonly AUDIO_PREFIX = 'audio_';
 
-  constructor(private storage: Storage) {
+  constructor() {
     this.initialiseStorage();
   }
 
@@ -22,42 +27,97 @@ export class NewAudioService {
   }
 
   async getAudioFilesByGuid(guids: Guid[]): Promise<AudioRecording[]> {
-    await this.initialiseStorage();
-    const recordings: AudioRecording[] = [];
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Loading audio...';
+    }
+    try {
+      await this.initialiseStorage();
+      const recordings: AudioRecording[] = [];
 
-    for (const guid of guids) {
-      const guidString = typeof guid === 'string' ? guid : (guid as any).value || guid.toString();
-      const recording = await this._storage?.get(`${this.AUDIO_PREFIX}${guidString}`);
+      for (const guid of guids) {
+        const guidString = typeof guid === 'string' ? guid : (guid as any).value || guid.toString();
+        const recording = await this._storage?.get(`${this.AUDIO_PREFIX}${guidString}`);
 
-      if (recording) {
-        recordings.push(this.deserializeAudio(recording));
+        if (recording) {
+          recordings.push(this.deserializeAudio(recording));
+        }
+      }
+
+      return recordings;
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
       }
     }
-
-    return recordings;
   }
 
   async setAudioFiles(audioFiles: AudioRecording[]) {
-    await this.addAudioFiles(audioFiles);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Saving audio...';
+    }
+    try {
+      await this.addAudioFiles(audioFiles);
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
+    }
   }
 
   async addAudioFile(audioFile: AudioRecording) {
-    await this.initialiseStorage();
-    await this.saveAudioToStorage(audioFile);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Adding audio...';
+    }
+    try {
+      await this.initialiseStorage();
+      await this.saveAudioToStorage(audioFile);
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
+    }
   }
 
   async addAudioFiles(audioFiles: AudioRecording[]) {
-    await this.initialiseStorage();
-    for (const audioFile of audioFiles) {
-      await this.saveAudioToStorage(audioFile);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Adding audio...';
+    }
+    try {
+      await this.initialiseStorage();
+      for (const audioFile of audioFiles) {
+        await this.saveAudioToStorage(audioFile);
+      }
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
     }
   }
 
   async removeAudioFile(audioFileId: Guid) {
-    await this.initialiseStorage();
-    const guidString =
-      typeof audioFileId === 'string' ? audioFileId : (audioFileId as any).value || audioFileId.toString();
-    await this._storage?.remove(`${this.AUDIO_PREFIX}${guidString}`);
+    const shouldHandleLoading = !this.loadingService.isLoading;
+    if (shouldHandleLoading) {
+      this.loadingService.isLoading = true;
+      this.loadingService.loadingMessage = 'Removing audio...';
+    }
+    try {
+      await this.initialiseStorage();
+      const guidString =
+        typeof audioFileId === 'string' ? audioFileId : (audioFileId as any).value || audioFileId.toString();
+      await this._storage?.remove(`${this.AUDIO_PREFIX}${guidString}`);
+    } finally {
+      if (shouldHandleLoading) {
+        this.loadingService.isLoading = false;
+      }
+    }
   }
 
   private async saveAudioToStorage(audioFile: AudioRecording) {
