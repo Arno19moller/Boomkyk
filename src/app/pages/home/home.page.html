@@ -1,0 +1,138 @@
+<ion-menu contentId="main-content">
+  <ion-header>
+    <ion-toolbar>
+      <div class="icon-container">
+        <ion-img src="../../../assets/icon/icon-only.png" class="ion-image"></ion-img>
+        <ion-title> BoomSpoor </ion-title>
+        <ion-menu-toggle>
+          <ion-button shape="round" fill="clear">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-menu-toggle>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    <ion-button expand="full" fill="clear" color="dark" style="border-radius: 7px;" (click)="menuButtonClicked('level')">
+      <div expand="full" fill="clear" color="dark" class="menu-button">
+        <ion-icon name="list-outline" style="margin-right: 15px;"></ion-icon>
+        <span>Levels</span>
+      </div>
+    </ion-button>
+    <ion-button expand="full" fill="clear" color="dark" style="border-radius: 7px;" (click)="menuButtonClicked('merge')">
+      <div expand="full" fill="clear" color="dark" class="menu-button">
+        <ion-icon name="git-merge" style="margin-right: 15px;"></ion-icon>
+        <span>Merge Items</span>
+      </div>
+    </ion-button>
+    <ion-button expand="full" fill="clear" color="dark" style="border-radius: 7px;" (click)="menuButtonClicked('categories')">
+      <div expand="full" fill="clear" color="dark" class="menu-button">
+        <ion-icon name="grid-outline" style="margin-right: 15px;"></ion-icon>
+        <span>Categories</span>
+      </div>
+    </ion-button>
+    <ion-button expand="full" fill="clear" color="danger" style="border-radius: 7px;" (click)="migrateData()">
+      <div expand="full" fill="clear" color="danger" class="menu-button">
+        <ion-icon name="refresh-outline" style="margin-right: 15px;"></ion-icon>
+        <span>Migrate Data</span>
+      </div>
+    </ion-button>
+  </ion-content>
+</ion-menu>
+<div class="ion-page" id="main-content">
+  <ion-header [translucent]="true">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <div class="icon-container">
+        <ion-img src="../../../assets/icon/icon-only.png" class="ion-image"></ion-img>
+        <ion-title> BoomSpoor </ion-title>
+      </div>
+      <ion-buttons slot="end">
+        <ion-button shape="round" (click)="isOpen.set(true)" color="primary">
+          <ion-icon slot="icon-only" name="filter-circle-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-toolbar>
+      <ion-searchbar
+        placeholder="Filter"
+        animated="true"
+        [debounce]="250"
+        (ionInput)="filterGroups($event.target.value)"
+      ></ion-searchbar>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content [fullscreen]="true">
+    <ion-grid>
+      <ion-row>
+        @for (item of items(); track $index) {
+        <ion-col size="6" appLongPress (longPress)="openActionSheet(item)">
+          <ion-card class="item-card" [attr.id]="item.id['value']" [routerLink]="['/view', { id: item.id['value'] }]">
+            @if(item.highlightImage && item.highlightImage.webPath != ''){
+            <ion-img
+              class="item-image"
+              [src]="item.highlightImage.webPath"
+              loading="lazy"
+              (ionError)="handleImageError($event)"
+            ></ion-img>
+            } @else {
+            <ion-img class="item-image" src="../../../assets/images/image-not-found.jpg" loading="lazy"></ion-img>
+            }
+            <ion-card-header>
+              <sub style="margin: 0px; display: flex; justify-content: start; align-items: center; width: 100%">
+                @for (hierarchy of item.categoryHierarchy; track $index) { {{hierarchy}} @if (!$last) {
+                <ion-icon name="chevron-forward-outline"></ion-icon>
+                } }
+              </sub>
+              <ion-card-title> {{item.name}} </ion-card-title>
+            </ion-card-header>
+            <sub style="margin: 0px; margin: 0px; position: absolute; bottom: 10px; right: 5px">
+              {{item.createDate | date: 'yyyy-MM-dd'}}
+            </sub>
+          </ion-card>
+        </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+
+    @if(filteredStructures()){
+    <h5>hellooo</h5>
+    }
+
+    <app-filter-bottom-sheet
+      [(isOpen)]="isOpen"
+      [structures]="categories()"
+      [(filters)]="filters"
+    ></app-filter-bottom-sheet>
+
+    <ion-fab slot="fixed" horizontal="center" vertical="bottom">
+      <ion-fab-button>
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-list side="top">
+        <ion-fab-button [routerLink]="['/create']" color="primary">
+          <ion-icon name="camera-outline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab-list>
+    </ion-fab>
+  </ion-content>
+</div>
+
+<!-- Action Sheet -->
+<app-action-sheet
+  [type]="actionSheetType"
+  [(isOpen)]="isActionSheetOpen"
+  (closed)="actionSheetClosed($event)"
+></app-action-sheet>
+
+<!-- Confirmation Popup -->
+<app-popup
+  [(isAlertOpen)]="openConfirmDelete"
+  [heading]="'Delete'"
+  [body]="confirmDeleteBody"
+  [buttonType]="'confirm'"
+  (popupClosed)="deletePopupClosed($event)"
+></app-popup>

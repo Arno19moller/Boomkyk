@@ -1,0 +1,131 @@
+@if (editable()) {
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="modalClosed.emit(undefined)">
+          Cancel
+          <ion-icon name="close" slot="start"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
+        <ion-button (click)="modalClosed.emit(mapPins)">
+          Save
+          <ion-icon name="save" slot="start"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content style="height: 100dvh; overflow: auto">
+    <ion-card>
+      <ion-card-header style="padding-bottom: 0">
+        Annotate
+        <ion-button fill="clear" size="large" shape="round" id="info" style="position: absolute; top: -8px; right: 5px">
+          <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
+        </ion-button>
+      </ion-card-header>
+      <ion-list>
+        <!-- Notes -->
+        <ion-item lines="none">
+          <ion-textarea
+            fill="outline"
+            label="Notes"
+            labelPlacement="stacked"
+            autocapitalize="sentences"
+            style="margin-top: 10px"
+            [disabled]="currentMarker == undefined"
+            [placeholder]="currentMarker != undefined ? 'Enter notes here' : 'Add or select a pin to annotate'"
+            [(ngModel)]="notes"
+            (ionChange)="notesChanged()"
+          ></ion-textarea>
+
+          <!-- Date Time -->
+          <ion-datetime-button
+            slot="end"
+            datetime="datetime"
+            [disabled]="currentMarker == undefined"
+          ></ion-datetime-button>
+        </ion-item>
+
+        <ion-button
+          fill="outline"
+          color="danger"
+          expand="block"
+          [disabled]="currentMarker == undefined"
+          style="padding: 0 16px"
+          (click)="deleteClicked()"
+        >
+          <ion-icon name="trash"></ion-icon>
+          Delete
+        </ion-button>
+      </ion-list>
+    </ion-card>
+    <ion-card>
+      <ng-container *ngTemplateOutlet="map"></ng-container>
+    </ion-card>
+    <ion-card style="margin-bottom: 100px">
+      <ion-list>
+        @if (isMapLoaded) {
+          <ion-item lines="none">
+            <ion-toggle
+              #locationToggle
+              justify="space-between"
+              color="success"
+              [disabled]="loading"
+              [enableOnOffLabels]="true"
+              [checked]="saveCurrentLocation"
+              (ionChange)="locationToggleChanged(locationToggle.checked)"
+            >
+              Save Current Location
+            </ion-toggle>
+          </ion-item>
+          <sub style="margin-left: 15px; margin-top: -15px">Or tap and hold to add location</sub>
+        }
+      </ion-list>
+    </ion-card>
+
+    <!-- Date popup -->
+    <ion-modal [keepContentsMounted]="true">
+      <ng-template>
+        <ion-datetime
+          id="datetime"
+          presentation="date"
+          [showDefaultButtons]="true"
+          [value]="dateString"
+          (ionChange)="dateTimeChanged($event)"
+        ></ion-datetime>
+      </ng-template>
+    </ion-modal>
+  </ion-content>
+} @else {
+  <ng-container *ngTemplateOutlet="map"></ng-container>
+}
+
+<!-- Leaflet map -->
+<ng-template #map>
+  @if (showMap) {
+    <div class="map-card" [class.full-height]="!editable()">
+      @if (!isMapLoaded) {
+        <ion-skeleton-text [animated]="true" class="map"></ion-skeleton-text>
+      }
+      <div id="leafletMap" class="map"></div>
+    </div>
+  }
+</ng-template>
+
+<!-- More info tooltip -->
+<ion-popover trigger="info" triggerAction="click" side="bottom">
+  <ng-template>
+    <app-popover-content>
+      <p style="padding: 5px">Select the toggle below or tap & hold to add a pin</p>
+    </app-popover-content>
+  </ng-template>
+</ion-popover>
+
+<!-- Delete Confirmation -->
+<app-popup
+  [(isAlertOpen)]="openConfirmDelete"
+  [heading]="'Delete'"
+  [body]="confirmDeleteBody"
+  [buttonType]="'confirm'"
+  (popupClosed)="deletePopupClosed($event)"
+></app-popup>

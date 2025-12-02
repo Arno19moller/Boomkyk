@@ -1,0 +1,15 @@
+@import "~leaflet/dist/leaflet.css";
+
+
+.map-card {
+    height: 500px;
+    border-radius: 7px;
+    overflow: hidden;
+
+    .map {
+        height: 100%;
+    }
+&.full-height {
+    height: 100%;
+}
+}

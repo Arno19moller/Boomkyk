@@ -2,7 +2,7 @@
   <ion-router-outlet></ion-router-outlet>
 </ion-app>
 
-<ion-loading [isOpen]="databaseService.isLoading" [message]="databaseService.loadingMessage"></ion-loading>
+<ion-loading [isOpen]="loadingService.isLoading" [message]="loadingService.loadingMessage"></ion-loading>
 
 <ion-toast
   [isOpen]="databaseService.openToast"

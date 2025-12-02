@@ -1,0 +1,27 @@
+import { Guid } from 'guid-typescript';
+import { NewImage } from './new-image.interface';
+
+export interface NewCategory {
+  id: Guid;
+  name: string;
+  level: number;
+  parentId?: Guid;
+  createDate?: Date;
+}
+
+export interface NewCategoryItem {
+  id: Guid;
+  name: string;
+  level: number;
+  parentId?: Guid;
+  notes?: string;
+  newCategoryId?: Guid;
+  audioFileIds?: Guid[];
+  imageIds?: Guid[];
+  highlightImageId?: Guid;
+  pinIds?: Guid[];
+  createDate?: Date;
+  highlightImage?: NewImage; // used in home page
+  categoryHierarchy?: string[]; // used to display in home and view
+  allowContent?: boolean;
+}

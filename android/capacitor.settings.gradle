@@ -14,17 +14,26 @@ project(':capacitor-camera').projectDir = new File('../node_modules/@capacitor/c
 include ':capacitor-filesystem'
 project(':capacitor-filesystem').projectDir = new File('../node_modules/@capacitor/filesystem/android')
 
+include ':capacitor-geolocation'
+project(':capacitor-geolocation').projectDir = new File('../node_modules/@capacitor/geolocation/android')
+
 include ':capacitor-haptics'
 project(':capacitor-haptics').projectDir = new File('../node_modules/@capacitor/haptics/android')
 
 include ':capacitor-keyboard'
 project(':capacitor-keyboard').projectDir = new File('../node_modules/@capacitor/keyboard/android')
 
+include ':capacitor-live-updates'
+project(':capacitor-live-updates').projectDir = new File('../node_modules/@capacitor/live-updates/android')
+
 include ':capacitor-preferences'
 project(':capacitor-preferences').projectDir = new File('../node_modules/@capacitor/preferences/android')
 
 include ':capacitor-status-bar'
 project(':capacitor-status-bar').projectDir = new File('../node_modules/@capacitor/status-bar/android')
+
+include ':capawesome-team-capacitor-file-opener'
+project(':capawesome-team-capacitor-file-opener').projectDir = new File('../node_modules/@capawesome-team/capacitor-file-opener/android')
 
 include ':capacitor-voice-recorder'
 project(':capacitor-voice-recorder').projectDir = new File('../node_modules/capacitor-voice-recorder/android')

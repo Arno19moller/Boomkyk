@@ -1,0 +1,65 @@
+@if (selectedCategoryItem()?.name && selectedCategoryItem()!.name!.length > 0) {
+  <ion-card>
+    <ion-list class="form-container" lines="none">
+      <ion-item>
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="tertiary"
+          size="large"
+          style="width: 100%"
+          (click)="actionSheetType = 'upload'; isActionSheetOpen.set(true)"
+        >
+          <ion-icon slot="icon-only" name="camera-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+      @if (images().length > 0) {
+        <ion-item>
+          <div class="image-scroll-container">
+            @for (image of images(); track $index) {
+              <ion-img
+                appLongPress
+                class="item-image"
+                [src]="image.webPath"
+                [class.highlight]="image.isHighlight"
+                (longPress)="startLongPress(image)"
+                (dblclick)="doubleClick(image)"
+                (ionError)="handleImageError($event)"
+                loading="lazy"
+                >
+              </ion-img>
+            }
+          </div>
+        </ion-item>
+      }
+      <ion-item>
+        <ion-textarea
+          fill="outline"
+          label="Notes"
+          labelPlacement="stacked"
+          placeholder="Enter notes here"
+          style="margin-top: 10px"
+          autoGrow="true"
+          [(ngModel)]="selectedCategoryItem()!.notes"
+        >
+        </ion-textarea>
+      </ion-item>
+    </ion-list>
+  </ion-card>
+
+  <!-- Action Sheet -->
+  <app-action-sheet
+    [type]="actionSheetType"
+    [(isOpen)]="isActionSheetOpen"
+    (closed)="actionSheetClosed($event)"
+  ></app-action-sheet>
+
+  <!-- Confirmation Popup -->
+  <app-popup
+    [(isAlertOpen)]="openConfirmDelete"
+    [heading]="'Delete'"
+    [body]="confirmDeleteBody"
+    [buttonType]="'confirm'"
+    (popupClosed)="deletePopupClosed($event)"
+  ></app-popup>
+}

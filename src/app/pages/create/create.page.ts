@@ -1,346 +1,268 @@
-import { LocationStrategy } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import {
-  AfterViewInit,
-  Component,
-  CUSTOM_ELEMENTS_SCHEMA,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { ActionSheetController } from '@ionic/angular';
-import {
-  GestureController,
+  IonBackButton,
   IonButton,
-  IonCol,
+  IonButtons,
   IonContent,
-  IonFab,
-  IonFabButton,
-  IonGrid,
   IonHeader,
   IonIcon,
-  IonImg,
-  IonInput,
-  IonItem,
-  IonList,
-  IonRow,
-  IonSelect,
-  IonSelectOption,
-  IonTextarea,
   IonTitle,
-  IonToast,
   IonToolbar,
+  NavController,
 } from '@ionic/angular/standalone';
 import { Guid } from 'guid-typescript';
-import { Subject } from 'rxjs';
-import { VoiceNote } from 'src/app/models/voice-notes.interface';
-import { RecordingService } from 'src/app/services/recording.service';
-import { ImageType } from '../../models/image-type.enum';
-import { BoomkykPhoto } from '../../models/photo.interface';
-import { TreeType } from '../../models/tree-type.enum';
-import { Tree } from '../../models/tree.interface';
-import { ActionsService } from '../../services/actions.service';
-import { DatabaseService } from '../../services/database.service';
-import { PhotoService } from '../../services/photo.service';
-import { TreeFamiliesComponent } from '../tree-families/tree-families.component';
+import { ItemImageComponent } from 'src/app/components/create/item-image/item-image.component';
+import { ItemMapComponent } from 'src/app/components/create/item-map/item-map.component';
+import { SelectItemComponent } from 'src/app/components/create/select-item/select-item.component';
+import { VoiceComponent } from 'src/app/components/create/voice/voice.component';
+import { AudioRecording } from 'src/app/models/audio-recording.interface';
+import { NewCategory, NewCategoryItem } from 'src/app/models/new-category.interface';
+import { NewImage } from 'src/app/models/new-image.interface';
+import { Pin } from 'src/app/models/pin.interface';
+import { ItemsService } from 'src/app/services/items.service';
+import { MapService } from 'src/app/services/map.service';
+import { NewAudioService } from 'src/app/services/new-audio.service';
+import { NewCategoryService } from 'src/app/services/new-category.service';
+import { NewImageService } from 'src/app/services/new-image.service';
 
 @Component({
-  selector: 'app-tab2',
-  templateUrl: 'create.page.html',
-  styleUrls: ['create.page.scss'],
+  selector: 'app-create',
+  templateUrl: './create.page.html',
+  styleUrls: ['./create.page.scss'],
   standalone: true,
   imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonContent,
-    TreeFamiliesComponent,
-    IonFabButton,
-    IonButton,
-    IonFab,
     IonIcon,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonImg,
-    IonList,
-    IonItem,
-    IonSelect,
-    IonSelectOption,
-    IonInput,
-    IonTextarea,
-    IonToast,
+    IonButton,
+    IonBackButton,
+    IonButtons,
+    IonContent,
+    IonHeader,
+    IonTitle,
+    IonToolbar,
+    CommonModule,
+    FormsModule,
+    SelectItemComponent,
+    ItemImageComponent,
+    ItemMapComponent,
+    VoiceComponent,
+    ReactiveFormsModule,
   ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class Tab2Page implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('ionInputEl') ionInputEl!: IonInput;
-  @ViewChild('recordBtn', { read: ElementRef }) recordBtn!: ElementRef;
+export class CreatePage implements OnInit {
+  private itemsService = inject(ItemsService);
+  private mapService = inject(MapService);
+  private audioService = inject(NewAudioService);
+  private categoryService = inject(NewCategoryService);
+  private imageService = inject(NewImageService);
+  private navController = inject(NavController);
+  private route = inject(ActivatedRoute);
 
-  private destroy$ = new Subject();
+  isEdit = signal<boolean>(false);
+  selectedCategory = signal<NewCategory | undefined>(undefined);
+  selectedCategoryItem = signal<NewCategoryItem | undefined>(undefined);
+  selectedParentItem = signal<NewCategoryItem | undefined>(undefined);
+  selectedItemId: Guid | undefined;
 
-  public newTree: Tree | undefined = undefined;
-  public isEdit: boolean = false;
-  public TreeType = TreeType;
-  public parentGroup: Tree | undefined = undefined;
-  public infoType: string = 'overview';
-  public individualImages: BoomkykPhoto[] = [];
-  public selectedImageType: ImageType = ImageType.Overview;
-  public treeGroups: Tree[] = [];
-  public errorMessage: string = '';
+  @ViewChild(SelectItemComponent) selectItemComponent!: SelectItemComponent;
 
-  // voice recording
-  duration: number = 0;
+  mapPins = signal<Pin[]>([]);
+  images = signal<NewImage[]>([]);
+  audioFiles = signal<AudioRecording[]>([]);
 
-  constructor(
-    public photoService: PhotoService,
-    private databaseService: DatabaseService,
-    public actionSheetController: ActionSheetController,
-    private actionsService: ActionsService,
-    public recordingService: RecordingService,
-    private locationStrategy: LocationStrategy,
-    private gestureCtrl: GestureController,
-  ) {}
+  itemFormGroup = new FormGroup({
+    type: new FormControl<NewCategory | undefined>(undefined, [Validators.required]),
+    typeValue: new FormControl('', [Validators.required]),
+    parent: new FormControl<NewCategory | undefined>(undefined, [Validators.required]),
+  });
 
-  async ngOnInit(): Promise<void> {
-    this.isEdit = this.actionsService.selectedTree != undefined;
-    this.newTree = this.actionsService.selectedTree ?? {
-      id: Guid.create(),
-      images: [],
-      title: '',
-      type: TreeType.Species,
-    };
-    this.typeSelected(TreeType.Species);
-    setTimeout(() => {
-      this.infoTypeChanged('overview');
-    }, 100);
-  }
+  constructor() {}
 
-  async ngAfterViewInit(): Promise<void> {
-    await this.recordingService.checkAndRequestPermission();
-    await this.recordingService.loadFiles(this.newTree);
-    const longpress = this.gestureCtrl.create(
-      {
-        el: this.recordBtn.nativeElement,
-        threshold: 0,
-        gestureName: 'long-press',
-        onStart: (ev) => {
-          Haptics.impact({ style: ImpactStyle.Light });
-          this.recordingService.startRecording();
-          this.calculateDuration();
-        },
-        onEnd: (ev) => {
-          Haptics.impact({ style: ImpactStyle.Light });
-          const treeName = this.newTree?.title === '' ? undefined : this.newTree?.title;
-          this.recordingService.stopRecording(this.selectedImageType);
-        },
-      },
-      true,
-    );
-    longpress.enable();
-  }
+  async ngOnInit() {
+    this.route.queryParamMap.subscribe(async (params) => {
+      const id = params.get('id');
 
-  calculateDuration(): void {
-    if (!this.recordBtn) {
-      this.duration = 0;
-      return;
-    }
+      if (id) {
+        this.isEdit.set(true);
+        this.selectedItemId = Guid.parse(id);
 
-    this.duration++;
+        const item = await this.itemsService.getItemByGuid(this.selectedItemId);
+        this.selectedCategoryItem.set(item);
 
-    setTimeout(() => {
-      this.calculateDuration();
-    }, 1000);
-  }
+        if (item != undefined) {
+          // Set basic item details
+          this.itemFormGroup.controls['typeValue'].setValue(item.name);
 
-  backClicked(): void {
-    this.locationStrategy.back();
-  }
+          // Handle Category
+          const categories = await this.categoryService.getCategories();
+          const category = categories?.find((c) => c.id.toString() === item.newCategoryId?.toString());
 
-  async playNote(note: VoiceNote) {
-    if (note.isPlaying) {
-      this.recordingService.pausePlayback();
-      note.isPlaying = false;
-      return;
-    }
-    await this.recordingService.playFile(note);
-  }
+          if (category) {
+            this.itemFormGroup.controls['type'].setValue(category);
+            this.selectedCategory.set(category);
 
-  async deleteNote(note: VoiceNote) {
-    await this.recordingService.deleteRecording(note);
-  }
+            // Handle Parent
+            if (item.parentId) {
+              const parentItems = await this.categoryService.getCategoryItemsByLevel(category.level + 1);
+              const parent = parentItems?.find((p) => p.id.toString() === item.parentId?.toString());
+              if (parent) {
+                this.selectedParentItem.set(parent);
+              }
+            }
+          }
 
-  async addPhotoToGallery() {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Add Photos',
-      buttons: [
-        {
-          text: 'From Photos',
-          role: 'destructive',
-          icon: 'image',
-          handler: async () => {
-            await this.photoService.addMultipleImages(this.newTree!.images!, this.selectedImageType);
-            this.individualImages = this.newTree!.images!.filter((x) => x.type === this.selectedImageType);
-          },
-        },
-        {
-          text: 'Take Picture',
-          role: 'destructive',
-          icon: 'camera',
-          handler: async () => {
-            await this.photoService.addSingleImage(this.newTree!.images!, this.selectedImageType);
-            this.individualImages = this.newTree!.images!.filter((x) => x.type === this.selectedImageType);
-          },
-        },
-        {
-          text: 'Cancel',
-          role: 'cancel',
-        },
-      ],
-    });
-    await actionSheet.present();
-  }
+          // Load related data
+          if (item.imageIds && item.imageIds.length > 0) {
+            const images = await this.imageService.getImagesByGuids(item.imageIds);
+            this.images.set(images);
+          }
 
-  public async showDeleteImageActionSheet(photo: BoomkykPhoto) {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Photos',
-      buttons: [
-        {
-          text: 'Delete',
-          role: 'destructive',
-          icon: 'trash',
-          handler: () => {
-            this.photoService.deletePicture(this.newTree!.images!, photo);
-            this.individualImages = this.newTree!.images!.filter((x) => x.type === this.selectedImageType);
-          },
-        },
-        {
-          text: 'Cancel',
-          icon: 'close',
-          role: 'cancel',
-        },
-      ],
-    });
-    await actionSheet.present();
-  }
+          if (item.audioFileIds && item.audioFileIds.length > 0) {
+            const audioFiles = await this.audioService.getAudioFilesByGuid(item.audioFileIds);
+            this.audioFiles.set(audioFiles);
+          }
 
-  public async showDeleteVoiceNoteActionSheet(note: VoiceNote) {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Voice Note',
-      buttons: [
-        {
-          text: 'Delete',
-          role: 'destructive',
-          icon: 'trash',
-          handler: async () => {
-            await this.deleteNote(note);
-          },
-        },
-        {
-          text: 'Cancel',
-          icon: 'close',
-          role: 'cancel',
-        },
-      ],
-    });
-    await actionSheet.present();
-  }
+          if (item.pinIds && item.pinIds.length > 0) {
+            const pins = await this.mapService.getPinsByGuid(item.pinIds);
+            this.mapPins.set(pins);
+          }
+        }
+      } else {
+        // Default initialization for create mode
+        let categoryItems = await this.categoryService.getCategoryItems();
+        if (categoryItems && categoryItems.length > 0) {
+          categoryItems = categoryItems?.sort((a, b) => a.level - b.level);
+          this.selectedCategoryItem.set(categoryItems[0]);
+        }
 
-  async typeSelected(type: any) {
-    this.newTree!.type = type;
-    if (this.newTree!.type === this.TreeType.Species) {
-      this.newTree!.treeInfo = this.newTree!.treeInfo ?? {
-        overview: '',
-        leaves: '',
-        bark: '',
-        fruit: '',
-        flower: '',
-      };
-    }
-
-    if (this.newTree!.type !== this.TreeType.Family) {
-      this.newTree!.groupId = this.parentGroup?.id ?? this.newTree!.groupId;
-      this.individualImages = this.newTree!.images!.filter((x) => x.type === ImageType.Overview);
-
-      if (type === TreeType.Genus) {
-        this.treeGroups = await this.databaseService.getTreesByType(TreeType.Family);
-      } else if (type === TreeType.Species) {
-        this.treeGroups = await this.databaseService.getTreesByType(TreeType.Genus);
+        let categories = await this.categoryService.getCategories();
+        if (categories && categories.length > 0) {
+          categories = categories?.sort((a, b) => a.level - b.level);
+          this.selectedCategory.set(categories[0]);
+        }
       }
-    } else {
-      this.newTree!.treeInfo = undefined;
-      this.newTree!.groupId = undefined;
-    }
-  }
-
-  groupSelected(e: any): void {
-    this.newTree!.groupId = e.detail.value;
-  }
-
-  textInputChanged(control: string, e: any): void {
-    if (control === 'title') {
-      this.newTree!.title = e.target.value;
-    } else if (control === 'individualDescription') {
-      if (this.infoType === 'overview') {
-        this.newTree!.treeInfo!.overview = e.target.value;
-      } else if (this.infoType === 'leaves') {
-        this.newTree!.treeInfo!.leaves = e.target.value;
-      } else if (this.infoType === 'bark') {
-        this.newTree!.treeInfo!.bark = e.target.value;
-      } else if (this.infoType === 'fruit') {
-        this.newTree!.treeInfo!.fruit = e.target.value;
-      } else if (this.infoType === 'flower') {
-        this.newTree!.treeInfo!.flower = e.target.value;
-      }
-    }
-  }
-
-  infoTypeChanged(type: string): void {
-    this.infoType = type;
-    if (this.infoType === 'overview') {
-      this.selectedImageType = ImageType.Overview;
-      this.ionInputEl.value = this.newTree!.treeInfo!.overview;
-    } else if (this.infoType === 'leaves') {
-      this.selectedImageType = ImageType.Leaves;
-      this.ionInputEl.value = this.newTree!.treeInfo!.leaves;
-    } else if (this.infoType === 'bark') {
-      this.selectedImageType = ImageType.Bark;
-      this.ionInputEl.value = this.newTree!.treeInfo!.bark;
-    } else if (this.infoType === 'fruit') {
-      this.selectedImageType = ImageType.Fruit;
-      this.ionInputEl.value = this.newTree!.treeInfo!.fruit;
-    } else if (this.infoType === 'flower') {
-      this.selectedImageType = ImageType.Flower;
-      this.ionInputEl.value = this.newTree!.treeInfo!.flower;
-    }
-    this.individualImages = this.newTree!.images!.filter((x) => x.type === this.selectedImageType);
+    });
   }
 
   async onSubmit(): Promise<void> {
-    if (this.newTree!.title === '') {
-      this.databaseService.toastMessage = 'Please fill out all required fields';
-      this.databaseService.openToast = true;
-    } else if (this.newTree?.type === this.TreeType.Species && this.newTree!.images?.length === 0) {
-      this.databaseService.toastMessage = 'Please add at least one image';
-      this.databaseService.openToast = true;
-    } else {
-      if (this.isEdit) {
-        await this.databaseService.updateTree(this.newTree!);
-      } else {
-        await this.databaseService.addTree(this.newTree!);
+    if (this.itemFormGroup.valid) {
+      // Add item
+      if ((this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level) === 0) {
+        await this.saveItem();
       }
-      this.databaseService.toastMessage = 'Tree Saved Successfully';
-      this.databaseService.openToast = true;
-      this.backClicked();
+      // Add Category
+      else {
+        await this.saveCategory();
+      }
+
+      this.navController.back();
+    } else {
+      console.log(this.itemFormGroup.controls['parent']);
     }
   }
 
-  async ngOnDestroy() {
-    this.destroy$.next(null);
-    this.destroy$.complete();
-    this.actionsService.selectedTree = undefined;
+  private async saveItem() {
+    let highlightImageId = this.images().find((image) => image.isHighlight)?.id;
+    highlightImageId = highlightImageId ?? this.images()[0]?.id;
 
-    await this.recordingService.saveTreeRecordings(this.newTree!);
+    const newItem: NewCategoryItem = {
+      id: Guid.create(),
+      name: this.itemFormGroup.value.typeValue!,
+      level: this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level,
+      parentId: this.itemFormGroup.value.parent?.id,
+      notes: this.selectedCategoryItem()?.notes!,
+      newCategoryId: this.selectedCategory()?.id!,
+      audioFileIds: this.audioFiles().map((recording) => recording.id),
+      imageIds: this.images().map((image) => image.id),
+      highlightImageId: highlightImageId,
+      pinIds: this.mapPins().map((pin) => pin.id),
+      createDate: this.selectedCategoryItem()?.createDate ?? new Date(),
+    };
+
+    if (this.isEdit() && this.selectedItemId) {
+      this.addAndRemoveItems();
+      newItem.id = this.selectedItemId;
+      await this.itemsService.updateItem(newItem);
+    } else {
+      if (this.audioFiles().length > 0) await this.audioService.addAudioFiles(this.audioFiles());
+      if (this.images().length > 0) await this.imageService.addImages(this.images());
+      if (this.mapPins().length > 0) await this.mapService.addPins(this.mapPins());
+
+      await this.itemsService.addItem(newItem);
+    }
+  }
+
+  private async saveCategory(){
+    const category: NewCategoryItem = {
+      id: Guid.create(),
+      name: this.itemFormGroup.value.typeValue!,
+      level: this.itemFormGroup.value.type?.level ?? this.selectedCategory()!.level,
+      newCategoryId: this.selectedCategory()?.id!,
+      parentId: this.itemFormGroup.value.parent?.id,
+      createDate: new Date(),
+    };
+      await this.categoryService.saveCategoryItem(category);
+  }
+
+  private async addAndRemoveItems() {
+    const imagesToDelete =
+      this.selectedCategoryItem()?.imageIds?.filter(
+        (id) => !this.images().some((image) => image.id.toString() === id.toString()),
+      ) ?? [];
+    const audioFilesToDelete =
+      this.selectedCategoryItem()?.audioFileIds?.filter(
+        (id) => !this.audioFiles().some((audio) => audio.id.toString() === id.toString()),
+      ) ?? [];
+    const pinsToDelete =
+      this.selectedCategoryItem()?.pinIds?.filter(
+        (id) => !this.mapPins().some((pin) => pin.id.toString() === id.toString()),
+      ) ?? [];
+
+    if (imagesToDelete?.length > 0) {
+      for (const imageId of imagesToDelete) {
+        await this.imageService.removeImage(imageId);
+      }
+    }
+    if (pinsToDelete?.length > 0) {
+      for (const pinId of pinsToDelete) {
+        await this.mapService.removePin(pinId);
+      }
+    }
+    if (audioFilesToDelete?.length > 0) {
+      for (const audioFileId of audioFilesToDelete) {
+        await this.imageService.removeImage(audioFileId);
+      }
+    }
+
+    const imagesToAdd =
+      this.images()?.filter(
+        (id) => !this.selectedCategoryItem()?.imageIds?.some((image) => image.toString() === id.toString()),
+      ) ?? [];
+    const audioFilesToAdd =
+      this.audioFiles()?.filter(
+        (id) => !this.selectedCategoryItem()?.audioFileIds?.some((audio) => audio.toString() === id.toString()),
+      ) ?? [];
+    const pinsToAdd =
+      this.mapPins()?.filter(
+        (id) => !this.selectedCategoryItem()?.pinIds?.some((pin) => pin.toString() === id.toString()),
+      ) ?? [];
+
+    if (imagesToAdd?.length > 0) {
+      for (const image of imagesToAdd) {
+        await this.imageService.addImage(image);
+      }
+    }
+    if (audioFilesToAdd?.length > 0) {
+      for (const audioFile of audioFilesToAdd) {
+        await this.audioService.addAudioFile(audioFile);
+      }
+    }
+    if (pinsToAdd?.length > 0) {
+      for (const pin of pinsToAdd) {
+        await this.mapService.addPin(pin);
+      }
+    }
   }
 }

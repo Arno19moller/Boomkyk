@@ -1,0 +1,63 @@
+<ion-card>
+  @if (categories().length > 0) {
+    <form [formGroup]="itemFormGroup">
+      <ion-list class="form-container" lines="none">
+        <!-- Selected Level -->
+        <ion-item>
+          <ion-select
+            #type
+            fill="outline"
+            label="Type*"
+            interface="popover"
+            placeholder="Select Type"
+            label-placement="stacked"
+            required="true"
+            style="margin-top: 10px"
+            formControlName="type"
+            [compareWith]="compareWith"
+            (ionChange)="selectedLevelChange()"
+          >
+            @for (level of categories(); track $index) {
+              <ion-select-option [value]="level">{{ level.name }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+
+        <!-- New Item Name -->
+        <ion-item>
+          <ion-input
+          #typeValue
+            fill="outline"
+            style="margin-top: 10px"
+            required="true"
+            labelPlacement="stacked"
+            label="{{ type.value?.name }} Name"
+            placeholder="Enter {{ type.value?.name }} Name"
+            formControlName="typeValue"
+          ></ion-input>
+        </ion-item>
+
+        @if (parentCategory() != undefined) {
+          <!-- Select Parent -->
+          <ion-item>
+            <ion-select
+              fill="outline"
+              label="{{ parentCategory()!.name }}*"
+              interface="popover"
+              placeholder="Select {{ parentCategory()!.name }}"
+              label-placement="stacked"
+              required="true"
+              style="margin-top: 10px"
+              formControlName="parent"
+              [compareWith]="compareWith"
+            >
+              @for (level of parentItems(); track $index) {
+                <ion-select-option [value]="level">{{ level.name }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+        }
+      </ion-list>
+    </form>
+  }
+</ion-card>

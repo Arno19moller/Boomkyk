@@ -1,0 +1,129 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Categories</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAddModal()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Add
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-back-button></ion-back-button>
+      </ion-buttons>
+      <ion-title size="large">Categories</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-card>
+    <ion-list>
+      @for (category of categories; track category.id) {
+      <ion-item-sliding>
+        <ion-item appLongPress (longPress)="openActionSheet(category)">
+          <ion-label>
+            <h2>{{ category.name }}</h2>
+            <div>
+              <ion-chip>
+                <ion-label>Level: {{ category.level }}</ion-label>
+              </ion-chip>
+              <ion-chip *ngIf="category.parentId">
+                <ion-label>Parent: {{ getParentName(category.parentId) }}</ion-label>
+              </ion-chip>
+            </div>
+          </ion-label>
+        </ion-item>
+
+        <ion-item-options side="end">
+          <ion-item-option color="primary" (click)="openEditModal(category)">
+            <ion-icon slot="icon-only" name="create"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="danger" (click)="promptDeleteCategory(category)">
+            <ion-icon slot="icon-only" name="trash"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+      }
+    </ion-list>
+  </ion-card>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button (click)="openAddModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-modal [isOpen]="isModalOpen" (willDismiss)="cancel()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="cancel()">Cancel</ion-button>
+          </ion-buttons>
+          <ion-title>{{ isEditing ? 'Edit Category' : 'Add Category' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="confirm()" [strong]="true">Save</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-item>
+          <ion-input
+            label="Name"
+            labelPlacement="stacked"
+            type="text"
+            placeholder="Enter name"
+            [(ngModel)]="currentCategory.name"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input
+            label="Level"
+            labelPlacement="stacked"
+            type="number"
+            placeholder="Enter level"
+            [(ngModel)]="currentCategory.level"
+            (ionChange)="onLevelChange()"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item *ngIf="availableParents.length > 0">
+          <ion-select
+            label="Parent Category"
+            labelPlacement="stacked"
+            placeholder="Select Parent"
+            interface="popover"
+            [(ngModel)]="currentCategory.parentId"
+            [compareWith]="compareWith"
+          >
+            <ion-select-option *ngFor="let parent of availableParents" [value]="parent.id"
+              >{{ parent.name }}</ion-select-option
+            >
+          </ion-select>
+        </ion-item>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <app-popup
+    [(isAlertOpen)]="openConfirmDelete"
+    [heading]="'Delete Category'"
+    [body]="confirmDeleteBody"
+    [buttonType]="'confirm'"
+    (popupClosed)="deletePopupClosed($event)"
+  ></app-popup>
+
+  <app-action-sheet
+    [(isOpen)]="isActionSheetOpen"
+    [type]="actionSheetType"
+    (closed)="actionSheetClosed($event)"
+  ></app-action-sheet>
+</ion-content>

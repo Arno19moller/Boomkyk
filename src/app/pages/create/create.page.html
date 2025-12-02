@@ -1,14 +1,12 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="clear" (click)="backClicked()">
-        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-      </ion-button>
+      <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title> {{ !isEdit ? 'Create' : 'Update' }} </ion-title>
+    <ion-title> {{ !isEdit() ? 'Create' : 'Update' }} </ion-title>
     <ion-button slot="end" (click)="onSubmit()">
       <ion-icon name="save" slot="start"></ion-icon>
-      {{ !isEdit ? 'Save' : 'Update' }}
+      {{ !isEdit() ? 'Save' : 'Update' }}
     </ion-button>
   </ion-toolbar>
 </ion-header>
@@ -17,152 +15,32 @@
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-button fill="clear" (click)="backClicked()">
-          <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-        </ion-button>
+        <ion-back-button></ion-back-button>
       </ion-buttons>
-      <ion-title size="large"> Create </ion-title>
+      <ion-title> {{ !isEdit() ? 'Create' : 'Update' }} </ion-title>
+      <ion-button slot="end" (click)="onSubmit()">
+        <ion-icon name="save" slot="start"></ion-icon>
+        {{ !isEdit() ? 'Save' : 'Update' }}
+      </ion-button>
     </ion-toolbar>
   </ion-header>
 
-  @if(newTree){
-  <ion-card>
-    <ion-list class="form-container" lines="none">
-      @if(!isEdit){
-      <ion-item>
-        <ion-select
-          fill="outline"
-          interface="popover"
-          placeholder="Select Type"
-          label="Type*"
-          label-placement="stacked"
-          (ionChange)="typeSelected($event.detail.value)"
-          [required]="true"
-          [value]="newTree.type"
-        >
-          <ion-select-option [value]="TreeType.Family"> Family </ion-select-option>
-          <ion-select-option [value]="TreeType.Genus"> Genus </ion-select-option>
-          <ion-select-option [value]="TreeType.Species"> Species </ion-select-option>
-        </ion-select>
-      </ion-item>
-      }
-      <ion-item>
-        <ion-input
-          fill="outline"
-          label="Name*"
-          labelPlacement="stacked"
-          placeholder="Enter Name"
-          (ionChange)="textInputChanged('title', $event)"
-          [value]="newTree.title"
-        ></ion-input>
-      </ion-item>
-      @if(newTree.type !== TreeType.Family){
-      <ion-item>
-        <ion-select
-          fill="outline"
-          interface="popover"
-          [placeholder]="newTree.type === TreeType.Genus ? 'Select Family*' : 'Select Genus*'"
-          [label]="newTree.type === TreeType.Genus ? 'Select Family*' : 'Select Genus*'"
-          label-placement="stacked"
-          (ionChange)="groupSelected($event)"
-          [required]="true"
-          [value]="newTree.groupId"
-        >
-          @for (group of treeGroups; track $index) {
-          <ion-select-option [value]="group.id"> {{group.title}} </ion-select-option>
-          }
-        </ion-select>
-      </ion-item>
-      }
-    </ion-list>
-  </ion-card>
-  @if(newTree.type === TreeType.Species){
-  <ion-card>
-    <ion-list>
-      <ion-item>
-        <ion-segment
-          [scrollable]="true"
-          value="overview"
-          (ionChange)="infoTypeChanged($event.target?.value?.toString() ?? '')"
-        >
-          <ion-segment-button value="overview">Overview</ion-segment-button>
-          <ion-segment-button value="leaves">Leaves</ion-segment-button>
-          <ion-segment-button value="bark">Bark</ion-segment-button>
-          <ion-segment-button value="fruit">Fruit</ion-segment-button>
-          <ion-segment-button value="flower">Flower</ion-segment-button>
-        </ion-segment>
-      </ion-item>
+  <app-select-item
+    [isEdit]="isEdit()"
+    [itemFormGroup]="itemFormGroup"
+    [(selectedCategory)]="selectedCategory"
+    [(selectedCategoryItem)]="selectedCategoryItem"
+    [(selectedParentItem)]="selectedParentItem"
+  ></app-select-item>
 
-      <!-- individual images -->
-      <ion-grid style="padding: 0 16px">
-        <ion-row>
-          <ion-col>
-            <ion-label>Images</ion-label>
-          </ion-col>
-        </ion-row>
-        <ion-row>
-          @for (image of individualImages; track $index) {
-          <ion-col size="3">
-            <ion-button fill="clear" class="delete-image-button" (click)="showDeleteImageActionSheet(image)">
-              <ion-icon name="close" slot="icon-only"></ion-icon>
-            </ion-button>
-            <ion-img [src]="image.webviewPath" (click)="showDeleteImageActionSheet(image)"></ion-img>
-          </ion-col>
-          }
-          <ion-col size="3">
-            <ion-img src="../../../assets/images/addImage.png" (click)="addPhotoToGallery()"></ion-img>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
+  @if(itemFormGroup.valid && selectedCategory()?.level === 0){
+  <app-item-image [(selectedCategoryItem)]="selectedCategoryItem" [(images)]="images"></app-item-image>
 
-      <ion-item>
-        <ion-textarea
-          #ionInputEl
-          fill="outline"
-          label="Description"
-          labelPlacement="stacked"
-          placeholder="Enter Description Here"
-          [autoGrow]="true"
-          (ionChange)="textInputChanged('individualDescription', $event)"
-        ></ion-textarea>
-      </ion-item>
-      @for (note of recordingService.storedFileNames; track $index) { @if(note.type === selectedImageType){
-      <ion-item>
-        <ion-button slot="start" fill="clear" (click)="showDeleteVoiceNoteActionSheet(note)">
-          <ion-icon name="trash" slot="icon-only"></ion-icon>
-        </ion-button>
-        <span>{{note.recordingName}}</span>
-        <ion-button slot="end" fill="clear" (click)="playNote(note)">
-          @if(!note.isPlaying){
-          <ion-icon name="play" slot="icon-only"></ion-icon>
-          } @else{
-          <ion-icon name="pause" slot="icon-only"></ion-icon>
-          }
-        </ion-button>
-      </ion-item>
-      } }
-    </ion-list>
-  </ion-card>
-  } }
+  <!-- Voice Notes -->
+  <app-voice [selectedCategoryItem]="selectedCategoryItem()" [(audioFiles)]="audioFiles" [allowEdit]="true"></app-voice>
+
+  <!-- Map -->
+  <app-item-map [selectedCategoryItem]="selectedCategoryItem()" [(mapPins)]="mapPins"></app-item-map>
+  <div style="margin-bottom: 100px"></div>
+  }
 </ion-content>
-
-@if(newTree?.type === TreeType.Species){
-<ion-footer>
-  <ion-toolbar>
-    <ion-row class="ion-align-items-center">
-      <ion-col size="10">
-        @if(!recordingService.recording){
-        <span> Press and hold to record </span>
-        } @else{
-        <span> Recording duration: {{duration}} </span>
-        }
-      </ion-col>
-      <ion-col size="2">
-        <ion-button fill="clear" #recordBtn>
-          <ion-icon name="mic" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-toolbar>
-</ion-footer>
-}

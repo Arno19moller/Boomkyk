@@ -1,0 +1,32 @@
+.image-scroll-container {
+    width: 100%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    display: ruby;
+
+    .item-image {
+        margin-right: 10px;
+        max-height: 180px;
+        width: auto;
+        border-radius: 10px;
+    }
+
+    .item-image::part(image) {
+        height: 100%;
+        object-fit: contain;
+        max-height: 180px;
+        border-radius: 7px;
+    }
+
+    .highlight {
+        border: 3px solid rgb(22, 212, 22);
+        overflow: hidden;
+
+        .item-image::part(image) {
+            max-height: 174px !important;
+        }
+    }
+}
