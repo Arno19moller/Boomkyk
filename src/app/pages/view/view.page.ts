@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StatusBar } from '@capacitor/status-bar';
 import { NavController, Platform, ViewWillLeave } from '@ionic/angular';
 import {
   IonAccordion,
@@ -107,10 +106,6 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
   async ionViewWillEnter() {
     this.isModalOpen = true;
     this.isNavigating = false;
-
-    if (this.platform.is('hybrid')) {
-      await StatusBar.setOverlaysWebView({ overlay: true });
-    }
 
     const id = this.route.snapshot.paramMap.get('id');
 
@@ -248,10 +243,6 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
   async goBack() {
     if (this.isNavigating) return;
 
-    if (this.platform.is('hybrid')) {
-      await StatusBar.setOverlaysWebView({ overlay: false });
-    }
-
     this.navController.navigateBack('home');
   }
 
@@ -263,9 +254,6 @@ export class ViewPage implements ViewWillLeave, AfterViewInit {
       }
       if (this.animationFrameId) {
         cancelAnimationFrame(this.animationFrameId);
-      }
-      if (this.platform.is('hybrid')) {
-        StatusBar.setOverlaysWebView({ overlay: false });
       }
     }, 100);
   }

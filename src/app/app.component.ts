@@ -1,5 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { IonApp, IonLoading, IonRouterOutlet, IonToast } from '@ionic/angular/standalone';
+import { Platform } from '@ionic/angular';
+import { StatusBar } from '@capacitor/status-bar';
 import { addIcons } from 'ionicons';
 import {
   add,
@@ -45,6 +47,7 @@ import { LoadingService } from './services/loading.service';
 export class AppComponent implements OnInit {
   public databaseService = inject(DatabaseService);
   public loadingService = inject(LoadingService);
+  private platform = inject(Platform);
 
   constructor() {
     addIcons({
@@ -83,5 +86,8 @@ export class AppComponent implements OnInit {
 
   async ngOnInit() {
     this.databaseService.addNursery();
+    if (this.platform.is('hybrid')) {
+      await StatusBar.setOverlaysWebView({ overlay: true });
+    }
   }
 }

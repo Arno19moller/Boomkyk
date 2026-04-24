@@ -45,6 +45,7 @@ export class VoiceComponent implements OnInit {
   selectedCategoryItem = input.required<NewCategoryItem | undefined>();
   audioFiles = model.required<AudioRecording[]>();
   allowEdit = input.required<boolean>();
+  bottomPosition = input.required<string>();
 
   protected longPressInterval: any;
   protected loadingText: string = 'Recording';

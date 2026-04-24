@@ -39,7 +39,7 @@
   [class.pulsing-button]="isRecording"
   (touchstart)="startLongPress()"
   (touchend)="endLongPress()"
-  style="position: fixed; bottom: 10px; left: calc(50% - 20px); z-index: 2"
+  [style]="bottomPosition()"
 >
   <ion-icon name="mic" slot="icon-only"></ion-icon>
 </ion-button>

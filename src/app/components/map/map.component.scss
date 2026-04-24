@@ -1,4 +1,5 @@
 @import "~leaflet/dist/leaflet.css";
+@import "~leaflet-geosearch/dist/geosearch.css";
 
 
 .map-card {
@@ -9,7 +10,46 @@
     .map {
         height: 100%;
     }
-&.full-height {
-    height: 100%;
+                                                                                                                                &.full-height {
+                                                                                                                                    height: 100%;
+                                                                                                                                }
 }
+/* Search results dropdown styling */
+::ng-deep .leaflet-control-geosearch {
+    .results {
+        background-color: white !important;
+        color: #333 !important;
+        border-radius: 8px;
+        margin-top: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: none !important;
+        overflow: hidden;
+        width: 300px;
+
+        &.active {
+            padding: 8px 0;
+        }
+
+        >* {
+            padding: 10px 15px !important;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &:hover {
+                background-color: #f8f8f8 !important;
+            }
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+    }
+
+    form {
+        input {
+            border-radius: 8px !important;
+        }
+    }
 }

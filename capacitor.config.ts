@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.boomspoor',
+  appId: 'io.ionic.boomkyk',
   appName: 'BoomSpoor',
   webDir: 'www',
   server: {

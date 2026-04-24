@@ -29,8 +29,24 @@ import { IonDatetimeCustomEvent } from '@ionic/core';
 import { Guid } from 'guid-typescript';
 import * as L from 'leaflet';
 import { Marker } from 'leaflet';
+import { GeoSearchControl } from 'leaflet-geosearch';
 import { Pin } from 'src/app/models/pin.interface';
 import { PopupComponent } from '../popup/popup.component';
+
+class PhotonProvider {
+  async search({ query }: { query: string }) {
+    const response = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`);
+    const data = await response.json();
+    return data.features.map((f: any) => ({
+      x: f.geometry.coordinates[0],
+      y: f.geometry.coordinates[1],
+      label: [f.properties.name, f.properties.city, f.properties.state, f.properties.country]
+        .filter(Boolean)
+        .join(', '),
+      raw: f,
+    }));
+  }
+}
 
 @Component({
   standalone: true,
@@ -105,11 +121,11 @@ export class MapComponent implements OnInit, OnDestroy {
     let intervalId = setInterval(async () => {
       try {
         if (!this.editable()) {
-          this.loadMap();
+          await this.loadMap();
           this.loadMapEvents();
         } else {
           await Geolocation.requestPermissions();
-          this.loadMap();
+          await this.loadMap();
           this.loadMapEvents();
         }
         clearInterval(intervalId);
@@ -122,12 +138,57 @@ export class MapComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  loadMap(): void {
+  async loadMap(): Promise<void> {
     this.leafletMap = new L.Map('leafletMap');
-    this.leafletMap.setView([-25.7566, 28.1914], 10);
+
+    let center: L.LatLngExpression = [40.4168, -3.7038];
+    const zoom = 10;
+
+    const savedPins = this.pins().filter((p) => p.position);
+    const selPin = this.selectedPin();
+
+    if (selPin && selPin.position) {
+      center = [selPin.position.coords.latitude, selPin.position.coords.longitude];
+    } else if (savedPins.length > 0 && savedPins[0].position) {
+      center = [savedPins[0].position.coords.latitude, savedPins[0].position.coords.longitude];
+    } else {
+      try {
+        const position = await Geolocation.getCurrentPosition();
+        center = [position.coords.latitude, position.coords.longitude];
+      } catch (e) {
+        console.warn('Geolocation failed, defaulting to Madrid');
+      }
+    }
+
+    this.leafletMap.setView(center, zoom);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href=”https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(this.leafletMap);
+
+    if (this.editable()) {
+      const provider = new PhotonProvider();
+      const searchControl = new (GeoSearchControl as any)({
+        provider: provider,
+        position: 'topright',
+        showMarker: true,
+        showPopup: true,
+        marker: {
+          icon: this.getIcon('selected'),
+          draggable: false,
+        },
+        popupFormat: ({ query, result }: any) => result.label,
+        resultFormat: ({ result }: any) => result.label,
+        maxMarkers: 1,
+        retainZoomLevel: false,
+        animateZoom: true,
+        autoClose: true,
+        searchLabel: 'Enter address',
+        keepResult: true,
+      });
+      this.leafletMap.addControl(searchControl);
+    }
+
     this.isMapLoaded = true;
 
     this.loadPins();
